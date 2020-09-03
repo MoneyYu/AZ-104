@@ -1,0 +1,43 @@
+$RESOURCE_GROUP='AZ10404'
+
+$AKS_CLUSTER='aks-demo'
+
+# retrieve the credentials to access the AKS cluster
+az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER
+
+# verify connectivity to the AKS cluster
+kubectl get nodes
+
+# deploy the nginx image from the Docker Hub
+kubectl create deployment nginx-deployment --image=nginx
+
+# verify that a Kubernetes pod has been created
+kubectl get pods
+
+# identify the state of the deployment
+kubectl get deployment
+
+# make the pod available from Internet
+kubectl expose deployment nginx-deployment --port=80 --type=LoadBalancer
+
+# identify whether a public IP address has been provisioned
+kubectl get service
+
+# View the web from browser
+
+# scale the deployment
+kubectl scale --replicas=4 deployment/nginx-deployment
+
+# verify the outcome of scaling the deployment
+kubectl get pods
+
+
+######
+
+az aks scale --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --node-count 3
+
+kubectl scale --replicas=15 deployment/nginx-deployment
+
+kubectl get pods
+
+kubectl get pod -o=custom-columns=NODE:.spec.nodeName,POD:.metadata.name
