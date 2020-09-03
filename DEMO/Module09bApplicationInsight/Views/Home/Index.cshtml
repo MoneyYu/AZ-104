@@ -1,0 +1,132 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<script type="text/javascript">
+    var sdkInstance = "appInsightsSDK"; window[sdkInstance] = "appInsights"; var aiName = window[sdkInstance], aisdk = window[aiName] || function (e) { function n(e) { t[e] = function () { var n = arguments; t.queue.push(function () { t[e].apply(t, n) }) } } var t = { config: e }; t.initialize = !0; var i = document, a = window; setTimeout(function () { var n = i.createElement("script"); n.src = e.url || "https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js", i.getElementsByTagName("script")[0].parentNode.appendChild(n) }); try { t.cookie = i.cookie } catch (e) { } t.queue = [], t.version = 2; for (var r = ["Event", "PageView", "Exception", "Trace", "DependencyData", "Metric", "PageViewPerformance"]; r.length;)n("track" + r.pop()); n("startTrackPage"), n("stopTrackPage"); var s = "Track" + r[0]; if (n("start" + s), n("stop" + s), n("setAuthenticatedUserContext"), n("clearAuthenticatedUserContext"), n("flush"), !(!0 === e.disableExceptionTracking || e.extensionConfig && e.extensionConfig.ApplicationInsightsAnalytics && !0 === e.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)) { n("_" + (r = "onerror")); var o = a[r]; a[r] = function (e, n, i, a, s) { var c = o && o(e, n, i, a, s); return !0 !== c && t["_" + r]({ message: e, url: n, lineNumber: i, columnNumber: a, error: s }), c }, e.autoExceptionInstrumented = !0 } return t }(
+        {
+            instrumentationKey: "ae2ce4f0-1136-445b-8c27-b7baa290c22d"
+        }
+    ); window[aiName] = aisdk, aisdk.queue && 0 === aisdk.queue.length && aisdk.trackPageView({});
+</script>
+
+<div class="text-center" id="app">
+    <h1 class="display-4">Welcome to Module 1201</h1>
+    <button class="btn btn-primary" v-if="!isStart" v-on:click="start()">Start</button>
+    <button class="btn btn-danger" v-if="isStart" v-on:click="stop()">Stop</button>
+    <hr />
+    <div class="container">
+        <div class="row">
+            <div class="col border">
+                <h2>Site A</h2>
+                <ul class="list-group">
+                    <li class="list-group-item" v-for="item in MsgA">{{item.code}}: {{item.msg}} at {{item.time.getHours()}}:{{item.time.getMinutes()}}:{{item.time.getSeconds()}}</li>
+                </ul>
+            </div>
+            <div class="col border">
+                <h2>Site B</h2>
+                <ul class="list-group">
+                    <li class="list-group-item" v-for="item in MsgB">{{item.code}}: {{item.msg}} at {{item.time.getHours()}}:{{item.time.getMinutes()}}:{{item.time.getSeconds()}}</li>
+                </ul>
+            </div>
+            <div class="col border">
+                <h2>Site C</h2>
+                <ul class="list-group">
+                    <li class="list-group-item" v-for="item in MsgC">{{item.code}}: {{item.msg}} at {{item.time.getHours()}}:{{item.time.getMinutes()}}:{{item.time.getSeconds()}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/lib/axios/axios.min.js"></script>
+    <script src="~/lib/vue/vue.js"></script>
+
+    <script>
+        var id1, id2, id3;
+        var app = new Vue({
+            el: '#app',
+            data: {
+                isStart: false,
+                MsgA: [],
+                MsgB: [],
+                MsgC: []
+            },
+            methods: {
+                start: function () {
+                    app.isStart = true;
+                    queryA();
+                    queryB();
+                    queryC();
+                },
+                end: function () {
+                    app.isStart = false;
+                    clearTimeout(id1);
+                    clearTimeout(id2);
+                    clearTimeout(id3);
+                }
+            }
+        });
+
+        function queryA() {
+            axios.get("http://localhost:5001/api/enqueue/WebSiteA")
+                .then(function (response) {
+                    if (app.MsgA.length >= 9) {
+                        app.MsgA = app.MsgA.slice(0, 8);
+                    }
+                    app.MsgA.unshift({ code: response.status, msg: response.statusText, time: new Date() })
+                })
+                .catch(function (error) {
+                    console.log(app.MsgA.length);
+                    if (app.MsgA.length >= 9) {
+                        app.MsgA = app.MsgA.slice(0, 8);
+                    }
+                    app.MsgA.unshift({ code: error.status, msg: error.statusText, time: new Date() })
+                })
+                .then(function () {
+                    id1 = setTimeout(queryA, 2000);
+                });
+        }
+
+        function queryB() {
+            axios.get("http://localhost:5001/api/enqueue/WebSiteB")
+                .then(function (response) {
+                    if (app.MsgB.length >= 9) {
+                        app.MsgB = app.MsgB.slice(0, 8);
+                    }
+                    app.MsgB.unshift({ code: response.status, msg: response.statusText, time: new Date() })
+                })
+                .catch(function (error) {
+                    console.log(app.MsgB.length);
+                    if (app.MsgB.length >= 9) {
+                        app.MsgB = app.MsgB.slice(0, 8);
+                    }
+                    app.MsgB.unshift({ code: error.status, msg: error.statusText, time: new Date() })
+                })
+                .then(function () {
+                    id2 = setTimeout(queryB, 10000);
+                });
+        }
+
+        function queryC() {
+            axios.get("http://localhost:5001/api/enqueue/WebSiteC")
+                .then(function (response) {
+                    if (app.MsgC.length >= 9) {
+                        app.MsgC = app.MsgC.slice(0, 8);
+                    }
+                    app.MsgC.unshift({ code: response.status, msg: response.statusText, time: new Date() });
+                })
+                .catch(function (error) {
+                    console.log(app.MsgC.length);
+                    if (app.MsgC.length >= 9) {
+                        app.MsgC = app.MsgC.slice(0, 8);
+                    }
+                    app.MsgC.unshift({ code: error.status, msg: error.statusText, time: new Date() });
+                })
+                .then(function () {
+                    id3 = setTimeout(queryC, 30000);
+                });
+        }
+    </script>
+}

@@ -1,0 +1,672 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_VM1_name": {
+            "defaultValue": "VM1",
+            "type": "String"
+        },
+        "virtualMachines_VM2_name": {
+            "defaultValue": "VM2",
+            "type": "String"
+        },
+        "virtualMachines_VM3_name": {
+            "defaultValue": "VM3",
+            "type": "String"
+        },
+        "networkInterfaces_vm377_name": {
+            "defaultValue": "vm377",
+            "type": "String"
+        },
+        "networkInterfaces_vm1907_name": {
+            "defaultValue": "vm1907",
+            "type": "String"
+        },
+        "networkInterfaces_vm2404_name": {
+            "defaultValue": "vm2404",
+            "type": "String"
+        },
+        "publicIPAddresses_VM1_ip_name": {
+            "defaultValue": "VM1-ip",
+            "type": "String"
+        },
+        "publicIPAddresses_VM2_ip_name": {
+            "defaultValue": "VM2-ip",
+            "type": "String"
+        },
+        "publicIPAddresses_VM3_ip_name": {
+            "defaultValue": "VM3-ip",
+            "type": "String"
+        },
+        "virtualNetworks_VM1_vnet_name": {
+            "defaultValue": "VM1-vnet",
+            "type": "String"
+        },
+        "virtualNetworks_VM2_vnet_name": {
+            "defaultValue": "VM2-vnet",
+            "type": "String"
+        },
+        "virtualNetworks_VM3_vnet_name": {
+            "defaultValue": "VM3-vnet",
+            "type": "String"
+        },
+        "networkSecurityGroups_VM1_nsg_name": {
+            "defaultValue": "VM1-nsg",
+            "type": "String"
+        },
+        "networkSecurityGroups_VM2_nsg_name": {
+            "defaultValue": "VM2-nsg",
+            "type": "String"
+        },
+        "networkSecurityGroups_VM3_nsg_name": {
+            "defaultValue": "VM3-nsg",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('networkSecurityGroups_VM1_nsg_name')]",
+            "location": "southeastasia",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDP",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('networkSecurityGroups_VM2_nsg_name')]",
+            "location": "southeastasia",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDP",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('networkSecurityGroups_VM3_nsg_name')]",
+            "location": "eastasia",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDP",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('publicIPAddresses_VM1_ip_name')]",
+            "location": "southeastasia",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "ipAddress": "52.187.66.79",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('publicIPAddresses_VM2_ip_name')]",
+            "location": "southeastasia",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "ipAddress": "40.65.187.227",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('publicIPAddresses_VM3_ip_name')]",
+            "location": "eastasia",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "ipAddress": "52.229.164.55",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('virtualNetworks_VM1_vnet_name')]",
+            "location": "southeastasia",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.1.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "defualt",
+                        "properties": {
+                            "addressPrefix": "10.1.1.0/24",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('virtualNetworks_VM2_vnet_name')]",
+            "location": "southeastasia",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.2.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "addressPrefix": "10.2.1.0/24",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('virtualNetworks_VM3_vnet_name')]",
+            "location": "eastasia",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.3.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "addressPrefix": "10.3.1.0/24",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[parameters('virtualMachines_VM1_name')]",
+            "location": "southeastasia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm1907_name'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B4ms"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_VM1_name'), '_OsDisk_1_53a98cec2a6b4084b09ca218a516ee02')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_VM1_name')]",
+                    "adminUsername": "demouser",
+                    "adminPassword":"Azuredemo@2020",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm1907_name'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": false
+                    }
+                },
+                "licenseType": "Windows_Server"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[parameters('virtualMachines_VM2_name')]",
+            "location": "southeastasia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm2404_name'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B4ms"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_VM2_name'), '_OsDisk_1_cc25d013d9994d769c798238d1e14314')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_VM2_name')]",
+                    "adminUsername": "demouser",
+                    "adminPassword":"Azuredemo@2020",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm2404_name'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": false
+                    }
+                },
+                "licenseType": "Windows_Server"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[parameters('virtualMachines_VM3_name')]",
+            "location": "eastasia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm377_name'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B4ms"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_VM3_name'), '_OsDisk_1_379680e56d0547d6b39ebb68a8da89ff')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_VM3_name')]",
+                    "adminUsername": "demouser",
+                    "adminPassword":"Azuredemo@2020",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm377_name'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": false
+                    }
+                },
+                "licenseType": "Windows_Server"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('networkSecurityGroups_VM1_nsg_name'), '/RDP')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM1_nsg_name'))]"
+            ],
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3389",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 300,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('networkSecurityGroups_VM2_nsg_name'), '/RDP')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM2_nsg_name'))]"
+            ],
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3389",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 300,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('networkSecurityGroups_VM3_nsg_name'), '/RDP')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM3_nsg_name'))]"
+            ],
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3389",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 300,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('virtualNetworks_VM2_vnet_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VM2_vnet_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.2.1.0/24",
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('virtualNetworks_VM3_vnet_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VM3_vnet_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.3.1.0/24",
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('virtualNetworks_VM1_vnet_name'), '/defualt')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VM1_vnet_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.1.1.0/24",
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('networkInterfaces_vm1907_name')]",
+            "location": "southeastasia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_VM1_ip_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VM1_vnet_name'), 'defualt')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM1_nsg_name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.1.1.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_VM1_ip_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VM1_vnet_name'), 'defualt')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM1_nsg_name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('networkInterfaces_vm2404_name')]",
+            "location": "southeastasia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_VM2_ip_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VM2_vnet_name'), 'default')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM2_nsg_name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.2.1.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_VM2_ip_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VM2_vnet_name'), 'default')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM2_nsg_name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('networkInterfaces_vm377_name')]",
+            "location": "eastasia",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_VM3_ip_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VM3_vnet_name'), 'default')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM3_nsg_name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.3.1.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_VM3_ip_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VM3_vnet_name'), 'default')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_VM3_nsg_name'))]"
+                }
+            }
+        }
+    ]
+}

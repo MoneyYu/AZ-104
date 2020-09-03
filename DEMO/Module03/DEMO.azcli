@@ -1,0 +1,14 @@
+az login
+
+# az account list
+
+# az account set -s "xxxxxxxx"
+
+az group create --name demopsgroup2 --location southeastasia
+
+az vm create `
+--resource-group demopsgroup2 `
+--name demopsgroup2VM `
+--image win2016datacenter `
+--admin-username demouser `
+--admin-password Azuredemo@2020
