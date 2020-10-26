@@ -1,0 +1,5 @@
+az login
+
+# az group create -n Demo104 -l SouthEastAsia
+
+az deployment group create --resource-group Demo104 --template-file azuredeploy.json --parameters azuredeploy.parameters.json

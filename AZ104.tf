@@ -6,30 +6,36 @@ provider "azurerm" {
 }
 
 locals {
-  group_name               = "AZ10407"
+  group_name               = "AZ10402"
   lab01_name               = "LAB01VMWEB"
   lab02_name               = "LAB02CI"
   lab03_name               = "LAB03VM"
-  lab04_name               = "LAB04BLOB"
+  lab04_name               = "lab04"
   lab05a_name              = "lab05a"
   lab05b_name              = "lab05b"
-  lab06_name               = "LAB06IOTHUB"
+  lab06a_name              = "lab06a"
+  lab06b_name              = "lab06b"
+  lab06c_name              = "lab06c"
   lab07_name               = "lab07"
-  lab08_name               = "LAB08WEBAPP"
+  lab08_name               = "lab08"
+  lab10_name               = "lab10"
   lab11_name               = "lab11"
   lab09a_name              = "lab09a"
   lab09b_name              = "lab09b"
   lab09c_name              = "lab09c"
   lab09d_name              = "lab09d"
-  lab01_name_with_postfix  = "${local.lab01_name}${random_string.rid.result}"
-  lab02_name_with_postfix  = "${local.lab02_name}${random_string.rid.result}"
-  lab03_name_with_postfix  = "${local.lab03_name}${random_string.rid.result}"
-  lab04_name_with_postfix  = "${local.lab04_name}${random_string.rid.result}"
+  lab01_name_with_postfix  = lower("${local.lab01_name}${random_string.rid.result}")
+  lab02_name_with_postfix  = lower("${local.lab02_name}${random_string.rid.result}")
+  lab03_name_with_postfix  = lower("${local.lab03_name}${random_string.rid.result}")
+  lab04_name_with_postfix  = lower("${local.lab04_name}${random_string.rid.result}")
   lab05a_name_with_postfix = lower("${local.lab05a_name}${random_string.rid.result}")
   lab05b_name_with_postfix = lower("${local.lab05b_name}${random_string.rid.result}")
-  lab06_name_with_postfix  = "${local.lab06_name}${random_string.rid.result}"
+  lab06a_name_with_postfix = lower("${local.lab06a_name}${random_string.rid.result}")
+  lab06b_name_with_postfix = lower("${local.lab06b_name}${random_string.rid.result}")
+  lab06c_name_with_postfix = lower("${local.lab06c_name}${random_string.rid.result}")
   lab07_name_with_postfix  = lower("${local.lab07_name}${random_string.rid.result}")
-  lab08_name_with_postfix  = "${local.lab08_name}${random_string.rid.result}"
+  lab08_name_with_postfix  = lower("${local.lab08_name}${random_string.rid.result}")
+  lab10_name_with_postfix  = lower("${local.lab10_name}${random_string.rid.result}")
   lab11_name_with_postfix  = lower("${local.lab11_name}${random_string.rid.result}")
   lab09a_name_with_postfix = lower("${local.lab09a_name}${random_string.rid.result}")
   lab09b_name_with_postfix = lower("${local.lab09b_name}${random_string.rid.result}")
@@ -65,6 +71,79 @@ resource "azurerm_resource_group" "az104" {
   tags = {
     environment = local.group_name
   }
+}
+
+## LAB-04-VNET
+resource "azurerm_virtual_network" "lab04" {
+  name                = local.lab04_name_with_postfix
+  address_space       = ["10.10.0.0/16"]
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+}
+
+resource "azurerm_network_security_group" "lab04" {
+  name                = local.lab04_name_with_postfix
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+}
+
+resource "azurerm_network_security_rule" "lab04" {
+  name                        = "RDP"
+  priority                    = 110
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "3389"
+  destination_port_range      = "3389"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab04.name
+}
+
+resource "azurerm_subnet" "lab04" {
+  name                 = "AzureFirewallSubnet"
+  resource_group_name  = azurerm_resource_group.az104.name
+  virtual_network_name = azurerm_virtual_network.lab04.name
+  address_prefixes     = ["10.10.1.0/24"]
+}
+
+resource "azurerm_public_ip" "lab04" {
+  name                = local.lab04_name_with_postfix
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_firewall" "lab04" {
+  name                = local.lab04_name_with_postfix
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.lab04.id
+    public_ip_address_id = azurerm_public_ip.lab04.id
+  }
+}
+
+resource "azurerm_dns_zone" "lab04" {
+  name                = "${local.lab04_name_with_postfix}public.com"
+  resource_group_name = azurerm_resource_group.az104.name
+}
+
+resource "azurerm_private_dns_zone" "lab04" {
+  name                = "${local.lab04_name_with_postfix}private.com"
+  resource_group_name = azurerm_resource_group.az104.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
+  name                  = local.lab04_name_with_postfix
+  resource_group_name   = azurerm_resource_group.az104.name
+  private_dns_zone_name = azurerm_private_dns_zone.lab04.name
+  virtual_network_id    = azurerm_virtual_network.lab04.id
+  registration_enabled  = true
 }
 
 ## LAB-05-A-PEERING
@@ -675,6 +754,20 @@ resource "azurerm_virtual_machine_extension" "lab05bscript" {
   }
 }
 
+# LAB-06-A-ROUTE-TABLE
+resource "azurerm_route_table" "lab06a" {
+  name                          = local.lab06a_name_with_postfix
+  location                      = azurerm_resource_group.az104.location
+  resource_group_name           = azurerm_resource_group.az104.name
+  disable_bgp_route_propagation = false
+
+  route {
+    name           = "route1"
+    address_prefix = "10.0.0.0/16"
+    next_hop_type  = "vnetlocal"
+  }
+}
+
 # LAB-07-STORAGE
 resource "azurerm_storage_account" "lab07" {
   name                     = local.lab07_name_with_postfix
@@ -790,6 +883,16 @@ resource "azurerm_kubernetes_cluster" "lab09c" {
       enabled = false
     }
   }
+}
+
+## LAB-10-BACKUP
+resource "azurerm_recovery_services_vault" "lab10" {
+  name                = local.lab10_name_with_postfix
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  sku                 = "Standard"
+
+  soft_delete_enabled = false
 }
 
 ## LAB-11-ALERT
