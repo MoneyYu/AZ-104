@@ -6,10 +6,10 @@ provider "azurerm" {
 }
 
 locals {
-  group_name               = "AZ10402"
-  lab01_name               = "LAB01VMWEB"
-  lab02_name               = "LAB02CI"
-  lab03_name               = "LAB03VM"
+  group_name               = "AZ10408"
+  lab01_name               = "lab01"
+  lab02_name               = "lab02"
+  lab03_name               = "lab03"
   lab04_name               = "lab04"
   lab05a_name              = "lab05a"
   lab05b_name              = "lab05b"
@@ -102,14 +102,28 @@ resource "azurerm_network_security_rule" "lab04" {
 }
 
 resource "azurerm_subnet" "lab04" {
-  name                 = "AzureFirewallSubnet"
+  name                 = "default"
   resource_group_name  = azurerm_resource_group.az104.name
   virtual_network_name = azurerm_virtual_network.lab04.name
   address_prefixes     = ["10.10.1.0/24"]
 }
 
+resource "azurerm_subnet" "lab04firewall" {
+  name                 = "AzureFirewallSubnet"
+  resource_group_name  = azurerm_resource_group.az104.name
+  virtual_network_name = azurerm_virtual_network.lab04.name
+  address_prefixes     = ["10.10.2.0/24"]
+}
+
 resource "azurerm_public_ip" "lab04" {
   name                = local.lab04_name_with_postfix
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  allocation_method   = "Dynamic"
+}
+
+resource "azurerm_public_ip" "lab04firewall" {
+  name                = "${local.lab04_name_with_postfix}firewall"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
@@ -123,8 +137,115 @@ resource "azurerm_firewall" "lab04" {
 
   ip_configuration {
     name                 = "configuration"
-    subnet_id            = azurerm_subnet.lab04.id
-    public_ip_address_id = azurerm_public_ip.lab04.id
+    subnet_id            = azurerm_subnet.lab04firewall.id
+    public_ip_address_id = azurerm_public_ip.lab04firewall.id
+  }
+}
+
+resource "azurerm_firewall_application_rule_collection" "lab04" {
+  name                = "App-Coll01"
+  azure_firewall_name = azurerm_firewall.lab04.name
+  resource_group_name = azurerm_resource_group.az104.name
+  priority            = 200
+  action              = "Allow"
+
+  rule {
+    name = "Allow-Google"
+
+    source_addresses = [
+      "10.10.1.0/24",
+    ]
+
+    target_fqdns = [
+      "*.google.com",
+    ]
+
+    protocol {
+      port = "443"
+      type = "Https"
+    }
+
+    protocol {
+      port = "80"
+      type = "Http"
+    }
+  }
+}
+
+resource "azurerm_firewall_network_rule_collection" "lab04" {
+  name                = "Net-Coll01"
+  azure_firewall_name = azurerm_firewall.lab04.name
+  resource_group_name = azurerm_resource_group.az104.name
+  priority            = 200
+  action              = "Allow"
+
+  rule {
+    name = "Allow-DNS"
+
+    source_addresses = [
+      "10.10.1.0/24",
+    ]
+
+    destination_ports = [
+      "53",
+    ]
+
+    destination_addresses = [
+      "8.8.8.8",
+      "8.8.4.4",
+    ]
+
+    protocols = [
+      "TCP",
+      "UDP",
+    ]
+  }
+}
+
+resource "azurerm_firewall_nat_rule_collection" "lab04" {
+  name                = "rdp"
+  azure_firewall_name = azurerm_firewall.lab04.name
+  resource_group_name = azurerm_resource_group.az104.name
+  priority            = 200
+  action              = "Dnat"
+
+  rule {
+    name = "rdp-nat"
+
+    source_addresses = [
+      "10.10.1.0/24",
+    ]
+
+    destination_ports = [
+      "3389",
+    ]
+
+    destination_addresses = [
+      azurerm_public_ip.lab04firewall.ip_address
+    ]
+
+    translated_port = 3389
+
+    translated_address = azurerm_network_interface.lab04.private_ip_address
+
+    protocols = [
+      "TCP",
+      "UDP",
+    ]
+  }
+}
+
+resource "azurerm_route_table" "lab04" {
+  name                          = local.lab04_name_with_postfix
+  location                      = azurerm_resource_group.az104.location
+  resource_group_name           = azurerm_resource_group.az104.name
+  disable_bgp_route_propagation = true
+
+  route {
+    name                   = "fw-dg"
+    address_prefix         = "0.0.0.0/0"
+    next_hop_type          = "VirtualAppliance"
+    next_hop_in_ip_address = azurerm_public_ip.lab04firewall.ip_address
   }
 }
 
@@ -144,6 +265,85 @@ resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
   private_dns_zone_name = azurerm_private_dns_zone.lab04.name
   virtual_network_id    = azurerm_virtual_network.lab04.id
   registration_enabled  = true
+}
+
+resource "azurerm_network_interface" "lab04" {
+  name                = local.lab04_name_with_postfix
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  dns_servers         = ["8.8.8.8", "8.8.4.4"]
+
+  ip_configuration {
+    name                          = local.lab04_name_with_postfix
+    subnet_id                     = azurerm_subnet.lab04.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.lab04.id
+  }
+
+  tags = {
+    environment = local.group_name
+  }
+}
+
+resource "azurerm_windows_virtual_machine" "lab04" {
+  name                  = local.lab04_name_with_postfix
+  location              = azurerm_resource_group.az104.location
+  resource_group_name   = azurerm_resource_group.az104.name
+  network_interface_ids = [azurerm_network_interface.lab04.id]
+  size                  = local.vm_size
+
+  os_disk {
+    name                 = local.lab04_name_with_postfix
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2019-Datacenter"
+    version   = "latest"
+  }
+
+  computer_name  = "${local.lab04_name}"
+  admin_username = local.user_name
+  admin_password = local.user_passowrd
+
+  tags = {
+    environment = local.group_name
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "lab04aad" {
+  name                       = "${local.lab04_name_with_postfix}aad"
+  publisher                  = "Microsoft.Azure.ActiveDirectory"
+  type                       = "AADLoginForWindows"
+  type_handler_version       = "1.0"
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab04.id
+
+  tags = {
+    environment = local.group_name
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "lab04script" {
+  name                       = "${local.lab04_name_with_postfix}script"
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.9"
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab04.id
+
+  settings = <<SETTINGS
+    {
+        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
+    }
+  SETTINGS
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 ## LAB-05-A-PEERING
@@ -272,7 +472,7 @@ resource "azurerm_virtual_machine_extension" "lab05a01script" {
   type_handler_version       = "1.9"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a01.id
-  
+
   settings = <<SETTINGS
     {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
@@ -409,7 +609,7 @@ resource "azurerm_virtual_machine_extension" "lab05a02script" {
   type_handler_version       = "1.9"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a02.id
-  
+
   settings = <<SETTINGS
     {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
@@ -546,7 +746,7 @@ resource "azurerm_virtual_machine_extension" "lab05a03script" {
   type_handler_version       = "1.9"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a03.id
-  
+
   settings = <<SETTINGS
     {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
@@ -742,7 +942,7 @@ resource "azurerm_virtual_machine_extension" "lab05bscript" {
   type_handler_version       = "1.9"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05b.id
-  
+
   settings = <<SETTINGS
     {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
