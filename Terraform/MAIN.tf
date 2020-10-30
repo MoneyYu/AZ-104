@@ -6,7 +6,7 @@ provider "azurerm" {
 }
 
 locals {
-  group_name               = "AZ10406"
+  group_name               = "AZ10403"
   lab01_name               = "lab01"
   lab02_name               = "lab02"
   lab03_name               = "lab03"

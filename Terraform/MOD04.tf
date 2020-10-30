@@ -68,7 +68,7 @@ resource "azurerm_firewall_application_rule_collection" "lab04" {
   action              = "Allow"
 
   rule {
-    name = "Allow-Google"
+    name = "Allow-Google-01"
 
     source_addresses = [
       "10.10.1.0/24",
@@ -79,10 +79,34 @@ resource "azurerm_firewall_application_rule_collection" "lab04" {
     ]
 
     protocol {
+      port = 443
       type = "Https"
     }
 
     protocol {
+      port = 80
+      type = "Http"
+    }
+  }
+
+  rule {
+    name = "Allow-Google-02"
+
+    source_addresses = [
+      "10.10.1.0/24",
+    ]
+
+    target_fqdns = [
+      "google.com",
+    ]
+
+    protocol {
+      port = 443
+      type = "Https"
+    }
+
+    protocol {
+      port = 80
       type = "Http"
     }
   }
@@ -161,7 +185,7 @@ resource "azurerm_route_table" "lab04" {
     name                   = "fw-dg"
     address_prefix         = "0.0.0.0/0"
     next_hop_type          = "VirtualAppliance"
-    next_hop_in_ip_address = azurerm_firewall.lab04.ip_configuration[0].private_ip_address 
+    next_hop_in_ip_address = azurerm_firewall.lab04.ip_configuration[0].private_ip_address
   }
 }
 
@@ -228,19 +252,6 @@ resource "azurerm_windows_virtual_machine" "lab04" {
   computer_name  = local.lab04_name
   admin_username = local.user_name
   admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
-}
-
-resource "azurerm_virtual_machine_extension" "lab04aad" {
-  name                       = "${local.lab04_name_with_postfix}aad"
-  publisher                  = "Microsoft.Azure.ActiveDirectory"
-  type                       = "AADLoginForWindows"
-  type_handler_version       = "1.0"
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab04.id
 
   tags = {
     environment = local.group_name

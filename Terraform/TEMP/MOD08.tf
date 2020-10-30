@@ -1,3 +1,4 @@
+## LAB-8-VM
 resource "azurerm_virtual_network" "lab08" {
   name                = local.lab08_name_with_postfix
   address_space       = ["10.10.0.0/16"]
