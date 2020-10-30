@@ -104,19 +104,6 @@ resource "azurerm_windows_virtual_machine" "lab05a01" {
   }
 }
 
-resource "azurerm_virtual_machine_extension" "lab05a01aad" {
-  name                       = "${local.lab05a_name_with_postfix}01aad"
-  publisher                  = "Microsoft.Azure.ActiveDirectory"
-  type                       = "AADLoginForWindows"
-  type_handler_version       = "1.0"
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab05a01.id
-
-  tags = {
-    environment = local.group_name
-  }
-}
-
 resource "azurerm_virtual_machine_extension" "lab05a01script" {
   name                       = "${local.lab05a_name_with_postfix}01script"
   publisher                  = "Microsoft.Compute"
@@ -241,19 +228,6 @@ resource "azurerm_windows_virtual_machine" "lab05a02" {
   }
 }
 
-resource "azurerm_virtual_machine_extension" "lab05a02aad" {
-  name                       = "${local.lab05a_name_with_postfix}02aad"
-  publisher                  = "Microsoft.Azure.ActiveDirectory"
-  type                       = "AADLoginForWindows"
-  type_handler_version       = "1.0"
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab05a02.id
-
-  tags = {
-    environment = local.group_name
-  }
-}
-
 resource "azurerm_virtual_machine_extension" "lab05a02script" {
   name                       = "${local.lab05a_name_with_postfix}02script"
   publisher                  = "Microsoft.Compute"
@@ -372,19 +346,6 @@ resource "azurerm_windows_virtual_machine" "lab05a03" {
   computer_name  = "${local.lab05a_name}03"
   admin_username = local.user_name
   admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
-}
-
-resource "azurerm_virtual_machine_extension" "lab05a03aad" {
-  name                       = "${local.lab05a_name_with_postfix}03aad"
-  publisher                  = "Microsoft.Azure.ActiveDirectory"
-  type                       = "AADLoginForWindows"
-  type_handler_version       = "1.0"
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab05a03.id
 
   tags = {
     environment = local.group_name

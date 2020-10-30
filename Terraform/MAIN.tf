@@ -6,7 +6,7 @@ provider "azurerm" {
 }
 
 locals {
-  group_name               = "AZ10403"
+  group_name               = "AZ10402"
   lab01_name               = "lab01"
   lab02_name               = "lab02"
   lab03_name               = "lab03"
@@ -16,6 +16,7 @@ locals {
   lab06a_name              = "lab06a"
   lab06b_name              = "lab06b"
   lab06c_name              = "lab06c"
+  lab06d_name              = "lab06c"
   lab07_name               = "lab07"
   lab08_name               = "lab08"
   lab10_name               = "lab10"
@@ -33,6 +34,7 @@ locals {
   lab06a_name_with_postfix = lower("${local.lab06a_name}${random_string.rid.result}")
   lab06b_name_with_postfix = lower("${local.lab06b_name}${random_string.rid.result}")
   lab06c_name_with_postfix = lower("${local.lab06c_name}${random_string.rid.result}")
+  lab06d_name_with_postfix = lower("${local.lab06d_name}${random_string.rid.result}")
   lab07_name_with_postfix  = lower("${local.lab07_name}${random_string.rid.result}")
   lab08_name_with_postfix  = lower("${local.lab08_name}${random_string.rid.result}")
   lab09a_name_with_postfix = lower("${local.lab09a_name}${random_string.rid.result}")

@@ -124,19 +124,6 @@ resource "azurerm_windows_virtual_machine" "lab06b01" {
   }
 }
 
-resource "azurerm_virtual_machine_extension" "lab06b01aad" {
-  name                       = "${local.lab06b_name_with_postfix}01aad"
-  publisher                  = "Microsoft.Azure.ActiveDirectory"
-  type                       = "AADLoginForWindows"
-  type_handler_version       = "1.0"
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b01.id
-
-  tags = {
-    environment = local.group_name
-  }
-}
-
 resource "azurerm_virtual_machine_extension" "lab06b01script" {
   name                       = "${local.lab06b_name_with_postfix}01script"
   publisher                  = "Microsoft.Compute"
@@ -207,19 +194,6 @@ resource "azurerm_windows_virtual_machine" "lab06b02" {
   }
 }
 
-resource "azurerm_virtual_machine_extension" "lab06b02aad" {
-  name                       = "${local.lab06b_name_with_postfix}02aad"
-  publisher                  = "Microsoft.Azure.ActiveDirectory"
-  type                       = "AADLoginForWindows"
-  type_handler_version       = "1.0"
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b02.id
-
-  tags = {
-    environment = local.group_name
-  }
-}
-
 resource "azurerm_virtual_machine_extension" "lab06b02script" {
   name                       = "${local.lab06b_name_with_postfix}02script"
   publisher                  = "Microsoft.Compute"
@@ -237,4 +211,35 @@ resource "azurerm_virtual_machine_extension" "lab06b02script" {
   tags = {
     environment = local.group_name
   }
+}
+
+## LAB-6-D-TRAFFIC-MANAGER
+resource "azurerm_traffic_manager_profile" "lab06d" {
+  name                = local.lab06d_name_with_postfix
+  resource_group_name = azurerm_resource_group.az104.name
+
+  traffic_routing_method = "Weighted"
+
+  dns_config {
+    relative_name = local.lab06d_name_with_postfix
+    ttl           = 100
+  }
+
+  monitor_config {
+    protocol                     = "http"
+    port                         = 80
+    path                         = "/"
+    interval_in_seconds          = 30
+    timeout_in_seconds           = 9
+    tolerated_number_of_failures = 3
+  }
+}
+
+resource "azurerm_traffic_manager_endpoint" "lab06d" {
+  name                = local.lab06d_name_with_postfix
+  resource_group_name = azurerm_resource_group.az104.name
+  profile_name        = azurerm_traffic_manager_profile.lab06d.name
+  target              = "terraform.io"
+  type                = "externalEndpoints"
+  weight              = 100
 }
