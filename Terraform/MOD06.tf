@@ -24,7 +24,7 @@ resource "azurerm_subnet" "lab06b" {
   name                 = "default"
   resource_group_name  = azurerm_resource_group.az104.name
   virtual_network_name = azurerm_virtual_network.lab06b.name
-  address_prefixes     = ["10.10.1.0/24"]
+  address_prefixes       = ["10.10.1.0/24"]
 }
 
 resource "azurerm_public_ip" "lab06b" {
@@ -71,6 +71,31 @@ resource "azurerm_lb_rule" "lab06b" {
   frontend_ip_configuration_name = "PublicIPAddress"
   backend_address_pool_id        = azurerm_lb_backend_address_pool.lab06b.id
   probe_id                       = azurerm_lb_probe.lab06b.id
+  disable_outbound_snat          = true
+}
+
+resource "azurerm_network_security_group" "lab06b" {
+  name                = local.lab06b_name_with_postfix}
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
+}
+
+resource "azurerm_network_security_rule" "lab06b" {
+  name                        = "HTTP"
+  priority                    = 110
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = "80"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab06b.name
 }
 
 resource "azurerm_network_interface" "lab06b01" {
@@ -87,6 +112,11 @@ resource "azurerm_network_interface" "lab06b01" {
   tags = {
     environment = local.group_name
   }
+}
+
+resource "azurerm_network_interface_security_group_association" "lab06b01" {
+  network_interface_id      = azurerm_network_interface.lab06b01.id
+  network_security_group_id = azurerm_network_security_group.lab06b.id
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "lab06b01" {
@@ -159,6 +189,11 @@ resource "azurerm_network_interface" "lab06b02" {
   }
 }
 
+resource "azurerm_network_interface_security_group_association" "lab06b02" {
+  network_interface_id      = azurerm_network_interface.lab06b02.id
+  network_security_group_id = azurerm_network_security_group.lab06b.id
+}
+
 resource "azurerm_network_interface_backend_address_pool_association" "lab06b02" {
   network_interface_id    = azurerm_network_interface.lab06b02.id
   ip_configuration_name   = "${local.lab06b_name_with_postfix}02"
@@ -211,35 +246,4 @@ resource "azurerm_virtual_machine_extension" "lab06b02script" {
   tags = {
     environment = local.group_name
   }
-}
-
-## LAB-6-D-TRAFFIC-MANAGER
-resource "azurerm_traffic_manager_profile" "lab06d" {
-  name                = local.lab06d_name_with_postfix
-  resource_group_name = azurerm_resource_group.az104.name
-
-  traffic_routing_method = "Weighted"
-
-  dns_config {
-    relative_name = local.lab06d_name_with_postfix
-    ttl           = 100
-  }
-
-  monitor_config {
-    protocol                     = "http"
-    port                         = 80
-    path                         = "/"
-    interval_in_seconds          = 30
-    timeout_in_seconds           = 9
-    tolerated_number_of_failures = 3
-  }
-}
-
-resource "azurerm_traffic_manager_endpoint" "lab06d" {
-  name                = local.lab06d_name_with_postfix
-  resource_group_name = azurerm_resource_group.az104.name
-  profile_name        = azurerm_traffic_manager_profile.lab06d.name
-  target              = "terraform.io"
-  type                = "externalEndpoints"
-  weight              = 100
 }
