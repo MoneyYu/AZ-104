@@ -20,12 +20,12 @@ locals {
   lab06d_name              = "lab06c"
   lab07_name               = "lab07"
   lab08_name               = "lab08"
-  lab10_name               = "lab10"
-  lab11_name               = "lab11"
   lab09a_name              = "lab09a"
   lab09b_name              = "lab09b"
   lab09c_name              = "lab09c"
   lab09d_name              = "lab09d"
+  lab10_name               = "lab10"
+  lab11_name               = "lab11"
   lab01_name_with_postfix  = lower("${local.lab01_name}${random_string.rid.result}")
   lab02_name_with_postfix  = lower("${local.lab02_name}${random_string.rid.result}")
   lab03_name_with_postfix  = lower("${local.lab03_name}${random_string.rid.result}")

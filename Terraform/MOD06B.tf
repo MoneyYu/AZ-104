@@ -1,17 +1,3 @@
-## LAB-06-A-ROUTE-TABLE
-resource "azurerm_route_table" "lab06a" {
-  name                          = local.lab06a_name_with_postfix
-  location                      = azurerm_resource_group.az104.location
-  resource_group_name           = azurerm_resource_group.az104.name
-  disable_bgp_route_propagation = false
-
-  route {
-    name           = "route1"
-    address_prefix = "10.0.0.0/16"
-    next_hop_type  = "vnetlocal"
-  }
-}
-
 ## LAB-06-B-LOAD-BALANCER
 resource "azurerm_virtual_network" "lab06b" {
   name                = local.lab06b_name_with_postfix
@@ -33,6 +19,7 @@ resource "azurerm_public_ip" "lab06b" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  domain_name_label   = local.lab06b_name_with_postfix
 }
 
 resource "azurerm_lb" "lab06b" {
@@ -75,7 +62,7 @@ resource "azurerm_lb_rule" "lab06b" {
 }
 
 resource "azurerm_network_security_group" "lab06b" {
-  name                = local.lab06b_name_with_postfix}
+  name                = local.lab06b_name_with_postfix
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
