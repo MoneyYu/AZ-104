@@ -40,13 +40,13 @@ resource "azurerm_subnet" "lab04firewall" {
   address_prefixes     = ["10.10.2.0/24"]
 }
 
-resource "azurerm_public_ip" "lab04firewall" {
-  name                = "${local.lab04_name_with_postfix}firewall"
+resource "azurerm_public_ip" "lab04" {
+  name                = local.lab04_name_with_postfix
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  domain_name_label   = "${local.lab04_name_with_postfix}firewall"
+  domain_name_label   = local.lab04_name_with_postfix
 }
 
 resource "azurerm_firewall" "lab04" {
@@ -57,7 +57,7 @@ resource "azurerm_firewall" "lab04" {
   ip_configuration {
     name                 = "configuration"
     subnet_id            = azurerm_subnet.lab04firewall.id
-    public_ip_address_id = azurerm_public_ip.lab04firewall.id
+    public_ip_address_id = azurerm_public_ip.lab04.id
   }
 }
 
@@ -162,7 +162,7 @@ resource "azurerm_firewall_nat_rule_collection" "lab04" {
     ]
 
     destination_addresses = [
-      azurerm_public_ip.lab04firewall.ip_address
+      azurerm_public_ip.lab04.ip_address
     ]
 
     translated_port = 3389
@@ -190,7 +190,7 @@ resource "azurerm_route_table" "lab04" {
   }
 }
 
-resource "azurerm_subnet_route_table_association" "example" {
+resource "azurerm_subnet_route_table_association" "lab04" {
   subnet_id      = azurerm_subnet.lab04.id
   route_table_id = azurerm_route_table.lab04.id
 }
