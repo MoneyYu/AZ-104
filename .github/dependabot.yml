@@ -6,12 +6,12 @@
 version: 2
 updates:
   - package-ecosystem: "nuget" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directory: "/DEMO/*" # Location of package manifests
     schedule:
       interval: "daily"
 
   - package-ecosystem: "terraform" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directory: "/TERRAFROM/*" # Location of package manifests
     schedule:
       interval: "daily"
 
