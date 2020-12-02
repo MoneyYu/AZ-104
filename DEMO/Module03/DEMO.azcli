@@ -4,10 +4,10 @@ az login
 
 # az account set -s "xxxxxxxx"
 
-az group create --name demopsgroup2 --location southeastasia
+az group create --name democligroup --location southeastasia
 
 az vm create `
---resource-group demopsgroup2 `
+--resource-group democligroup `
 --name demopsgroup2VM `
 --image win2016datacenter `
 --admin-username demouser `
