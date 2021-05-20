@@ -28,10 +28,6 @@ resource "azurerm_kubernetes_cluster" "lab09c" {
       enabled = false
     }
 
-    kube_dashboard {
-      enabled = true
-    }
-
     oms_agent {
       enabled = false
     }
