@@ -10,7 +10,7 @@ resource "azurerm_container_group" "lab09b" {
 
   container {
     name   = "hello-world"
-    image  = "microsoft/aci-helloworld:latest"
+    image  = "abc12207/simpleweb:latest"
     cpu    = "2"
     memory = "4"
 
