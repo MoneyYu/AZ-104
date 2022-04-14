@@ -23,9 +23,5 @@ GA: UA-117096964-1
 | Module 09a - Implement Web Apps                               | [Video Link](http://media.yu.money/az104/lab09a.html) |
 | Module 09b - Implement Azure Container Instances              | [Video Link](http://media.yu.money/az104/lab09b.html) |
 | Module 09c - Implement Azure Kubernetes Service               | [Video Link](http://media.yu.money/az104/lab09c.html) |
-
-<!--
-
 | Module 10 - Implement Data Protection                         | [Video Link](http://media.yu.money/az104/lab10.html)  |
-| Module 11 - Implement Monitoring                              | [Video Link](http://media.yu.money/az104/lab11.html) |
--->
+| Module 11 - Implement Monitoring                              | [Video Link](http://media.yu.money/az104/lab11.html)  |
