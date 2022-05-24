@@ -13,7 +13,7 @@ provider "azurerm" {
 
 locals {
   group_name               = "AZ104-${formatdate("MMDDHHmm", timestamp())}"
-  location                 = "southeastasia"
+  location                 = "japaneast"
   lab01_name               = "lab01"
   lab02_name               = "lab02"
   lab03_name               = "lab03"
