@@ -52,7 +52,7 @@ locals {
   lab11_name_with_postfix  = lower("${local.lab11_name}${random_string.rid.result}")
   user_name                = "demouser"
   user_passowrd            = "Azuredemo2020"
-  vm_size                  = "Standard_D4s_v4"
+  vm_size                  = "Standard_B4ms"
 }
 
 data "http" "myip" {
