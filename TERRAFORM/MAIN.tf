@@ -53,6 +53,7 @@ locals {
   user_name                = "demouser"
   user_passowrd            = "Azuredemo2020"
   vm_size                  = "Standard_B4ms"
+  random_str              = random_string.rid.result
 }
 
 data "http" "myip" {
