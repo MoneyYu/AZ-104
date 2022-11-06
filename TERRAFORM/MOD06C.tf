@@ -7,14 +7,14 @@ resource "azurerm_virtual_network" "lab06c" {
 }
 
 resource "azurerm_subnet" "lab06csub01" {
-  name                 = "default"
+  name                 = "backend"
   resource_group_name  = azurerm_resource_group.az104.name
   virtual_network_name = azurerm_virtual_network.lab06c.name
   address_prefixes     = ["10.10.1.0/24"]
 }
 
 resource "azurerm_subnet" "lab06csub02" {
-  name                 = "appgw"
+  name                 = "frontend"
   resource_group_name  = azurerm_resource_group.az104.name
   virtual_network_name = azurerm_virtual_network.lab06c.name
   address_prefixes     = ["10.10.2.0/24"]
@@ -30,7 +30,7 @@ resource "azurerm_public_ip" "lab06c" {
 }
 
 resource "azurerm_application_gateway" "lab06c" {
-  name                = local.lab06c_name_with_postfix
+  name                = "${local.lab06c_name}-appgw-${local.random_str}"
   resource_group_name = azurerm_resource_group.az104.name
   location            = azurerm_resource_group.az104.location
 
@@ -41,22 +41,24 @@ resource "azurerm_application_gateway" "lab06c" {
   }
 
   gateway_ip_configuration {
-    name      = "${lab06c_name}-appgw-ipconfig-${random_str}"
+    name      = "${local.lab06c_name}-appgw-ipconfig-${local.random_str}"
     subnet_id = azurerm_subnet.lab06csub02.id
   }
 
   frontend_port {
-    name = "${lab06c_name}-appgw-port-${random_str}"
+    name = "${local.lab06c_name}-appgw-port-${local.random_str}"
     port = 80
   }
 
   frontend_ip_configuration {
-    name                 = "${lab06c_name}-appgw-pip-config-${random_str}"
-    public_ip_address_id = azurerm_public_ip.lab06c.id
+    name                          = "${local.lab06c_name}-appgw-pip-config-${local.random_str}"
+    public_ip_address_id          = azurerm_public_ip.lab06c.id
+    private_ip_address_allocation = "Static"
+    private_ip_address            = "10.10.2.11"
   }
 
   backend_address_pool {
-    name = "${lab06c_name}-appgw-bepool-${random_str}"
+    name = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
     ip_addresses = [
       azurerm_network_interface.lab06c01.private_ip_address,
       azurerm_network_interface.lab06c02.private_ip_address
@@ -64,7 +66,7 @@ resource "azurerm_application_gateway" "lab06c" {
   }
 
   backend_http_settings {
-    name                  = "${lab06c_name}-appgw-http-setting-${random_str}"
+    name                  = "${local.lab06c_name}-appgw-http-setting-${local.random_str}"
     cookie_based_affinity = "Disabled"
     path                  = "/"
     port                  = 80
@@ -73,23 +75,23 @@ resource "azurerm_application_gateway" "lab06c" {
   }
 
   http_listener {
-    name                           = "${lab06c_name}-appgw-listener-${random_str}"
-    frontend_ip_configuration_name = "${lab06c_name}-appgw-pip-config-${random_str}"
-    frontend_port_name             = "${lab06c_name}-appgw-port-${random_str}"
+    name                           = "${local.lab06c_name}-appgw-listener-${local.random_str}"
+    frontend_ip_configuration_name = "${local.lab06c_name}-appgw-pip-config-${local.random_str}"
+    frontend_port_name             = "${local.lab06c_name}-appgw-port-${local.random_str}"
     protocol                       = "Http"
   }
 
   request_routing_rule {
-    name                       = "${lab06c_name}-appgw-rule-${random_str}"
+    name                       = "${local.lab06c_name}-appgw-rule-${local.random_str}"
     rule_type                  = "Basic"
-    http_listener_name         = "${lab06c_name}-appgw-listener-${random_str}"
-    backend_address_pool_name  = "${lab06c_name}-appgw-bepool-${random_str}"
-    backend_http_settings_name = "${lab06c_name}-appgw-http-setting-${random_str}"
+    http_listener_name         = "${local.lab06c_name}-appgw-listener-${local.random_str}"
+    backend_address_pool_name  = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
+    backend_http_settings_name = "${local.lab06c_name}-appgw-http-setting-${local.random_str}"
   }
 }
 
 resource "azurerm_network_security_group" "lab06c" {
-  name                = local.lab06c_name_with_postfix
+  name                = "${local.lab06c_name}-nsg-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
@@ -113,13 +115,13 @@ resource "azurerm_network_security_rule" "lab06c" {
 }
 
 resource "azurerm_network_interface" "lab06c01" {
-  name                = "${local.lab06c_name_with_postfix}01"
+  name                = "${local.lab06c_name}-vm-01-nic-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
   ip_configuration {
-    name                          = "${local.lab06c_name_with_postfix}01"
-    subnet_id                     = azurerm_subnet.lab06c.id
+    name                          = "${local.lab06c_name}-vm-01-ipconfig-${local.random_str}"
+    subnet_id                     = azurerm_subnet.lab06csub01.id
     private_ip_address_allocation = "Dynamic"
   }
 
@@ -133,21 +135,15 @@ resource "azurerm_network_interface_security_group_association" "lab06c01" {
   network_security_group_id = azurerm_network_security_group.lab06c.id
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "lab06c01" {
-  network_interface_id    = azurerm_network_interface.lab06c01.id
-  ip_configuration_name   = "${local.lab06c_name_with_postfix}01"
-  backend_address_pool_id = azurerm_lb_backend_address_pool.lab06c.id
-}
-
 resource "azurerm_windows_virtual_machine" "lab06c01" {
-  name                  = "${local.lab06c_name_with_postfix}01"
+  name                  = "${local.lab06c_name}-vm-01-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab06c01.id]
   size                  = local.vm_size
 
   os_disk {
-    name                 = "${local.lab06c_name_with_postfix}01"
+    name                 = "${local.lab06c_name}-vm-01-osdisk-${local.random_str}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
@@ -159,7 +155,7 @@ resource "azurerm_windows_virtual_machine" "lab06c01" {
     version   = "latest"
   }
 
-  computer_name  = "${local.lab06c_name}01"
+  computer_name  = "${local.lab06c_name}-vm-01-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_passowrd
 
@@ -169,7 +165,7 @@ resource "azurerm_windows_virtual_machine" "lab06c01" {
 }
 
 resource "azurerm_virtual_machine_extension" "lab06c01script" {
-  name                       = "${local.lab06c_name_with_postfix}01script"
+  name                       = "${local.lab06c_name}-vm-01-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
   type_handler_version       = "1.9"
@@ -188,13 +184,13 @@ resource "azurerm_virtual_machine_extension" "lab06c01script" {
 }
 
 resource "azurerm_network_interface" "lab06c02" {
-  name                = "${local.lab06c_name_with_postfix}02"
+  name                = "${local.lab06c_name}-vm-02-nic-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
   ip_configuration {
-    name                          = "${local.lab06c_name_with_postfix}02"
-    subnet_id                     = azurerm_subnet.lab06c.id
+    name                          = "${local.lab06c_name}-vm-02-ipconfig-${local.random_str}"
+    subnet_id                     = azurerm_subnet.lab06csub01.id
     private_ip_address_allocation = "Dynamic"
   }
 
@@ -208,21 +204,15 @@ resource "azurerm_network_interface_security_group_association" "lab06c02" {
   network_security_group_id = azurerm_network_security_group.lab06c.id
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "lab06c02" {
-  network_interface_id    = azurerm_network_interface.lab06c02.id
-  ip_configuration_name   = "${local.lab06c_name_with_postfix}02"
-  backend_address_pool_id = azurerm_lb_backend_address_pool.lab06c.id
-}
-
 resource "azurerm_windows_virtual_machine" "lab06c02" {
-  name                  = "${local.lab06c_name_with_postfix}02"
+  name                  = "${local.lab06c_name}-vm-02-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab06c02.id]
   size                  = local.vm_size
 
   os_disk {
-    name                 = "${local.lab06c_name_with_postfix}02"
+    name                 = "${local.lab06c_name}-vm-02-osdisk-${local.random_str}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
@@ -234,7 +224,7 @@ resource "azurerm_windows_virtual_machine" "lab06c02" {
     version   = "latest"
   }
 
-  computer_name  = "${local.lab06c_name}02"
+  computer_name  = "${local.lab06c_name}-vm-02-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_passowrd
 
@@ -244,7 +234,7 @@ resource "azurerm_windows_virtual_machine" "lab06c02" {
 }
 
 resource "azurerm_virtual_machine_extension" "lab06c02script" {
-  name                       = "${local.lab06c_name_with_postfix}02script"
+  name                       = "${local.lab06c_name}-vm-02-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
   type_handler_version       = "1.9"

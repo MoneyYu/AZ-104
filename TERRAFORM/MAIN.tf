@@ -1,8 +1,10 @@
 terraform {
+  required_version = ">=0.12"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>2.0"
+      version = ">=2.97.0"
     }
   }
 }
@@ -65,7 +67,7 @@ data "azurerm_client_config" "current" {}
 resource "random_string" "rid" {
   length  = 3
   special = false
-  number  = false
+  numeric  = false
 }
 
 resource "random_integer" "rint" {
