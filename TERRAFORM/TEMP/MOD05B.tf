@@ -1,6 +1,6 @@
 # LAB-05-B-VPN
 resource "azurerm_virtual_network" "lab05b" {
-  name                = local.lab05b_name_with_postfix
+  name                = "${local.lab05b_name}-vnet-${local.random_str}"
   address_space       = ["10.1.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
@@ -25,7 +25,7 @@ resource "azurerm_subnet" "lab05bgateway" {
 }
 
 resource "azurerm_public_ip" "lab05b" {
-  name                = local.lab05b_name_with_postfix
+  name                = "${local.lab05b_name}-pip-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
@@ -33,7 +33,7 @@ resource "azurerm_public_ip" "lab05b" {
 }
 
 resource "azurerm_virtual_network_gateway" "lab05b" {
-  name                = local.lab05b_name_with_postfix
+  name                = "${local.lab05b_name}-vnetgw-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
@@ -45,7 +45,7 @@ resource "azurerm_virtual_network_gateway" "lab05b" {
   sku           = "VpnGw3"
 
   ip_configuration {
-    name                          = local.lab05b_name_with_postfix
+    name                          = "${local.lab05b_name}-vnetgw-ipconfig-${local.random_str}"
     public_ip_address_id          = azurerm_public_ip.lab05b.id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.lab05bgateway.id
@@ -81,7 +81,7 @@ EOF
 }
 
 resource "azurerm_local_network_gateway" "lab05b" {
-  name                = local.lab05b_name_with_postfix
+  name                = "${local.lab05b_name}-localgw-${local.random_str}"
   resource_group_name = azurerm_resource_group.az104.name
   location            = azurerm_resource_group.az104.location
   gateway_address     = "114.32.33.212"
@@ -89,7 +89,7 @@ resource "azurerm_local_network_gateway" "lab05b" {
 }
 
 resource "azurerm_network_security_group" "lab05b" {
-  name                = local.lab05b_name_with_postfix
+  name                = "${local.lab05b_name}-nsg-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
@@ -113,12 +113,12 @@ resource "azurerm_network_security_rule" "lab05b" {
 }
 
 resource "azurerm_network_interface" "lab05b" {
-  name                = local.lab05b_name_with_postfix
+  name                = "${local.lab05b_name}-nic-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
   ip_configuration {
-    name                          = local.lab05b_name_with_postfix
+    name                          = "${local.lab05b_name}-nic-ipconfig-${local.random_str}"
     subnet_id                     = azurerm_subnet.lab05b.id
     private_ip_address_allocation = "Dynamic"
   }
@@ -134,14 +134,14 @@ resource "azurerm_network_interface_security_group_association" "lab05b" {
 }
 
 resource "azurerm_windows_virtual_machine" "lab05b" {
-  name                  = local.lab05b_name_with_postfix
+  name                  = "${local.lab05b_name}-vm-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab05b.id]
   size                  = local.vm_size
 
   os_disk {
-    name                 = local.lab05b_name_with_postfix
+    name                 = "${local.lab05b_name}-osdisk-${local.random_str}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
@@ -153,7 +153,7 @@ resource "azurerm_windows_virtual_machine" "lab05b" {
     version   = "latest"
   }
 
-  computer_name  = local.lab05b_name
+  computer_name  = "${local.lab05b_name}-vm-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_passowrd
 
@@ -163,7 +163,7 @@ resource "azurerm_windows_virtual_machine" "lab05b" {
 }
 
 resource "azurerm_virtual_machine_extension" "lab05baad" {
-  name                       = "${local.lab05a_name_with_postfix}03aad"
+  name                       = "${local.lab05b_name}-aad-${local.random_str}"
   publisher                  = "Microsoft.Azure.ActiveDirectory"
   type                       = "AADLoginForWindows"
   type_handler_version       = "1.0"
@@ -176,7 +176,7 @@ resource "azurerm_virtual_machine_extension" "lab05baad" {
 }
 
 resource "azurerm_virtual_machine_extension" "lab05bscript" {
-  name                       = "${local.lab05a_name_with_postfix}03script"
+  name                       = "${local.lab05b_name}-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
   type_handler_version       = "1.9"

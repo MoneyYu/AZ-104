@@ -68,6 +68,7 @@ resource "random_string" "rid" {
   length  = 3
   special = false
   numeric  = false
+  upper = false
 }
 
 resource "random_integer" "rint" {

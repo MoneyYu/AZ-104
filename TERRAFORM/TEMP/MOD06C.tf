@@ -1,6 +1,6 @@
 ## LAB-06-B-LOAD-BALANCER
 resource "azurerm_virtual_network" "lab06c" {
-  name                = local.lab06c_name_with_postfix
+  name                = "${local.lab06c_name}-vnet-${local.random_str}"
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
@@ -21,7 +21,7 @@ resource "azurerm_subnet" "lab06csub02" {
 }
 
 resource "azurerm_public_ip" "lab06c" {
-  name                = local.lab06c_name_with_postfix
+  name                = "${local.lab06c_name}-pip-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
@@ -51,10 +51,8 @@ resource "azurerm_application_gateway" "lab06c" {
   }
 
   frontend_ip_configuration {
-    name                          = "${local.lab06c_name}-appgw-pip-config-${local.random_str}"
-    public_ip_address_id          = azurerm_public_ip.lab06c.id
-    private_ip_address_allocation = "Static"
-    private_ip_address            = "10.10.2.11"
+    name                 = "${local.lab06c_name}-appgw-pip-config-${local.random_str}"
+    public_ip_address_id = azurerm_public_ip.lab06c.id
   }
 
   backend_address_pool {
@@ -136,7 +134,7 @@ resource "azurerm_network_interface_security_group_association" "lab06c01" {
 }
 
 resource "azurerm_windows_virtual_machine" "lab06c01" {
-  name                  = "${local.lab06c_name}-vm-01-${local.random_str}"
+  name                  = "${local.lab06c_name}-vm01-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab06c01.id]
@@ -155,7 +153,7 @@ resource "azurerm_windows_virtual_machine" "lab06c01" {
     version   = "latest"
   }
 
-  computer_name  = "${local.lab06c_name}-vm-01-${local.random_str}"
+  computer_name  = "${local.lab06c_name}-vm01-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_passowrd
 
@@ -205,7 +203,7 @@ resource "azurerm_network_interface_security_group_association" "lab06c02" {
 }
 
 resource "azurerm_windows_virtual_machine" "lab06c02" {
-  name                  = "${local.lab06c_name}-vm-02-${local.random_str}"
+  name                  = "${local.lab06c_name}-vm02-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab06c02.id]
@@ -224,7 +222,7 @@ resource "azurerm_windows_virtual_machine" "lab06c02" {
     version   = "latest"
   }
 
-  computer_name  = "${local.lab06c_name}-vm-02-${local.random_str}"
+  computer_name  = "${local.lab06c_name}-vm02-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_passowrd
 

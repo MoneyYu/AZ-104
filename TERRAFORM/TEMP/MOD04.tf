@@ -1,13 +1,13 @@
 ## LAB-04-VNET
 resource "azurerm_virtual_network" "lab04" {
-  name                = local.lab04_name_with_postfix
+  name                = "${local.lab04_name}-vnet-${local.random_str}"
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 }
 
 resource "azurerm_network_security_group" "lab04" {
-  name                = local.lab04_name_with_postfix
+  name                = "${local.lab04_name}-nsg-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 }
@@ -41,7 +41,7 @@ resource "azurerm_subnet" "lab04firewall" {
 }
 
 resource "azurerm_public_ip" "lab04" {
-  name                = local.lab04_name_with_postfix
+  name                = "${local.lab04_name}-pip-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
@@ -50,7 +50,7 @@ resource "azurerm_public_ip" "lab04" {
 }
 
 resource "azurerm_firewall" "lab04" {
-  name                = local.lab04_name_with_postfix
+  name                = "${local.lab04_name}-fw-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
@@ -177,7 +177,7 @@ resource "azurerm_firewall_nat_rule_collection" "lab04" {
 }
 
 resource "azurerm_route_table" "lab04" {
-  name                          = local.lab04_name_with_postfix
+  name                          = "${local.lab04_name}-routes-${local.random_str}"
   location                      = azurerm_resource_group.az104.location
   resource_group_name           = azurerm_resource_group.az104.name
   disable_bgp_route_propagation = true
@@ -196,17 +196,17 @@ resource "azurerm_subnet_route_table_association" "lab04" {
 }
 
 resource "azurerm_dns_zone" "lab04" {
-  name                = "${local.lab04_name_with_postfix}public.com"
+  name                = "${local.lab04_name}-public-dns-${local.random_str}.com"
   resource_group_name = azurerm_resource_group.az104.name
 }
 
 resource "azurerm_private_dns_zone" "lab04" {
-  name                = "${local.lab04_name_with_postfix}private.com"
+  name                = "${local.lab04_name}-private-dns-${local.random_str}.local"
   resource_group_name = azurerm_resource_group.az104.name
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
-  name                  = local.lab04_name_with_postfix
+  name                  = "${local.lab04_name}-zone-link-${local.random_str}"
   resource_group_name   = azurerm_resource_group.az104.name
   private_dns_zone_name = azurerm_private_dns_zone.lab04.name
   virtual_network_id    = azurerm_virtual_network.lab04.id
@@ -214,13 +214,13 @@ resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
 }
 
 resource "azurerm_network_interface" "lab04" {
-  name                = local.lab04_name_with_postfix
+  name                = "${local.lab04_name}-nic-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   dns_servers         = ["8.8.8.8", "8.8.4.4"]
 
   ip_configuration {
-    name                          = local.lab04_name_with_postfix
+    name                          = "${local.lab04_name}-nic-ipconfig-${local.random_str}"
     subnet_id                     = azurerm_subnet.lab04.id
     private_ip_address_allocation = "Dynamic"
   }
@@ -231,14 +231,14 @@ resource "azurerm_network_interface" "lab04" {
 }
 
 resource "azurerm_windows_virtual_machine" "lab04" {
-  name                  = local.lab04_name_with_postfix
+  name                  = "${local.lab04_name}-vm-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab04.id]
   size                  = local.vm_size
 
   os_disk {
-    name                 = local.lab04_name_with_postfix
+    name                 = "${local.lab04_name}-osdisk-${local.random_str}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
@@ -250,7 +250,7 @@ resource "azurerm_windows_virtual_machine" "lab04" {
     version   = "latest"
   }
 
-  computer_name  = local.lab04_name
+  computer_name  = "${local.lab04_name}-vm-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_passowrd
 
@@ -260,7 +260,7 @@ resource "azurerm_windows_virtual_machine" "lab04" {
 }
 
 resource "azurerm_virtual_machine_extension" "lab04script" {
-  name                       = "${local.lab04_name_with_postfix}script"
+  name                       = "${local.lab04_name}-vm-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
   type_handler_version       = "1.9"
