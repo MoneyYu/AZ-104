@@ -1,4 +1,4 @@
-## LAB-06-B-LOAD-BALANCER
+## LAB-06-C-APP-GATEWAY
 resource "azurerm_virtual_network" "lab06c" {
   name                = "${local.lab06c_name}-vnet-${local.random_str}"
   address_space       = ["10.10.0.0/16"]
@@ -149,7 +149,7 @@ resource "azurerm_windows_virtual_machine" "lab06c01" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    sku       = "2022-Datacenter"
     version   = "latest"
   }
 
@@ -218,7 +218,7 @@ resource "azurerm_windows_virtual_machine" "lab06c02" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    sku       = "2022-Datacenter"
     version   = "latest"
   }
 

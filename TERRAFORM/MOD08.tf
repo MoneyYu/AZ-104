@@ -1,6 +1,6 @@
 ## LAB-8-VM
 resource "azurerm_virtual_network" "lab08" {
-  name                = local.lab08_name_with_postfix
+  name                = "${local.lab08_name}-vnet-${local.random_str}"
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
@@ -21,7 +21,7 @@ resource "azurerm_subnet" "lab08bastion" {
 }
 
 resource "azurerm_public_ip" "lab08" {
-  name                = local.lab08_name_with_postfix
+  name                = "${local.lab08_name}-pip-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
@@ -29,24 +29,29 @@ resource "azurerm_public_ip" "lab08" {
 }
 
 resource "azurerm_bastion_host" "lab08" {
-  name                = local.lab08_name_with_postfix
-  location            = azurerm_resource_group.az104.location
-  resource_group_name = azurerm_resource_group.az104.name
+  name                   = "${local.lab08_name}-bastion-${local.random_str}"
+  location               = azurerm_resource_group.az104.location
+  resource_group_name    = azurerm_resource_group.az104.name
+  sku                    = "Standard"
+  file_copy_enabled      = true
+  ip_connect_enabled     = true
+  shareable_link_enabled = true
+  tunneling_enabled      = true
 
   ip_configuration {
-    name                 = local.lab08_name_with_postfix
+    name                 = "${local.lab08_name}-bastion-ipconfig-${local.random_str}"
     subnet_id            = azurerm_subnet.lab08bastion.id
     public_ip_address_id = azurerm_public_ip.lab08.id
   }
 }
 
 resource "azurerm_network_interface" "lab08" {
-  name                = local.lab08_name_with_postfix
+  name                = "${local.lab08_name}-nic-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
 
   ip_configuration {
-    name                          = local.lab08_name_with_postfix
+    name                          = "${local.lab08_name}-nic-ipconfig-${local.random_str}"
     subnet_id                     = azurerm_subnet.lab08.id
     private_ip_address_allocation = "Dynamic"
   }
@@ -57,14 +62,14 @@ resource "azurerm_network_interface" "lab08" {
 }
 
 resource "azurerm_windows_virtual_machine" "lab08" {
-  name                  = local.lab08_name_with_postfix
+  name                  = "${local.lab08_name}-vm-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab08.id]
   size                  = local.vm_size
 
   os_disk {
-    name                 = local.lab08_name_with_postfix
+    name                 = "${local.lab08_name}-osdisk-${local.random_str}"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
@@ -72,11 +77,11 @@ resource "azurerm_windows_virtual_machine" "lab08" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    sku       = "2022-Datacenter"
     version   = "latest"
   }
 
-  computer_name  = local.lab08_name_with_postfix
+  computer_name  = "${local.lab08_name}-vm-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_passowrd
 
@@ -86,12 +91,12 @@ resource "azurerm_windows_virtual_machine" "lab08" {
 }
 
 resource "azurerm_virtual_machine_extension" "lab08aad" {
-  name                       = "${local.lab08_name_with_postfix}aad"
+  name                       = "${local.lab08_name}-aad-${local.random_str}"
   publisher                  = "Microsoft.Azure.ActiveDirectory"
   type                       = "AADLoginForWindows"
   type_handler_version       = "1.0"
   auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b02.id
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab08.id
 
   tags = {
     environment = local.group_name
@@ -99,7 +104,7 @@ resource "azurerm_virtual_machine_extension" "lab08aad" {
 }
 
 resource "azurerm_virtual_machine_extension" "lab08script" {
-  name                       = "${local.lab08_name_with_postfix}script"
+  name                       = "${local.lab08_name}-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
   type_handler_version       = "1.9"

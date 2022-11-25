@@ -91,7 +91,7 @@ resource "azurerm_network_interface" "lab06b01" {
   resource_group_name = azurerm_resource_group.az104.name
 
   ip_configuration {
-    name                          = "${local.lab06b_name}-ipconfig-01-${local.random_str}"
+    name                          = "${local.lab06b_name}-nic-ipconfig-01-${local.random_str}"
     subnet_id                     = azurerm_subnet.lab06b.id
     private_ip_address_allocation = "Dynamic"
   }
@@ -108,7 +108,7 @@ resource "azurerm_network_interface_security_group_association" "lab06b01" {
 
 resource "azurerm_network_interface_backend_address_pool_association" "lab06b01" {
   network_interface_id    = azurerm_network_interface.lab06b01.id
-  ip_configuration_name   = "${local.lab06b_name}-poolconfig-01-${local.random_str}"
+  ip_configuration_name   = "${local.lab06b_name}-nic-ipconfig-01-${local.random_str}"
   backend_address_pool_id = azurerm_lb_backend_address_pool.lab06b.id
 }
 
@@ -128,7 +128,7 @@ resource "azurerm_windows_virtual_machine" "lab06b01" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    sku       = "2022-Datacenter"
     version   = "latest"
   }
 
@@ -183,7 +183,7 @@ resource "azurerm_network_interface_security_group_association" "lab06b02" {
 
 resource "azurerm_network_interface_backend_address_pool_association" "lab06b02" {
   network_interface_id    = azurerm_network_interface.lab06b02.id
-  ip_configuration_name   = "${local.lab06b_name}-poolconfig-02-${local.random_str}"
+  ip_configuration_name   = "${local.lab06b_name}-nic-ipconfig-02-${local.random_str}"
   backend_address_pool_id = azurerm_lb_backend_address_pool.lab06b.id
 }
 
@@ -203,7 +203,7 @@ resource "azurerm_windows_virtual_machine" "lab06b02" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
+    sku       = "2022-Datacenter"
     version   = "latest"
   }
 
