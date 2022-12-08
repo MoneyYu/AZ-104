@@ -32,4 +32,8 @@ resource "azurerm_kubernetes_cluster" "lab09c" {
       enabled = false
     }
   }
+
+  tags = {
+    environment = local.group_name
+  }
 }

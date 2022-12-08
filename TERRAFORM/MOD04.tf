@@ -46,13 +46,15 @@ resource "azurerm_public_ip" "lab04" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  domain_name_label   = local.lab04_name_with_postfix
+  domain_name_label   = "${local.lab04_name}-pip-${local.random_str}"
 }
 
 resource "azurerm_firewall" "lab04" {
   name                = "${local.lab04_name}-fw-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
+  sku_name            = "AZFW_VNet"
+  sku_tier            = "Standard"
 
   ip_configuration {
     name                 = "configuration"
