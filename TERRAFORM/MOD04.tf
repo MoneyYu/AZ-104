@@ -20,7 +20,7 @@ resource "azurerm_network_security_rule" "lab04" {
   protocol                    = "Tcp"
   source_port_range           = "3389"
   destination_port_range      = "3389"
-  source_address_prefix       = "*"
+  source_address_prefix       = chomp(data.http.myip.response_body)
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.az104.name
   network_security_group_name = azurerm_network_security_group.lab04.name
