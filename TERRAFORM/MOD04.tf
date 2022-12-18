@@ -4,12 +4,20 @@ resource "azurerm_virtual_network" "lab04" {
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_network_security_group" "lab04" {
   name                = "${local.lab04_name}-nsg-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_network_security_rule" "lab04" {
@@ -47,6 +55,10 @@ resource "azurerm_public_ip" "lab04" {
   allocation_method   = "Static"
   sku                 = "Standard"
   domain_name_label   = "${local.lab04_name}-pip-${local.random_str}"
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_firewall" "lab04" {
@@ -60,6 +72,10 @@ resource "azurerm_firewall" "lab04" {
     name                 = "configuration"
     subnet_id            = azurerm_subnet.lab04firewall.id
     public_ip_address_id = azurerm_public_ip.lab04.id
+  }
+
+  tags = {
+    environment = local.group_name
   }
 }
 
@@ -190,6 +206,10 @@ resource "azurerm_route_table" "lab04" {
     next_hop_type          = "VirtualAppliance"
     next_hop_in_ip_address = azurerm_firewall.lab04.ip_configuration[0].private_ip_address
   }
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_subnet_route_table_association" "lab04" {
@@ -200,11 +220,19 @@ resource "azurerm_subnet_route_table_association" "lab04" {
 resource "azurerm_dns_zone" "lab04" {
   name                = "${local.lab04_name}-public-dns-${local.random_str}.com"
   resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_private_dns_zone" "lab04" {
   name                = "${local.lab04_name}-private-dns-${local.random_str}.local"
   resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
@@ -213,6 +241,10 @@ resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
   private_dns_zone_name = azurerm_private_dns_zone.lab04.name
   virtual_network_id    = azurerm_virtual_network.lab04.id
   registration_enabled  = true
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_network_interface" "lab04" {
