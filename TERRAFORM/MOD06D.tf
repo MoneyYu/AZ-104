@@ -1,8 +1,9 @@
-## LAB-06-D-VWAN
+# LAB-06-D-VWAN
 locals {
   lab06d_loc_01 = "japaneast"
-  lab06d_loc_02 = "southeastasia"
+  lab06d_loc_02 = "japanwest"
   lab06d_loc_03 = "eastasia"
+  lab06d_vmsize = "Standard_D2s_v5"
 }
 
 resource "azurerm_virtual_network" "lab06d01" {
@@ -24,7 +25,7 @@ resource "azurerm_subnet" "lab06d01" {
 }
 
 resource "azurerm_virtual_network" "lab06d02" {
-  name                = "${local.lab06d_name}-vnet02-sea-${local.random_str}"
+  name                = "${local.lab06d_name}-vnet02-jpw-${local.random_str}"
   address_space       = ["10.12.1.0/24"]
   location            = local.lab06d_loc_02
   resource_group_name = azurerm_resource_group.az104.name
@@ -82,7 +83,7 @@ resource "azurerm_virtual_hub" "lab06d01" {
 }
 
 resource "azurerm_virtual_hub" "lab06d02" {
-  name                = "${local.lab06d_name}-hub02-sea-${local.random_str}"
+  name                = "${local.lab06d_name}-hub02-jpw-${local.random_str}"
   resource_group_name = azurerm_resource_group.az104.name
   location            = local.lab06d_loc_02
   virtual_wan_id      = azurerm_virtual_wan.lab06d.id
@@ -112,7 +113,7 @@ resource "azurerm_virtual_hub_connection" "lab06d01" {
 }
 
 resource "azurerm_virtual_hub_connection" "lab06d02" {
-  name                      = "${local.lab06d_name}-vnet02-conn-sea-${local.random_str}"
+  name                      = "${local.lab06d_name}-vnet02-conn-jpw-${local.random_str}"
   virtual_hub_id            = azurerm_virtual_hub.lab06d02.id
   remote_virtual_network_id = azurerm_virtual_network.lab06d02.id
 }
@@ -134,7 +135,7 @@ resource "azurerm_network_security_group" "lab06d01" {
 }
 
 resource "azurerm_network_security_group" "lab06d02" {
-  name                = "${local.lab06d_name}-nsg02-sea-${local.random_str}"
+  name                = "${local.lab06d_name}-nsg02-jpw-${local.random_str}"
   location            = local.lab06d_loc_02
   resource_group_name = azurerm_resource_group.az104.name
 
@@ -175,7 +176,7 @@ resource "azurerm_network_interface_security_group_association" "lab06d01" {
 }
 
 resource "azurerm_network_interface" "lab06d02" {
-  name                = "${local.lab06d_name}-nic02-sea-${local.random_str}"
+  name                = "${local.lab06d_name}-nic02-jpw-${local.random_str}"
   location            = local.lab06d_loc_02
   resource_group_name = azurerm_resource_group.az104.name
 
@@ -221,7 +222,7 @@ resource "azurerm_windows_virtual_machine" "lab06d01" {
   location              = local.lab06d_loc_01
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab06d01.id]
-  size                  = local.vm_size
+  size                  = local.lab06d_vmsize
 
   os_disk {
     name                 = "${local.lab06d_name}-osdisk-01-${local.random_str}"
@@ -247,9 +248,9 @@ resource "azurerm_windows_virtual_machine" "lab06d01" {
 
 resource "azurerm_virtual_machine_extension" "lab06d01script" {
   name                       = "${local.lab06d_name}-script-01-${local.random_str}"
-  publisher                  = "Microsoft.Azure.Extensions"
-  type                       = "CustomScript"
-  type_handler_version       = "2.0"
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.9"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab06d01.id
 
@@ -269,7 +270,7 @@ resource "azurerm_windows_virtual_machine" "lab06d02" {
   location              = local.lab06d_loc_02
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab06d02.id]
-  size                  = local.vm_size
+  size                  = local.lab06d_vmsize
 
   os_disk {
     name                 = "${local.lab06d_name}-osdisk-02-${local.random_str}"
@@ -295,9 +296,9 @@ resource "azurerm_windows_virtual_machine" "lab06d02" {
 
 resource "azurerm_virtual_machine_extension" "lab06d02script" {
   name                       = "${local.lab06d_name}-script-02-${local.random_str}"
-  publisher                  = "Microsoft.Azure.Extensions"
-  type                       = "CustomScript"
-  type_handler_version       = "2.0"
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.9"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab06d02.id
 
@@ -317,7 +318,7 @@ resource "azurerm_windows_virtual_machine" "lab06d03" {
   location              = local.lab06d_loc_03
   resource_group_name   = azurerm_resource_group.az104.name
   network_interface_ids = [azurerm_network_interface.lab06d03.id]
-  size                  = local.vm_size
+  size                  = local.lab06d_vmsize
 
   os_disk {
     name                 = "${local.lab06d_name}-osdisk-03-${local.random_str}"
@@ -343,9 +344,9 @@ resource "azurerm_windows_virtual_machine" "lab06d03" {
 
 resource "azurerm_virtual_machine_extension" "lab06d03script" {
   name                       = "${local.lab06d_name}-script-03-${local.random_str}"
-  publisher                  = "Microsoft.Azure.Extensions"
-  type                       = "CustomScript"
-  type_handler_version       = "2.0"
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.9"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab06d03.id
 
@@ -354,6 +355,62 @@ resource "azurerm_virtual_machine_extension" "lab06d03script" {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
     }
   SETTINGS
+
+  tags = {
+    environment = local.group_name
+  }
+}
+
+resource "azurerm_vpn_server_configuration" "lab06d01" {
+  name                     = "${local.lab06d_name}-vpnsvr01-jpe-${local.random_str}"
+  resource_group_name      = azurerm_resource_group.az104.name
+  location                 = local.lab06d_loc_01
+  vpn_authentication_types = ["Certificate"]
+  vpn_protocols            = ["IkeV2", "OpenVPN"]
+
+  client_root_certificate {
+    name             = "P2SRootCert"
+    public_cert_data = <<EOF
+MIIC6TCCAdGgAwIBAgIQXqUDrgdRmZVBz5E3J+jz1TANBgkqhkiG9w0BAQsFADAW
+MRQwEgYDVQQDDAtQMlNSb290Q2VydDAgFw0yMTExMjgxMzUyMTdaGA8yMDk5MTIz
+MDE2MDAwMFowFjEUMBIGA1UEAwwLUDJTUm9vdENlcnQwggEiMA0GCSqGSIb3DQEB
+AQUAA4IBDwAwggEKAoIBAQDFZcgHM2zSyBYUWmi/N4y9BZeqIbLaVJXJbICAcCww
+cgnR7LLtBe607mWCkOupTVlkg61Yf64bn5H0R7mkXAChA9vuk0NaHxvhkCsSQQoc
+4GOfXjYXvuwHM8bGvT4Wk2sMLPCK03xj+RX6KskVqmjXesG0/4qCoQcY3JsgJGhL
+QRCX4KD5hYopD0PU54SIQU5vxr7kb9+evx1pDpOI7tLdon02DGZ7J7yi8+3+qkFN
+JlPdCPZNqvyNdKpIIWl4RKadfzrOirAzHtvvBN455eEbuH/qPGC8OiIYGeSTS04K
+VPOYosKJDEXlnTmbo0ySUvRgqTmXJdpDkWKa8l5u6zodAgMBAAGjMTAvMA4GA1Ud
+DwEB/wQEAwICBDAdBgNVHQ4EFgQUHdp6ZhvCBDsQQUIahU2dy0omt50wDQYJKoZI
+hvcNAQELBQADggEBAMUh/0XrddTmI7VjJjSc01WVThx82r/IXVsNfl+ed13h3+Rp
+1r3FELUTiozyYIUus70uiMf+qXDdPI3I7lPRMENoQNCxEyPhdD5awc12TBRP/c8W
+QwqTA9lhoERvQ6oDQqZIGcARHFdq0qk1Ci/ZDDw1Oq70xSFhSZqMo2VDwKtuh2gT
+pgEzE0JQpt9OOUI1EzLrx/nun6t/wxAXSyLev+0rt9dNr0MSD8DfqtFYiQWL5C44
+nitvjgOQlGGE5LAR061qUaSwc3CMSOniaDjASGXVmF55lIEFeCg+yg/5Na7IVRCb
++ZNNQGtMCTBWZI7WJ9A8PwdhFw6412aBK9AKsvk=
+EOF
+  }
+
+  tags = {
+    environment = local.group_name
+  }
+}
+
+resource "azurerm_point_to_site_vpn_gateway" "lab06d01" {
+  name                        = "${local.lab06d_name}-p2s-vpngw01-jpe-${local.random_str}"
+  resource_group_name         = azurerm_resource_group.az104.name
+  location                    = local.lab06d_loc_01
+  virtual_hub_id              = azurerm_virtual_hub.lab06d01.id
+  vpn_server_configuration_id = azurerm_vpn_server_configuration.lab06d01.id
+  scale_unit                  = 1
+  connection_configuration {
+    name = "${local.lab06d_name}-p2s-config01-jpe-${local.random_str}"
+
+    vpn_client_address_pool {
+      address_prefixes = [
+        "10.11.2.0/24"
+      ]
+    }
+  }
 
   tags = {
     environment = local.group_name
