@@ -8,6 +8,10 @@ resource "azurerm_route_table" "lab06a" {
   route {
     name           = "route1"
     address_prefix = "10.0.0.0/16"
-    next_hop_type  = "vnetlocal"
+    next_hop_type  = "VnetLocal"
+  }
+
+  tags = {
+    environment = local.group_name
   }
 }

@@ -28,8 +28,13 @@ resource "azurerm_public_ip" "lab05b" {
   name                = "${local.lab05b_name}-pip-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  domain_name_label   = "${local.lab05b_name}-pip-${local.random_str}"
 
-  allocation_method = "Dynamic"
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_virtual_network_gateway" "lab05b" {
@@ -78,6 +83,10 @@ EOF
 
     }
   }
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_local_network_gateway" "lab05b" {
@@ -86,6 +95,10 @@ resource "azurerm_local_network_gateway" "lab05b" {
   location            = azurerm_resource_group.az104.location
   gateway_address     = "114.32.33.212"
   address_space       = ["192.168.112.0/24"]
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_network_security_group" "lab05b" {
@@ -105,7 +118,7 @@ resource "azurerm_network_security_rule" "lab05b" {
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  source_address_prefix       = "*"
+  source_address_prefix       = chomp(data.http.myip.response_body)
   destination_port_range      = "3389"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.az104.name

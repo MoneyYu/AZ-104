@@ -170,7 +170,7 @@ resource "azurerm_network_security_rule" "lab05a02" {
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  source_address_prefix       = "*"
+  source_address_prefix       = chomp(data.http.myip.response_body)
   destination_port_range      = "3389"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.az104.name
@@ -294,7 +294,7 @@ resource "azurerm_network_security_rule" "lab05a03" {
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  source_address_prefix       = "*"
+  source_address_prefix       = chomp(data.http.myip.response_body)
   destination_port_range      = "3389"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.az104.name

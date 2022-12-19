@@ -4,13 +4,17 @@ resource "azurerm_virtual_network" "lab06b" {
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_subnet" "lab06b" {
   name                 = "default"
   resource_group_name  = azurerm_resource_group.az104.name
   virtual_network_name = azurerm_virtual_network.lab06b.name
-  address_prefixes       = ["10.10.1.0/24"]
+  address_prefixes     = ["10.10.1.0/24"]
 }
 
 resource "azurerm_public_ip" "lab06b" {
@@ -19,7 +23,11 @@ resource "azurerm_public_ip" "lab06b" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  domain_name_label   = local.lab06b_name_with_postfix
+  domain_name_label   = "${local.lab06b_name}-pip-${local.random_str}"
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_lb" "lab06b" {
@@ -32,16 +40,18 @@ resource "azurerm_lb" "lab06b" {
     name                 = "PublicIPAddress"
     public_ip_address_id = azurerm_public_ip.lab06b.id
   }
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_lb_backend_address_pool" "lab06b" {
-  resource_group_name = azurerm_resource_group.az104.name
-  loadbalancer_id     = azurerm_lb.lab06b.id
-  name                = "BackendPool"
+  loadbalancer_id = azurerm_lb.lab06b.id
+  name            = "BackendPool"
 }
 
 resource "azurerm_lb_probe" "lab06b" {
-  resource_group_name = azurerm_resource_group.az104.name
   loadbalancer_id     = azurerm_lb.lab06b.id
   name                = "probe"
   port                = 80
@@ -49,14 +59,13 @@ resource "azurerm_lb_probe" "lab06b" {
 }
 
 resource "azurerm_lb_rule" "lab06b" {
-  resource_group_name            = azurerm_resource_group.az104.name
   loadbalancer_id                = azurerm_lb.lab06b.id
   name                           = "rule"
   protocol                       = "Tcp"
   frontend_port                  = 80
   backend_port                   = 80
   frontend_ip_configuration_name = "PublicIPAddress"
-  backend_address_pool_id        = azurerm_lb_backend_address_pool.lab06b.id
+  backend_address_pool_ids        = [azurerm_lb_backend_address_pool.lab06b.id]
   probe_id                       = azurerm_lb_probe.lab06b.id
   disable_outbound_snat          = true
 }

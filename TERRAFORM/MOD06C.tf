@@ -4,6 +4,10 @@ resource "azurerm_virtual_network" "lab06c" {
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_subnet" "lab06csub01" {
@@ -26,7 +30,11 @@ resource "azurerm_public_ip" "lab06c" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  domain_name_label   = local.lab06c_name_with_postfix
+  domain_name_label   = "${local.lab06c_name}-pip-${local.random_str}"
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_application_gateway" "lab06c" {
@@ -85,6 +93,11 @@ resource "azurerm_application_gateway" "lab06c" {
     http_listener_name         = "${local.lab06c_name}-appgw-listener-${local.random_str}"
     backend_address_pool_name  = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
     backend_http_settings_name = "${local.lab06c_name}-appgw-http-setting-${local.random_str}"
+    priority                   = 100
+  }
+
+  tags = {
+    environment = local.group_name
   }
 }
 
