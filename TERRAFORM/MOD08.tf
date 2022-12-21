@@ -4,6 +4,10 @@ resource "azurerm_virtual_network" "lab08" {
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_subnet" "lab08" {
@@ -26,6 +30,10 @@ resource "azurerm_public_ip" "lab08" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_bastion_host" "lab08" {
@@ -42,6 +50,10 @@ resource "azurerm_bastion_host" "lab08" {
     name                 = "${local.lab08_name}-bastion-ipconfig-${local.random_str}"
     subnet_id            = azurerm_subnet.lab08bastion.id
     public_ip_address_id = azurerm_public_ip.lab08.id
+  }
+
+  tags = {
+    environment = local.group_name
   }
 }
 
