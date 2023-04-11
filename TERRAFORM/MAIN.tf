@@ -38,6 +38,8 @@ locals {
   lab04_name    = "lab04"
   lab05a_name   = "lab05a"
   lab05b_name   = "lab05b"
+  lab05c_name   = "lab05c"
+  lab05d_name   = "lab05d"
   lab06a_name   = "lab06a"
   lab06b_name   = "lab06b"
   lab06c_name   = "lab06c"
