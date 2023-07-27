@@ -1,9 +1,3 @@
----
-image: https://images.credly.com/size/110x110/images/336eebfc-0ac3-4553-9a67-b402f491f185/azure-administrator-associate-600x600.png
-tags: AZ-104, Reference
-GA: G-DXYJBX6BH8
----
-
 # AZ-104 Reference
 
 ## Contact
