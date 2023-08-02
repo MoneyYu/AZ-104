@@ -41,6 +41,11 @@ resource "azurerm_subnet" "lab04" {
   address_prefixes     = ["10.10.1.0/24"]
 }
 
+resource "azurerm_subnet_network_security_group_association" "lab04" {
+  subnet_id                 = azurerm_subnet.lab04.id
+  network_security_group_id = azurerm_network_security_group.lab04.id
+}
+
 resource "azurerm_subnet" "lab04firewall" {
   name                 = "AzureFirewallSubnet"
   resource_group_name  = azurerm_resource_group.az104.name
@@ -68,6 +73,8 @@ resource "azurerm_firewall" "lab04" {
   sku_name            = "AZFW_VNet"
   sku_tier            = "Standard"
 
+  firewall_policy_id = azurerm_firewall_policy.lab04.id
+
   ip_configuration {
     name                 = "configuration"
     subnet_id            = azurerm_subnet.lab04firewall.id
@@ -79,118 +86,97 @@ resource "azurerm_firewall" "lab04" {
   }
 }
 
-resource "azurerm_firewall_application_rule_collection" "lab04" {
-  name                = "App-Coll01"
-  azure_firewall_name = azurerm_firewall.lab04.name
+resource "azurerm_firewall_policy" "lab04" {
+  name                = "${local.lab04_name}-fw-policy-${local.random_str}"
   resource_group_name = azurerm_resource_group.az104.name
-  priority            = 200
-  action              = "Allow"
+  location            = azurerm_resource_group.az104.location
 
-  rule {
-    name = "Allow-Google-01"
-
-    source_addresses = [
-      "10.10.1.0/24",
-    ]
-
-    target_fqdns = [
-      "*.google.com",
-    ]
-
-    protocol {
-      port = 443
-      type = "Https"
-    }
-
-    protocol {
-      port = 80
-      type = "Http"
-    }
-  }
-
-  rule {
-    name = "Allow-Google-02"
-
-    source_addresses = [
-      "10.10.1.0/24",
-    ]
-
-    target_fqdns = [
-      "google.com",
-    ]
-
-    protocol {
-      port = 443
-      type = "Https"
-    }
-
-    protocol {
-      port = 80
-      type = "Http"
-    }
+  tags = {
+    environment = local.group_name
   }
 }
 
-resource "azurerm_firewall_network_rule_collection" "lab04" {
-  name                = "Net-Coll01"
-  azure_firewall_name = azurerm_firewall.lab04.name
-  resource_group_name = azurerm_resource_group.az104.name
-  priority            = 200
-  action              = "Allow"
+resource "azurerm_firewall_policy_rule_collection_group" "lab04" {
+  name               = "${local.lab04_name}-fw-policy-group-${local.random_str}"
+  firewall_policy_id = azurerm_firewall_policy.lab04.id
+  priority           = 500
 
-  rule {
-    name = "Allow-DNS"
+  application_rule_collection {
+    name     = "app_rule_collection1"
+    priority = 500
+    action   = "Allow"
 
-    source_addresses = [
-      "10.10.1.0/24",
-    ]
+    rule {
+      name             = "Allow-Google-01"
+      source_addresses = ["10.10.1.0/24"]
+      destination_fqdns     = ["*.google.com"]
+      protocols {
+        port = 443
+        type = "Https"
+      }
+      protocols {
+        port = 80
+        type = "Http"
+      }
+    }
 
-    destination_ports = [
-      "53",
-    ]
+    rule {
+      name             = "Allow-Google-02"
+      source_addresses = ["10.10.1.0/24"]
+      destination_fqdns     = ["google.com"]
+      protocols {
+        port = 443
+        type = "Https"
+      }
+      protocols {
+        port = 80
+        type = "Http"
+      }
+    }
 
-    destination_addresses = [
-      "8.8.8.8",
-      "8.8.4.4",
-    ]
-
-    protocols = [
-      "TCP",
-      "UDP",
-    ]
+    rule {
+      name             = "Allow-Bing"
+      source_addresses = ["10.10.1.0/24"]
+      destination_fqdns     = ["*.bing.com"]
+      protocols {
+        port = 443
+        type = "Https"
+      }
+      protocols {
+        port = 80
+        type = "Http"
+      }
+    }
   }
-}
 
-resource "azurerm_firewall_nat_rule_collection" "lab04" {
-  name                = "rdp"
-  azure_firewall_name = azurerm_firewall.lab04.name
-  resource_group_name = azurerm_resource_group.az104.name
-  priority            = 200
-  action              = "Dnat"
+  network_rule_collection {
+    name     = "network_rule_collection1"
+    priority = 400
+    action   = "Allow"
 
-  rule {
-    name = "rdp-nat"
+    rule {
+      name                  = "Allow-DNS"
+      source_addresses      = ["10.10.1.0/24"]
+      destination_ports     = ["53"]
+      destination_addresses = ["8.8.8.8", "8.8.4.4"]
+      protocols             = ["TCP", "UDP"]
+    }
+  }
 
-    source_addresses = [
-      "*",
-    ]
+  nat_rule_collection {
+    name     = "nat_rule_collection1"
+    priority = 300
+    action   = "Dnat"
 
-    destination_ports = [
-      "3389",
-    ]
-
-    destination_addresses = [
-      azurerm_public_ip.lab04.ip_address
-    ]
-
-    translated_port = 3389
-
-    translated_address = azurerm_network_interface.lab04.private_ip_address
-
-    protocols = [
-      "TCP",
-      "UDP",
-    ]
+    rule {
+      name                  = "RDP-NAT"
+      source_addresses      = ["*"]
+      destination_ports     = ["3389"]
+      destination_address  = azurerm_public_ip.lab04.ip_address
+      translated_port       = 3389
+      translated_address    = azurerm_network_interface.lab04.private_ip_address
+      protocols             = ["TCP", "UDP", ]
+    }
   }
 }
 
