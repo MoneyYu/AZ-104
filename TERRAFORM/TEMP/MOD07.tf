@@ -5,7 +5,7 @@ resource "azurerm_storage_account" "lab07" {
   location                        = azurerm_resource_group.az104.location
   account_tier                    = "Standard"
   account_replication_type        = "RAGRS"
-  allow_nested_items_to_be_public = true
+  allow_nested_items_to_be_public = false
 
   tags = {
     environment = local.group_name

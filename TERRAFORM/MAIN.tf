@@ -44,6 +44,7 @@ locals {
   lab06b_name   = "lab06b"
   lab06c_name   = "lab06c"
   lab06d_name   = "lab06d"
+  lab06e_name   = "lab06e"
   lab07_name    = "lab07"
   lab08_name    = "lab08"
   lab09a_name   = "lab09a"
@@ -72,6 +73,13 @@ resource "random_string" "rid" {
 resource "random_integer" "rint" {
   min = 100
   max = 999
+}
+
+resource "random_pet" "petname" {
+  keepers = {
+    # Generate a new pet name each time we switch to a new AMI id
+    ami_id = var.group_postfix
+  }
 }
 
 # Create a resource group if it doesn't exist
