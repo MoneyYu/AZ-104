@@ -1,3 +1,9 @@
+---
+image: https://images.credly.com/size/110x110/images/336eebfc-0ac3-4553-9a67-b402f491f185/azure-administrator-associate-600x600.png
+tags: AZ-104, Reference
+GA: G-DXYJBX6BH8
+---
+
 # AZ-104 Reference
 
 ## Contact
@@ -5,8 +11,8 @@
     - Mail: [Money.Yu@microsoft.com](mailto:Money.Yu@microsoft.com)
     - LinkedIn: [@abc12207](https://www.linkedin.com/in/abc12207/)
 
-> Date: 20230726
-> Course ID: 52348
+> Date: 20231120
+> Course ID: 55239
 
 > Course Survey: [https://aka.ms/az104zhsurvey](https://aka.ms/az104zhsurvey)
 
@@ -25,10 +31,11 @@
 ## Lab
 ### Skillable lab system
 [ESI Labs](https://aka.ms/esilab)
-> Training key: 5A4B3567D4CC464C
+> Training key: E142A0C3F9FC4B28
 > > Only need to redeem once
 > > Valid for 6 months
 
+<!--
 Turtoial Video: https://media.yu.money/common/lods.html
 
 ### Azure (Azure Pass version)
@@ -39,16 +46,20 @@ Turtoial Video: https://media.yu.money/common/lods.html
 > > **Cloudslice version don't need to go to throught this process**
 
 Turtoial Video: https://media.yu.money/common/azurepass.html
+-->
 
 ### Instruction (Azure Pass version)
 [AZ-104 Labs EN](https://aka.ms/AZ104Labs)
 [AZ-104 Labs ZH](https://aka.ms/az104zhlabs)
-[AZ-104 Lab files](http://aka.ms/az104labfiles)
+[AZ-104 Lab files](https://aka.ms/az104labfiles)
 
+<!--
 #### Lab Videos
 [Lab Videos for AZ-104 (Azure Pass version)](https://doc.yu.money/s/mRglULNdD)
 
-<!--
+https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Azure%20Administrator%20Exercise%2016
+
+
 #### Backup site (Azure Pass version)
 [AZ-104 LAB EN backup site](https://lab.yu.money/AZ-104-MicrosoftAzureAdministrator/)
 [AZ-104 LAB ZH backup site](https://lab.yu.money/AZ-104ZH-MicrosoftAzureAdministrator/)
@@ -61,36 +72,40 @@ Turtoial Video: https://media.yu.money/common/azurepass.html
 
 ![Certification Areas](https://mdcontent.yu.money/contents/31b5b0d6ee886b9be732c5f13.PNG)
 
-## M01 - Azure AD
+## M01 - Microsoft Entra ID
 [Active Directory Domain Services Overview](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview)
 
-[Compare Active Directory to Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-compare-azure-ad-to-ad)
+[Compare Active Directory to Microsoft Entra ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-compare-azure-ad-to-ad)
 
-[Azure AD terminology](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-whatis#terminology)
+[Microsoft Entra ID terminology](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-whatis#terminology)
 
-[Azure AD Role](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference)
+[Microsoft Entra ID Role](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference)
 
-[Azure AD Custom Role](https://docs.microsoft.com/en-us/azure/active-directory/roles/custom-overview)
+[Microsoft Entra ID Custom Role](https://docs.microsoft.com/en-us/azure/active-directory/roles/custom-overview)
 
-[Azure AD Connect and Azure AD Connect Health installation roadmap](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-install-roadmap)
+[Application and service principal objects in Microsoft Entra ID](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals)
 
-[Azure AD Connect: Staging server and disaster recovery](https://learn.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sync-staging-server)
+[Microsoft Entra ID Domain Service](https://docs.microsoft.com/en-us/azure/active-directory-domain-services/overview)
 
-[Application and service principal objects in Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals)
+[Microsoft Entra ID Conditional Access](https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/overview)
 
-[Azure AD Domain Service](https://docs.microsoft.com/en-us/azure/active-directory-domain-services/overview)
-
-[Azure AD Conditional Access](https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/overview)
-
-[Azure AD comparison based on licenses](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-mfa-licensing#feature-comparison-based-on-licenses)
+[Microsoft Entra ID comparison based on licenses](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-mfa-licensing#feature-comparison-based-on-licenses)
 
 [Zero Turst Security](https://www.microsoft.com/en-us/security/business/zero-trust)
 
-[How long does Azure AD store reporting data?](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-reports-data-retention)
+[Administrative units in Microsoft Entra ID](https://learn.microsoft.com/en-us/azure/active-directory/roles/administrative-units)
 
-[Azure AD joined devices](https://docs.microsoft.com/en-us/azure/active-directory/devices/concept-azure-ad-join)
+[How long does Microsoft Entra ID store reporting data?](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-reports-data-retention)
 
-[Azure AD Connect Supported Topology](https://learn.microsoft.com/en-us/azure/active-directory/hybrid/plan-connect-topologies)
+[Microsoft Entra ID joined devices](https://docs.microsoft.com/en-us/azure/active-directory/devices/concept-azure-ad-join)
+
+[Microsoft Entra ID Connect and Microsoft Entra ID Connect Health installation roadmap](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-install-roadmap)
+
+[Microsoft Entra ID Connect: Staging server and disaster recovery](https://learn.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sync-staging-server)
+
+[Microsoft Entra ID Connect Supported Topology](https://learn.microsoft.com/en-us/azure/active-directory/hybrid/plan-connect-topologies)
+
+[Tutorial: Enable users to unlock their account or reset passwords using Microsoft Entra ID self-service password reset](https://learn.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-sspr)
 
 ## M02 - Compliance
 [Azure Speed Test 2.0](https://azurespeedtest.azurewebsites.net/)
@@ -130,7 +145,7 @@ Turtoial Video: https://media.yu.money/common/azurepass.html
 
 [List Azure role definitions](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-definitions-list)
 
-[Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#storage-blob-data-reader)
+[Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles)
 
 [Azure custom roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/custom-roles)
 
@@ -174,6 +189,8 @@ Turtoial Video: https://media.yu.money/common/azurepass.html
 [DDoS Protection compare](https://docs.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
 
 [Azure Public IP](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-addresses)
+
+[Azure Private IP](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/private-ip-addresses)
 
 [Azure VNET IPv6](https://docs.microsoft.com/en-us/azure/virtual-network/ipv6-overview)
 
@@ -244,14 +261,16 @@ NSG：功能比较简单（端口开放/关闭），并且不需要创建服务�
 
 [Microsoft 365 Routing with ExpressRoute](https://docs.microsoft.com/en-us/microsoft-365/enterprise/routing-with-expressroute?view=o365-worldwide)
 
-[Hub-spoke network topology in Azure](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
-
 [ExpressRoute Pricing](https://azure.microsoft.com/en-us/pricing/details/expressroute/)
 
 ### Virtual WAN
+[Hub-spoke network topology in Azure](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
+
 [Virtual WAN](https://docs.microsoft.com/en-us/azure/virtual-wan/virtual-wan-about)
 
 [Virtual WAN FAQ](https://docs.microsoft.com/en-us/azure/virtual-wan/virtual-wan-faq)
+
+[Upgrade a virtual WAN from Basic to Standard (SKU Comparsion)](https://learn.microsoft.com/en-us/azure/virtual-wan/upgrade-virtual-wan)
 
 ## M06 - Network Traffic Management
 ### Secure Connection to PaaS
@@ -336,6 +355,8 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 [Azure SPOT VM](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/spot-vms)
 
 [Introduction to Azure managed disks](https://docs.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview)
+
+[Azure managed disk types](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-types)
 
 [FAQs for Azure Disks](https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/azure-iaas-vm-disks-managed-unmanaged)
 
@@ -424,7 +445,18 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [virtual-kubelet](https://github.com/virtual-kubelet/virtual-kubelet)
 
-[Kubenet and Azure CNI](https://learn.microsoft.com/en-us/azure/aks/configure-azure-cni)
+[Kubenet and Azure CNI](https://learn.microsoft.com/en-us/azure/aks/configure-kubenet)
+
+[Simplified application autoscaling with Kubernetes Event-driven Autoscaling (KEDA) add-on (Preview)](https://learn.microsoft.com/en-us/azure/aks/keda-about)
+
+### Azure Container App
+[Azure Container Apps overview](https://learn.microsoft.com/en-us/azure/container-apps/overview)
+
+[Comparing Container Apps with other Azure container options](https://learn.microsoft.com/en-us/azure/container-apps/compare-options)
+
+[Azure Container Apps environments](https://learn.microsoft.com/en-us/azure/container-apps/environment)
+
+[ACA vs AKS: Which Azure Service Is Better for Running Containers?](https://techcommunity.microsoft.com/t5/startups-at-microsoft/aca-vs-aks-which-azure-service-is-better-for-running-containers/ba-p/3815164)
 
 ## M10 - Backup
 ### Azure Backup
@@ -435,6 +467,8 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 [Overview of Backup center](https://docs.microsoft.com/en-gb/azure/backup/backup-center-overview)
 
 [Create and configure a Recovery Services vault](https://docs.microsoft.com/en-us/azure/backup/backup-create-rs-vault)
+
+[Azure Backup MARS agent](https://learn.microsoft.com/en-us/azure/backup/install-mars-agent)
 
 [Install and upgrade Azure Backup Server](https://docs.microsoft.com/en-us/azure/backup/backup-azure-microsoft-azure-backup)
 
@@ -479,6 +513,8 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [Log Analytics tutorial](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-tutorial)
 
+[Kusto Query Language (KQL) overview](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/)
+
 [Tutorial: Use Kusto queries](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/tutorial?pivots=azuremonitor)
 
 [Kusto Function types](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/functions/)
@@ -500,11 +536,13 @@ SVG:
 [49459-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/49459-AZ-104.pdf)
 [50101-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/50101-AZ-104.pdf)
 [50488-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/50488-AZ-104.pdf)
+[52348-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/52348-AZ-104.pdf)
+[52357-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/52357-AZ-104.pdf)
 
 ## Exam
 [AZ-104 Exam Page](https://docs.microsoft.com/en-us/learn/certifications/exams/az-104)
 [Claiming your exam voucher - Video](https://aka.ms/esi-claim-voucher)
-[Exam duration and question types](https://docs.microsoft.com/en-us/learn/certifications/exam-duration-question-types)
+[Exam duration and question types](https://learn.microsoft.com/en-us/credentials/support/exam-duration-exam-experience)
 [AZ-104 Study Guide](https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4pCWy)
 [AZ-104 Exam Prep videos](https://learn.microsoft.com/en-us/shows/exam-readiness-zone/preparing-for-az-104-manage-azure-identities-and-governance-1-of-5/)
 [Unscheduled breaks now available in most exams without requesting in advance](https://techcommunity.microsoft.com/t5/microsoft-learn-blog/unscheduled-breaks-now-available-in-most-exams-without/ba-p/3287005)
@@ -512,6 +550,7 @@ SVG:
 [AZ-104 Exam Sandbox](https://aka.ms/examdemo)
 [Microsoft Exam FAQ](https://docs.microsoft.com/zh-cn/learn/certifications/online-exams)
 [Renew your Microsoft Certifications for free. Stay Microsoft Certified!](https://aka.ms/RenewYourCertVideo)
+[Microsoft Learn for all role-based Microsoft Certification exams](https://techcommunity.microsoft.com/t5/microsoft-learn-blog/introducing-a-new-resource-for-all-role-based-microsoft/ba-p/3500870?WT.mc_id=general_Twitter-wwl)
 <!--[](https://aka.ms/LxPExamDiscountVideo)-->
 
 
