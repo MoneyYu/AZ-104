@@ -70,8 +70,8 @@ resource "azurerm_network_interface" "lab05a01" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "lab05a01" {
-  network_interface_id      = azurerm_network_interface.lab05a01.id
+resource "azurerm_subnet_network_security_group_association" "lab05a01" {
+  subnet_id                 = azurerm_subnet.lab05a01.id
   network_security_group_id = azurerm_network_security_group.lab05a01.id
 }
 
@@ -194,8 +194,8 @@ resource "azurerm_network_interface" "lab05a02" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "lab05a02" {
-  network_interface_id      = azurerm_network_interface.lab05a02.id
+resource "azurerm_subnet_network_security_group_association" "lab05a02" {
+  subnet_id                 = azurerm_subnet.lab05a02.id
   network_security_group_id = azurerm_network_security_group.lab05a02.id
 }
 
@@ -318,8 +318,8 @@ resource "azurerm_network_interface" "lab05a03" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "lab05a03" {
-  network_interface_id      = azurerm_network_interface.lab05a03.id
+resource "azurerm_subnet_network_security_group_association" "lab05a03" {
+  subnet_id                 = azurerm_subnet.lab05a03.id
   network_security_group_id = azurerm_network_security_group.lab05a03.id
 }
 

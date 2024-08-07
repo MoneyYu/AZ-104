@@ -141,8 +141,8 @@ resource "azurerm_network_interface" "lab05b" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "lab05b" {
-  network_interface_id      = azurerm_network_interface.lab05b.id
+resource "azurerm_subnet_network_security_group_association" "lab05b" {
+  subnet_id                 = azurerm_subnet.lab05b.id
   network_security_group_id = azurerm_network_security_group.lab05b.id
 }
 

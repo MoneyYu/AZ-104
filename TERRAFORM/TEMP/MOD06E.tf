@@ -11,6 +11,10 @@ resource "azurerm_cdn_frontdoor_profile" "lab06e" {
 resource "azurerm_cdn_frontdoor_endpoint" "lab06e" {
   name                     = "${local.lab06e_name}-fd-endpoint-${local.random_str}"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.lab06e.id
+
+  tags = {
+    environment = local.group_name
+  }
 }
 
 resource "azurerm_cdn_frontdoor_origin_group" "lab06e" {

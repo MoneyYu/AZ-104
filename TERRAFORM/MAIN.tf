@@ -30,7 +30,7 @@ variable "user_passowrd" {
 locals {
   group_name    = "AZ104-${var.group_postfix}"
   location      = "japaneast"
-  random_str    = "dog"
+  random_str    = "cat"
   vm_size       = "Standard_B4ms"
   lab01_name    = "lab01"
   lab02_name    = "lab02"

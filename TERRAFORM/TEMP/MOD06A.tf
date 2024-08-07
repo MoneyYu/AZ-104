@@ -3,7 +3,6 @@ resource "azurerm_route_table" "lab06a" {
   name                          = "${local.lab06a_name}-routes-${local.random_str}"
   location                      = azurerm_resource_group.az104.location
   resource_group_name           = azurerm_resource_group.az104.name
-  disable_bgp_route_propagation = false
 
   route {
     name           = "route1"
