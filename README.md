@@ -5,16 +5,14 @@ GA: G-DXYJBX6BH8
 ---
 
 # AZ-104 Reference
+:::success
+Date: 20240805
+Course ID: 65790
+:::
 
-## Contact
-- Money Yu
-    - Mail: [Money.Yu@microsoft.com](mailto:Money.Yu@microsoft.com)
-    - LinkedIn: [@abc12207](https://www.linkedin.com/in/abc12207/)
-
-> Date: 20231120
-> Course ID: 55239
-
-> Course Survey: [https://aka.ms/az104zhsurvey](https://aka.ms/az104zhsurvey)
+:::info
+Course Survey: [https://aka.ms/az104zhsurvey](https://aka.ms/az104zhsurvey)
+:::
 
 ## Course Materials
 [Course AZ-104 English version](https://aka.ms/learn/az104en)
@@ -31,22 +29,14 @@ GA: G-DXYJBX6BH8
 ## Lab
 ### Skillable lab system
 [ESI Labs](https://aka.ms/esilab)
-> Training key: E142A0C3F9FC4B28
-> > Only need to redeem once
-> > Valid for 6 months
+:::success
+Training key: B25F462AC6834AF5
+:::
 
-<!--
-Turtoial Video: https://media.yu.money/common/lods.html
-
-### Azure (Azure Pass version)
-[Azure Pass Redeem](https://www.microsoftazurepass.com/)
-> Valid for 100 USD or 1 month
-> Only need to redeem once
-> In the lab, use `EastUS` as your region
-> > **Cloudslice version don't need to go to throught this process**
-
-Turtoial Video: https://media.yu.money/common/azurepass.html
--->
+:::info
+Only need to redeem once
+Valid for 6 months
+:::
 
 ### Instruction (Azure Pass version)
 [AZ-104 Labs EN](https://aka.ms/AZ104Labs)
@@ -86,6 +76,8 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 [Application and service principal objects in Microsoft Entra ID](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals)
 
 [Microsoft Entra ID Domain Service](https://docs.microsoft.com/en-us/azure/active-directory-domain-services/overview)
+
+[Compare self-managed Active Directory Domain Services, Microsoft Entra ID, and managed Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/compare-identity-solutions)
 
 [Microsoft Entra ID Conditional Access](https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/overview)
 
@@ -184,6 +176,8 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Virtual Network – Business Continuity](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-disaster-recovery-guidance)
 
+[Plan virtual networks](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-vnet-plan-design-arm)
+
 [Subnet reserved IP](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets)
 
 [DDoS Protection compare](https://docs.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
@@ -212,9 +206,13 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 ### Firewall
 [Azure Firewall Pricing](https://azure.microsoft.com/en-us/pricing/details/azure-firewall/)
 
-[Azure Firewall Premium features](https://docs.microsoft.com/en-us/azure/firewall/premium-features)
-
 [Azure Firewall SKU comparsion](https://learn.microsoft.com/en-us/azure/firewall/choose-firewall-sku)
+
+- [Azure Firewall Basic features](https://learn.microsoft.com/en-us/azure/firewall/basic-features)
+
+- [Azure Firewall Standard features](https://learn.microsoft.com/en-us/azure/firewall/features)
+
+- [Azure Firewall Premium features](https://docs.microsoft.com/en-us/azure/firewall/premium-features)
 
 [Azure Firewall policy vs rule](https://learn.microsoft.com/en-us/azure/firewall-manager/policy-overview#classic-rules-and-policies)
 
@@ -248,13 +246,15 @@ NSG：功能比较简单（端口开放/关闭），并且不需要创建服务�
 [Choose between virtual network peering and VPN gateways](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/vnet-peering)
 
 ### Virtual network Gateway (VPN Gateway)
-[VPN Gateway SKUs](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#benchmark)
+[VPN Gateway SKUs](https://learn.microsoft.com/zh-cn/azure/vpn-gateway/about-gateway-skus)
 
 [VPN Gateway High availability](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-highlyavailable)
 
 [Use AAD to login P2S VPN](https://docs.microsoft.com/en-us/azure/vpn-gateway/openvpn-azure-ad-tenant)
 
 [Create S2S VPN](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-site-to-site-resource-manager-portal)
+
+[Configure server settings for P2S VPN Gateway certificate authentication](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal)
 
 ### ExpressRoute
 [ExpressRoute](https://docs.microsoft.com/en-us/azure/expressroute/expressroute-introduction)
@@ -271,6 +271,8 @@ NSG：功能比较简单（端口开放/关闭），并且不需要创建服务�
 [Virtual WAN FAQ](https://docs.microsoft.com/en-us/azure/virtual-wan/virtual-wan-faq)
 
 [Upgrade a virtual WAN from Basic to Standard (SKU Comparsion)](https://learn.microsoft.com/en-us/azure/virtual-wan/upgrade-virtual-wan)
+
+[Scenario: Custom Isolation for Virtual Networks and Branches](https://learn.microsoft.com/en-us/azure/virtual-wan/scenario-isolate-virtual-networks-branches)
 
 ## M06 - Network Traffic Management
 ### Secure Connection to PaaS
@@ -308,11 +310,11 @@ NSG：功能比较简单（端口开放/关闭），并且不需要创建服务�
 
 [Enable and create large file shares](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-how-to-create-large-file-share)
 
+[Storage Tier](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-storage-tiers?tabs=azure-portal)
+
 [Lifecycle management](https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview)
 
 [Lifecycle management - Move data based on last accessed time](https://docs.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview#move-data-based-on-last-accessed-time)
-
-[Storage Tier](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-storage-tiers?tabs=azure-portal)
 
 [Azure Files storage tiers](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-planning#storage-tiers)
 
@@ -366,8 +368,12 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [Azure virtual machine extensions and features](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/overview)
 
+[Azure VM Image Builder overview](https://learn.microsoft.com/en-us/azure/virtual-machines/image-builder-overview?tabs=azure-powershell)
+
 ### VMSS
 [VM scale sets](https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview)
+
+[Orchestration modes for Virtual Machine Scale Sets in Azure](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-orchestration-modes)
 
 [Considerations for scaling when multiple profiles are configured in an autoscale setting](https://docs.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-understanding-settings#how-does-autoscale-evaluate-multiple-rules)
 
@@ -387,6 +393,8 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 [Azure Compute Unit](https://docs.microsoft.com/en-us/azure/virtual-machines/acu)
 
 [Local Git deployment to Azure App Service](https://docs.microsoft.com/en-us/azure/app-service/deploy-local-git)
+
+[App Service managed certificate](https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-certificate?tabs=apex#create-a-free-managed-certificate)
 
 [Frontdoor](https://docs.microsoft.com/en-us/azure/frontdoor/front-door-lb-with-azure-app-delivery-suite)
 
@@ -458,6 +466,8 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [ACA vs AKS: Which Azure Service Is Better for Running Containers?](https://techcommunity.microsoft.com/t5/startups-at-microsoft/aca-vs-aks-which-azure-service-is-better-for-running-containers/ba-p/3815164)
 
+[Dapr integration with Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/dapr-overview)
+
 ## M10 - Backup
 ### Azure Backup
 [What is the Azure Backup service?](https://docs.microsoft.com/en-us/azure/backup/backup-overview)
@@ -466,11 +476,19 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [Overview of Backup center](https://docs.microsoft.com/en-gb/azure/backup/backup-center-overview)
 
+[Backup vaults overview](https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview)
+
+[Recovery Services vaults overview](https://learn.microsoft.com/en-us/azure/backup/backup-azure-recovery-services-vault-overview)
+
 [Create and configure a Recovery Services vault](https://docs.microsoft.com/en-us/azure/backup/backup-create-rs-vault)
 
 [Azure Backup MARS agent](https://learn.microsoft.com/en-us/azure/backup/install-mars-agent)
 
+[Back up Windows Server files and folders to Azure](https://learn.microsoft.com/en-us/azure/backup/backup-windows-with-mars-agent#install-and-register-the-agent)
+
 [Install and upgrade Azure Backup Server](https://docs.microsoft.com/en-us/azure/backup/backup-azure-microsoft-azure-backup)
+
+[Immutable vault for Azure Backup](https://learn.microsoft.com/en-us/azure/backup/backup-azure-immutable-vault-concept?tabs=recovery-services-vault#restricted-operations)
 
 ### Site Recovery
 [About Site Recovery](https://docs.microsoft.com/en-us/azure/site-recovery/site-recovery-overview)
@@ -495,6 +513,13 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [Azure Monitor Videos (YouTube)](https://youtube.com/playlist?list=PLLasX02E8BPCCsHzNLJjcElCwF52rnh6t)
 
+[What is Azure Managed Grafana?](https://learn.microsoft.com/en-us/azure/managed-grafana/overview)
+
+[Azure Monitor managed service for Prometheus](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/prometheus-metrics-overview)
+
+[Azure Monitor SCOM Managed Instance](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/scom-managed-instance-overview)
+
+<!--
 ### Application Insight
 [What is Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)
 
@@ -507,6 +532,7 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 [Live Metrics Stream](https://docs.microsoft.com/en-us/azure/azure-monitor/app/live-stream)
 
 [Smart Detection](https://docs.microsoft.com/en-us/azure/azure-monitor/app/proactive-diagnostics)
+-->
 
 ### Log Analytics
 [Log Analytics demo environment](https://portal.azure.com/#blade/Microsoft_Azure_Monitoring_Logs/DemoLogsBlade)
@@ -518,6 +544,8 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 [Tutorial: Use Kusto queries](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/tutorial?pivots=azuremonitor)
 
 [Kusto Function types](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/functions/)
+
+[Run search jobs in Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/search-jobs)
 
 [](https://github.com/Azure-Samples/application-insights-aspnet-sample-opentelemetry)
 
@@ -538,11 +566,16 @@ SVG:
 [50488-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/50488-AZ-104.pdf)
 [52348-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/52348-AZ-104.pdf)
 [52357-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/52357-AZ-104.pdf)
+[55239-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/55239-AZ-104.pdf)
+[59711-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/59711-AZ-104.pdf)
+[64357-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/64357-AZ-104.pdf)
+[65790-AZ-104.pdf](https://mttcontent.yu.money/az104/notes/65790-AZ-104.pdf)
 
 ## Exam
 [AZ-104 Exam Page](https://docs.microsoft.com/en-us/learn/certifications/exams/az-104)
 [Claiming your exam voucher - Video](https://aka.ms/esi-claim-voucher)
 [Exam duration and question types](https://learn.microsoft.com/en-us/credentials/support/exam-duration-exam-experience)
+[AZ-104 Practice Exam](https://learn.microsoft.com/en-us/credentials/certifications/azure-administrator/practice/assessment?assessment-type=practice&assessmentId=21&practice-assessment-type=certification)
 [AZ-104 Study Guide](https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4pCWy)
 [AZ-104 Exam Prep videos](https://learn.microsoft.com/en-us/shows/exam-readiness-zone/preparing-for-az-104-manage-azure-identities-and-governance-1-of-5/)
 [Unscheduled breaks now available in most exams without requesting in advance](https://techcommunity.microsoft.com/t5/microsoft-learn-blog/unscheduled-breaks-now-available-in-most-exams-without/ba-p/3287005)
@@ -557,6 +590,11 @@ SVG:
 ![exam](https://mdcontent.yu.money/contents/31b5b0d6ee886b9be732c5f03.png)
 
 SVG: [exam.svg](https://mttcontent.yu.money/common/exam.svg)
+
+## Contact
+- Money Yu
+    - Mail: [Money.Yu@microsoft.com](mailto:Money.Yu@microsoft.com)
+    - LinkedIn: [@abc12207](https://www.linkedin.com/in/abc12207/)
 
 ## Else
 [Azure for GCP Professionals](https://docs.microsoft.com/en-us/azure/architecture/gcp-professional/)
