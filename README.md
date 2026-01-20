@@ -99,26 +99,47 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 [Tutorial: Enable users to unlock their account or reset passwords using Microsoft Entra ID self-service password reset](https://learn.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-sspr)
 
 ## M02 - Compliance
-[Azure Speed Test 2.0](https://azurespeedtest.azurewebsites.net/)
 
-[Azure Region](https://azure.microsoft.com/en-us/global-infrastructure/geographies/)
+### Azure Infrastructure
+[Azure Speed Test 2.0](https://richorama.github.io/AzureSpeedTest2/)
 
-[Regions and availability zones](https://learn.microsoft.com/en-us/azure/availability-zones/az-overview)
+[Azure Products by Region](https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/table)
 
-[Region Pair](https://learn.microsoft.com/en-us/azure/best-practices-availability-paired-regions)
+[What are Azure availability zones?](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview)
 
+[Azure regions with availability zones support](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-service-support)
+
+[Azure region pairs and nonpaired regions](https://learn.microsoft.com/en-us/azure/reliability/regions-paired)
+
+[List of Azure regions](https://learn.microsoft.com/en-us/azure/reliability/regions-list)
+
+### Cost Management
 [Azure Offer](https://azure.microsoft.com/en-us/support/legal/offer-details/)
 
 [Azure Hybrid Benefit](https://learn.microsoft.com/en-us/azure/virtual-machines/windows/hybrid-use-benefit-licensing)
 
 [Azure Reservations](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/save-compute-costs-reservations)
 
-[Azure Activity Log](https://learn.microsoft.com/en-us/azure/azure-monitor/platform/activity-log)
+[Azure Savings Plans](https://learn.microsoft.com/en-us/azure/cost-management-billing/savings-plan/savings-plan-compute-overview)
 
+[FinOps on Azure](https://learn.microsoft.com/en-us/azure/cost-management-billing/finops/overview-finops)
+
+### Monitoring & Activity
+[Azure Activity Log](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/activity-log)
+
+### Governance
 [Azure management groups](https://learn.microsoft.com/en-us/azure/governance/management-groups/overview)
 
+[Management group design recommendations](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-management-groups)
+
+[Cloud Adoption Framework - Governance](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/)
+
 ### Azure Policy
-[What is Azure Policy?](https://learn.microsoft.com/en-us/azure/governance/policy/overview)
+[What is Azure Policy? ](https://learn.microsoft.com/en-us/azure/governance/policy/overview)
+
+[Microsoft Cloud Security Benchmark (MCSB)](https://learn.microsoft.com/en-us/security/benchmark/azure/overview)
+
+[Regulatory compliance in Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/regulatory-compliance)
 
 [Azure Policy definition structure](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/definition-structure)
 
@@ -128,8 +149,9 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Tutorial: Create a custom policy definition](https://learn.microsoft.com/en-us/azure/governance/policy/tutorials/create-custom-policy-definition)
 
-[Details of the ISO 27001:2013 Regulatory Compliance built-in initiative
-](https://learn.microsoft.com/en-us/azure/governance/policy/samples/iso-27001)
+[Azure Policy built-in policy definitions](https://learn.microsoft.com/en-us/azure/governance/policy/samples/built-in-policies)
+
+[Details of the ISO 27001:2013 Regulatory Compliance built-in initiative](https://learn.microsoft.com/en-us/azure/governance/policy/samples/iso-27001)
 
 ### RBAC
 [Understand Azure role definitions](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-definitions)
@@ -138,30 +160,56 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Azure built-in roles](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles)
 
+[RBAC Role Changes Tracker](https://rbac-catalog.dev/)
+
 [Azure custom roles](https://learn.microsoft.com/en-us/azure/role-based-access-control/custom-roles)
 
 [Tutorial: Create or update Azure custom roles using the Azure portal](https://learn.microsoft.com/en-us/azure/role-based-access-control/custom-roles-portal)
 
+[Built-in policy definitions for Azure RBAC](https://learn.microsoft.com/en-us/azure/role-based-access-control/policy-reference)
+
 ## M03 - Administration
+
+### Azure Portal
 [Azure Portal](https://portal.azure.com/)
 
+### Azure Cloud Shell
 [Features & tools for Azure Cloud Shell](https://learn.microsoft.com/en-us/azure/cloud-shell/features)
 
+### Azure CLI & PowerShell
 [Install Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/install-az-ps)
+
+[Get started with Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/get-started-azureps)
+
+[Azure PowerShell documentation](https://learn.microsoft.com/en-us/powershell/azure/)
 
 [Install Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 
-[ARM Template](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/overview)
+[Get started with Azure CLI](https://learn.microsoft.com/en-us/cli/azure/get-started-with-azure-cli)
 
-[Azure Resource Manager](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview)
+[Azure CLI documentation](https://learn.microsoft.com/en-us/cli/azure/)
 
-[ARM Template Gallery](https://azure.microsoft.com/en-us/resources/templates/)
+### Azure Resource Manager (ARM)
+[Azure Resource Manager overview](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview)
+
+[ARM template overview](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/overview)
+
+[ARM template best practices](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/best-practices)
 
 [ARM template functions](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions)
 
 [ARM template user-defined functions](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-user-defined-functions)
 
-[Azure Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview)
+[Azure Quickstart Templates](https://github.com/Azure/azure-quickstart-templates)
+
+### Azure Bicep
+[Azure Bicep overview](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview)
+
+[Bicep best practices](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/best-practices)
+
+[Bicep file structure and syntax](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/file)
+
+[Bicep modules](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/modules)
 
 [Decompiling ARM template JSON to Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/decompile?tabs=azure-cli)
 
@@ -169,60 +217,93 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Azure Bicep playground](https://azure.github.io/bicep/)
 
+### Deployment Validation
+[ARM template what-if deployment](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-what-if)
+
+[Bicep what-if deployment](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deploy-what-if)
+
+[ARM template test toolkit (arm-ttk)](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/test-toolkit)
+
+### Template Management
+[Azure Template Specs overview](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-specs)
+
+[Create and deploy template specs](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-specs-create-linked)
+
+[Azure deployment stacks overview](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-stacks)
+
+[Create and deploy deployment stacks](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-stacks?tabs=azure-cli)
+
 ## M04 - Virtual Network
 ### Basic Networking
-[Azure Virtual Network concepts and best practices](https://learn.microsoft.com/en-us/azure/virtual-network/concepts-and-best-practices)
+[What is Azure Virtual Network?](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview)
 
-[Virtual Network – Business Continuity](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-disaster-recovery-guidance)
+[Azure Virtual Network concepts and best practices](https://learn.microsoft.com/en-us/azure/virtual-network/concepts-and-best-practices)
 
 [Plan virtual networks](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-vnet-plan-design-arm)
 
-[Subnet reserved IP](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets)
+[Virtual Network FAQ](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq)
 
-[DDoS Protection compare](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
-
-[Azure Public IP](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-addresses)
-
-[Azure Private IP](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/private-ip-addresses)
-
-[Azure VNET IPv6](https://learn.microsoft.com/en-us/azure/virtual-network/ipv6-overview)
-
-[Azure Virtual Network frequently asked questions (FAQ)](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq)
+[Virtual Network business continuity](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-disaster-recovery-guidance)
 
 [Azure Networking limits](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-resource-manager-virtual-networking-limits)
 
+### IP Addressing
+[Public IP addresses](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-addresses)
+
+[Private IP addresses](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/private-ip-addresses)
+
+[IPv6 for Azure Virtual Network](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/ipv6-overview)
+
+[Reserved IP addresses in subnets](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets)
+
 [What is IP address 168.63.129.16?](https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16)
 
+### DDoS Protection
+
+[Azure DDoS Protection overview](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
+
+[Azure DDoS Protection SKU comparison](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-sku-comparison)
+
+[DDoS Protection best practices](https://learn.microsoft.com/en-us/azure/ddos-protection/fundamental-best-practices)
+
 ### Network Security Group
-[NSG security rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview#security-rules)
+[Network security groups overview](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview)
 
-[NSG default rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview#default-security-rules)
+[Security rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview#security-rules)
 
-[Service Tags](https://learn.microsoft.com/en-us/azure/virtual-network/service-tags-overview)
+[Default security rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview#default-security-rules)
+
+[Augmented security rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview#augmented-security-rules)
+
+[Service tags overview](https://learn.microsoft.com/en-us/azure/virtual-network/service-tags-overview)
 
 [Application security groups](https://learn.microsoft.com/en-us/azure/virtual-network/application-security-groups)
 
+[NSG flow logs](https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-nsg-flow-logging-overview)
+
 ### Firewall
-[Azure Firewall Pricing](https://azure.microsoft.com/en-us/pricing/details/azure-firewall/)
+[What is Azure Firewall?](https://learn.microsoft.com/en-us/azure/firewall/overview)
 
-[Azure Firewall SKU comparsion](https://learn.microsoft.com/en-us/azure/firewall/choose-firewall-sku)
+[Azure Firewall features by SKU](https://learn.microsoft.com/en-us/azure/firewall/features-by-sku)
 
-- [Azure Firewall Basic features](https://learn.microsoft.com/en-us/azure/firewall/basic-features)
+[Azure Firewall Basic features](https://learn.microsoft.com/en-us/azure/firewall/basic-features)
 
-- [Azure Firewall Standard features](https://learn.microsoft.com/en-us/azure/firewall/features)
+[Azure Firewall Standard features](https://learn.microsoft.com/en-us/azure/firewall/features)
 
-- [Azure Firewall Premium features](https://learn.microsoft.com/en-us/azure/firewall/premium-features)
+[Azure Firewall Premium features](https://learn.microsoft.com/en-us/azure/firewall/premium-features)
 
-[Azure Firewall policy vs rule](https://learn.microsoft.com/en-us/azure/firewall-manager/policy-overview#classic-rules-and-policies)
+[Azure Firewall pricing](https://azure.microsoft.com/en-us/pricing/details/azure-firewall/)
 
-[Tutorial: Deploy and configure Azure Firewall and policy using the Azure portal](https://learn.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal-policy)
+[Deploy and configure Azure Firewall using Azure portal](https://learn.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal-policy)
 
 区别：
 NSG：功能比较简单（端口开放/关闭），并且不需要创建服务器，是免费使用的
 防火墙：功能更多；是部署的托管服务器；是收费的
 
 ### Azure Network Security
-[Azure DDoS Protection (2026 updates)](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
+[Azure DDoS Protection overview](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
+
+[Azure DDoS Protection SKU comparison](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-sku-comparison)
 
 [Network security groups - augmented security rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview#augmented-security-rules)
 
@@ -233,21 +314,41 @@ NSG：功能比较简单（端口开放/关闭），并且不需要创建服务�
 ### Azure DNS Zone
 [What is Azure DNS?](https://learn.microsoft.com/en-us/azure/dns/dns-overview)
 
-[Azure DNS Zone Delegation of DNS zones (Child Zone)](https://learn.microsoft.com/en-us/azure/dns/dns-domain-delegation)
+[Azure DNS FAQ](https://learn.microsoft.com/en-us/azure/dns/dns-faq)
 
-[Azure Private DNS zone](https://learn.microsoft.com/en-us/azure/dns/private-dns-privatednszone)
+[Delegate Azure DNS subdomains](https://learn.microsoft.com/en-us/azure/dns/dns-domain-delegation)
 
-[Architecture of Azure Private DNS](https://msandbu.org/architecture-of-azure-private-dns-and-name-lookup-in-azure/)
+[Host reverse DNS lookup zones](https://learn.microsoft.com/en-us/azure/dns/dns-reverse-dns-overview)
 
-[Private DNS zone virtual network link](https://learn.microsoft.com/en-us/azure/dns/private-dns-virtual-network-links)
+[Azure DNS Private Resolver](https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview)
+
+### Private DNS
+[What is Azure Private DNS?](https://learn.microsoft.com/en-us/azure/dns/private-dns-overview)
+
+[Azure Private DNS zones](https://learn.microsoft.com/en-us/azure/dns/private-dns-privatednszone)
+
+[Private DNS zone virtual network links](https://learn.microsoft.com/en-us/azure/dns/private-dns-virtual-network-links)
 
 [Private DNS zone auto registration](https://learn.microsoft.com/en-us/azure/dns/private-dns-autoregistration)
 
-[Azure DNS Private Resolver](https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview)
+[Private DNS scenarios](https://learn.microsoft.com/en-us/azure/dns/private-dns-scenarios)
+
+### DNS Private Resolver
+[What is Azure DNS Private Resolver?](https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview)
+
+[Private Resolver architecture](https://learn.microsoft.com/en-us/azure/dns/private-resolver-architecture)
+
+[Resolve Azure and on-premises domains](https://learn.microsoft.com/en-us/azure/dns/private-resolver-hybrid-dns)
+
+[DNS Private Resolver endpoints and rulesets](https://learn.microsoft.com/en-us/azure/dns/private-resolver-endpoints-rulesets)
 
 ## M05 - Intersite Connectivity
 ### Peering
 [Virtual network peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview)
+
+[Create, change, or delete a virtual network peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-peering)
+
+[Virtual network peering FAQ](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#virtual-network-peering)
 
 [Configure VPN gateway transit for virtual network peering](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-peering-gateway-transit)
 
@@ -256,24 +357,36 @@ NSG：功能比较简单（端口开放/关闭），并且不需要创建服务�
 ### Virtual network Gateway (VPN Gateway)
 [VPN Gateway SKUs](https://learn.microsoft.com/en-us/azure/vpn-gateway/about-gateway-skus)
 
+[VPN Gateway SKU migration guidance](https://learn.microsoft.com/en-us/azure/vpn-gateway/gateway-sku-consolidation)
+
 [VPN Gateway High availability](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-highlyavailable)
 
-[Use AAD to login P2S VPN](https://learn.microsoft.com/en-us/azure/vpn-gateway/openvpn-azure-ad-tenant)
+#### VPN Gateway Implementation
 
-[Create S2S VPN](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-site-to-site-resource-manager-portal)
+[Create Site-to-Site VPN](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-site-to-site-resource-manager-portal)
 
-[Configure server settings for P2S VPN Gateway certificate authentication](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal)
+[Configure Point-to-Site VPN with certificate authentication](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-point-to-site-resource-manager-portal)
+
+[Configure Point-to-Site VPN with Azure AD authentication](https://learn.microsoft.com/en-us/azure/vpn-gateway/openvpn-azure-ad-tenant)
+
+[VPN Gateway high availability scenarios](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-highlyavailable)
 
 ### ExpressRoute
 [ExpressRoute](https://learn.microsoft.com/en-us/azure/expressroute/expressroute-introduction)
+
+[ExpressRoute FAQ](https://learn.microsoft.com/en-us/azure/expressroute/expressroute-faqs)
 
 [Microsoft 365 Routing with ExpressRoute](https://learn.microsoft.com/en-us/microsoft-365/enterprise/routing-with-expressroute?view=o365-worldwide)
 
 [ExpressRoute Pricing](https://azure.microsoft.com/en-us/pricing/details/expressroute/)
 
-### Virtual WAN
+### Hub-Spoke Architecture
+
 [Hub-spoke network topology in Azure](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
 
+[Hub-spoke topology with Azure Virtual WAN](https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke-vwan-architecture)
+
+### Virtual WAN
 [Virtual WAN](https://learn.microsoft.com/en-us/azure/virtual-wan/virtual-wan-about)
 
 [Virtual WAN FAQ](https://learn.microsoft.com/en-us/azure/virtual-wan/virtual-wan-faq)
