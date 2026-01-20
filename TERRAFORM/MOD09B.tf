@@ -51,12 +51,12 @@ resource "azurerm_container_group" "lab09b" {
     }
   }
 
-  container {
-    name   = "sidecar"
-    image  = "mcr.microsoft.com/azuredocs/aci-tutorial-sidecar"
-    cpu    = "1"
-    memory = "2"
-  }
+  # container {
+  #   name   = "sidecar"
+  #   image  = "mcr.microsoft.com/azuredocs/aci-tutorial-sidecar"
+  #   cpu    = "1"
+  #   memory = "2"
+  # }
 
   # container {
   #   name   = "hello-world"

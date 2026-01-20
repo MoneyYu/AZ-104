@@ -11,6 +11,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+  subscription_id = "ffc7fbc7-3840-4835-ad88-4eb5015d7dac"
 }
 
 variable "group_postfix" {
