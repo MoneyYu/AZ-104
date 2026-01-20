@@ -13,10 +13,7 @@ resource "azurerm_traffic_manager_profile" "lab06d" {
     path                        = "/"
     expected_status_code_ranges = ["200-202", "301-302"]
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_traffic_manager_external_endpoint" "lab06d01" {

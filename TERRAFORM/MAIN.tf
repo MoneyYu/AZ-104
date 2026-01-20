@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">=0.12"
+  required_version = ">= 1.0"
 
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>3.0"
+      version = "~>4.0"
     }
   }
 }
@@ -22,7 +22,7 @@ variable "user_name" {
   default = "demouser"
 }
 
-variable "user_passowrd" {
+variable "user_password" {
   type    = string
   default = "Azuredemo2020"
 }
@@ -54,7 +54,12 @@ locals {
   lab10_name    = "lab10"
   lab11_name    = "lab11"
   user_name     = "demouser"
-  user_passowrd = "Azuredemo2020"
+  user_password = "Azuredemo2020"
+
+  default_tags = {
+    environment     = local.group_name
+    SecurityControl = "Ignore"
+  }
 }
 
 data "http" "myip" {
@@ -86,8 +91,13 @@ resource "random_pet" "petname" {
 resource "azurerm_resource_group" "az104" {
   name     = local.group_name
   location = local.location
+  tags     = local.default_tags
+}
 
-  tags = {
-    environment = local.group_name
-  }
+# Demo Resource Group
+resource "azurerm_resource_group" "demo" {
+  name     = "Demo${var.group_postfix}"
+  location = local.location
+
+  tags = local.default_tags
 }

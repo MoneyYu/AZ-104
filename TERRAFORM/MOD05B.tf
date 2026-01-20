@@ -4,10 +4,7 @@ resource "azurerm_virtual_network" "lab05b" {
   address_space       = ["10.1.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_subnet" "lab05b" {
@@ -31,10 +28,7 @@ resource "azurerm_public_ip" "lab05b" {
   allocation_method   = "Static"
   sku                 = "Standard"
   domain_name_label   = "${local.lab05b_name}-pip-${local.random_str}"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_virtual_network_gateway" "lab05b" {
@@ -83,10 +77,7 @@ EOF
 
     }
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_local_network_gateway" "lab05b" {
@@ -95,20 +86,14 @@ resource "azurerm_local_network_gateway" "lab05b" {
   location            = azurerm_resource_group.az104.location
   gateway_address     = "114.32.33.212"
   address_space       = ["192.168.112.0/24"]
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_group" "lab05b" {
   name                = "${local.lab05b_name}-nsg-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_rule" "lab05b" {
@@ -135,10 +120,7 @@ resource "azurerm_network_interface" "lab05b" {
     subnet_id                     = azurerm_subnet.lab05b.id
     private_ip_address_allocation = "Dynamic"
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_subnet_network_security_group_association" "lab05b" {
@@ -168,11 +150,8 @@ resource "azurerm_windows_virtual_machine" "lab05b" {
 
   computer_name  = "${local.lab05b_name}-vm-${local.random_str}"
   admin_username = local.user_name
-  admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
+  admin_password = local.user_password
+  tags           = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab05baad" {
@@ -182,17 +161,14 @@ resource "azurerm_virtual_machine_extension" "lab05baad" {
   type_handler_version       = "1.0"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05b.id
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                       = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab05bscript" {
   name                       = "${local.lab05b_name}-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
-  type_handler_version       = "1.9"
+  type_handler_version       = "1.10"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05b.id
 
@@ -201,8 +177,5 @@ resource "azurerm_virtual_machine_extension" "lab05bscript" {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
     }
   SETTINGS
-
-  tags = {
-    environment = local.group_name
-  }
+  tags     = local.default_tags
 }

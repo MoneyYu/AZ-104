@@ -9,30 +9,21 @@ resource "azurerm_container_registry" "lab09b" {
   georeplications {
     location                = "East Asia"
     zone_redundancy_enabled = false
-    tags = {
-      environment = local.group_name
-    }
+    tags                    = local.default_tags
   }
 
   georeplications {
     location                = "SouthEastAsia"
     zone_redundancy_enabled = false
-    tags = {
-      environment = local.group_name
-    }
+    tags                    = local.default_tags
   }
 
   georeplications {
     location                = "JapanWest"
     zone_redundancy_enabled = false
-    tags = {
-      environment = local.group_name
-    }
+    tags                    = local.default_tags
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_container_group" "lab09b" {
@@ -78,8 +69,5 @@ resource "azurerm_container_group" "lab09b" {
   #     protocol = "TCP"
   #   }
   # }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }

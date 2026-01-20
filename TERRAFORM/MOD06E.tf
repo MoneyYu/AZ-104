@@ -2,19 +2,13 @@ resource "azurerm_cdn_frontdoor_profile" "lab06e" {
   name                = "${local.lab06e_name}-fd-${local.random_str}"
   resource_group_name = azurerm_resource_group.az104.name
   sku_name            = "Standard_AzureFrontDoor"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_cdn_frontdoor_endpoint" "lab06e" {
   name                     = "${local.lab06e_name}-fd-endpoint-${local.random_str}"
   cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.lab06e.id
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                     = local.default_tags
 }
 
 resource "azurerm_cdn_frontdoor_origin_group" "lab06e" {
@@ -70,10 +64,7 @@ resource "azurerm_service_plan" "lab06e" {
   sku_name     = "S1"
   os_type      = "Windows"
   worker_count = 1
-
-  tags = {
-    environment = local.group_name
-  }
+  tags         = local.default_tags
 }
 
 resource "azurerm_windows_web_app" "lab06e" {
@@ -102,8 +93,5 @@ resource "azurerm_windows_web_app" "lab06e" {
       name = "Allow traffic from Front Door"
     }
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }

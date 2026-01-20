@@ -4,10 +4,7 @@ resource "azurerm_virtual_network" "lab05a01" {
   address_space       = ["10.1.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_subnet" "lab05a01" {
@@ -23,20 +20,14 @@ resource "azurerm_public_ip" "lab05a01" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Dynamic"
   domain_name_label   = "${local.lab05a_name}-pip-01-${local.random_str}"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_group" "lab05a01" {
   name                = "${local.lab05a_name}-nsg-01-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_rule" "lab05a01" {
@@ -64,10 +55,7 @@ resource "azurerm_network_interface" "lab05a01" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.lab05a01.id
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_subnet_network_security_group_association" "lab05a01" {
@@ -97,18 +85,15 @@ resource "azurerm_windows_virtual_machine" "lab05a01" {
 
   computer_name  = "${local.lab05a_name}-vm01-${local.random_str}"
   admin_username = local.user_name
-  admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
+  admin_password = local.user_password
+  tags           = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab05a01script" {
   name                       = "${local.lab05a_name}-script-01-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
-  type_handler_version       = "1.9"
+  type_handler_version       = "1.10"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a01.id
 
@@ -117,10 +102,7 @@ resource "azurerm_virtual_machine_extension" "lab05a01script" {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
     }
   SETTINGS
-
-  tags = {
-    environment = local.group_name
-  }
+  tags     = local.default_tags
 }
 
 resource "azurerm_virtual_network" "lab05a02" {
@@ -128,10 +110,7 @@ resource "azurerm_virtual_network" "lab05a02" {
   address_space       = ["10.2.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_subnet" "lab05a02" {
@@ -147,20 +126,14 @@ resource "azurerm_public_ip" "lab05a02" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Dynamic"
   domain_name_label   = "${local.lab05a_name}-pip-02-${local.random_str}"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_group" "lab05a02" {
   name                = "${local.lab05a_name}-nsg-02-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_rule" "lab05a02" {
@@ -188,10 +161,7 @@ resource "azurerm_network_interface" "lab05a02" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.lab05a02.id
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_subnet_network_security_group_association" "lab05a02" {
@@ -221,18 +191,15 @@ resource "azurerm_windows_virtual_machine" "lab05a02" {
 
   computer_name  = "${local.lab05a_name}-vm02-${local.random_str}"
   admin_username = local.user_name
-  admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
+  admin_password = local.user_password
+  tags           = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab05a02script" {
   name                       = "${local.lab05a_name}-script-02-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
-  type_handler_version       = "1.9"
+  type_handler_version       = "1.10"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a02.id
 
@@ -241,10 +208,7 @@ resource "azurerm_virtual_machine_extension" "lab05a02script" {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
     }
   SETTINGS
-
-  tags = {
-    environment = local.group_name
-  }
+  tags     = local.default_tags
 }
 
 resource "azurerm_virtual_network" "lab05a03" {
@@ -252,10 +216,7 @@ resource "azurerm_virtual_network" "lab05a03" {
   address_space       = ["10.3.0.0/16"]
   location            = "eastasia"
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_subnet" "lab05a03" {
@@ -271,20 +232,14 @@ resource "azurerm_public_ip" "lab05a03" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Dynamic"
   domain_name_label   = "${local.lab05a_name}-pip-03-${local.random_str}"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_group" "lab05a03" {
   name                = "${local.lab05a_name}-nsg-03-${local.random_str}"
   location            = "eastasia"
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_rule" "lab05a03" {
@@ -312,10 +267,7 @@ resource "azurerm_network_interface" "lab05a03" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.lab05a03.id
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_subnet_network_security_group_association" "lab05a03" {
@@ -345,18 +297,15 @@ resource "azurerm_windows_virtual_machine" "lab05a03" {
 
   computer_name  = "${local.lab05a_name}-vm03-${local.random_str}"
   admin_username = local.user_name
-  admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
+  admin_password = local.user_password
+  tags           = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab05a03script" {
   name                       = "${local.lab05a_name}-script-03-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
-  type_handler_version       = "1.9"
+  type_handler_version       = "1.10"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a03.id
 
@@ -365,8 +314,5 @@ resource "azurerm_virtual_machine_extension" "lab05a03script" {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
     }
   SETTINGS
-
-  tags = {
-    environment = local.group_name
-  }
+  tags     = local.default_tags
 }

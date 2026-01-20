@@ -4,10 +4,7 @@ resource "azurerm_virtual_network" "lab08" {
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_subnet" "lab08" {
@@ -30,10 +27,7 @@ resource "azurerm_public_ip" "lab08" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_bastion_host" "lab08" {
@@ -51,10 +45,7 @@ resource "azurerm_bastion_host" "lab08" {
     subnet_id            = azurerm_subnet.lab08bastion.id
     public_ip_address_id = azurerm_public_ip.lab08.id
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_network_interface" "lab08" {
@@ -67,10 +58,7 @@ resource "azurerm_network_interface" "lab08" {
     subnet_id                     = azurerm_subnet.lab08.id
     private_ip_address_allocation = "Dynamic"
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_windows_virtual_machine" "lab08" {
@@ -95,11 +83,8 @@ resource "azurerm_windows_virtual_machine" "lab08" {
 
   computer_name  = "${local.lab08_name}-vm-${local.random_str}"
   admin_username = local.user_name
-  admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
+  admin_password = local.user_password
+  tags           = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab08aad" {
@@ -109,17 +94,14 @@ resource "azurerm_virtual_machine_extension" "lab08aad" {
   type_handler_version       = "1.0"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab08.id
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                       = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab08script" {
   name                       = "${local.lab08_name}-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
-  type_handler_version       = "1.9"
+  type_handler_version       = "1.10"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab08.id
 
@@ -128,8 +110,5 @@ resource "azurerm_virtual_machine_extension" "lab08script" {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
     }
   SETTINGS
-
-  tags = {
-    environment = local.group_name
-  }
+  tags     = local.default_tags
 }

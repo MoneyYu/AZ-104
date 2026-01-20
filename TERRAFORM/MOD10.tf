@@ -7,7 +7,5 @@ resource "azurerm_recovery_services_vault" "lab10" {
 
   soft_delete_enabled = false
 
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }

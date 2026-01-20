@@ -5,10 +5,7 @@ resource "azurerm_service_plan" "lab09a" {
   resource_group_name = azurerm_resource_group.az104.name
   os_type             = "Windows"
   sku_name            = "S1"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_windows_web_app" "lab09a" {
@@ -20,11 +17,8 @@ resource "azurerm_windows_web_app" "lab09a" {
   site_config {
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v6.0"
+      dotnet_version = "v10.0"
     }
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }

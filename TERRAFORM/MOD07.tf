@@ -6,8 +6,5 @@ resource "azurerm_storage_account" "lab07" {
   account_tier                    = "Standard"
   account_replication_type        = "RAGRS"
   allow_nested_items_to_be_public = false
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                            = local.default_tags
 }

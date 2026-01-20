@@ -16,10 +16,7 @@ resource "azurerm_kubernetes_cluster" "lab09c" {
   identity {
     type = "SystemAssigned"
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_role_assignment" "lab09c" {

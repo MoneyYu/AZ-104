@@ -4,20 +4,14 @@ resource "azurerm_virtual_network" "lab04" {
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_group" "lab04" {
   name                = "${local.lab04_name}-nsg-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_network_security_rule" "lab04" {
@@ -60,10 +54,7 @@ resource "azurerm_public_ip" "lab04" {
   allocation_method   = "Static"
   sku                 = "Standard"
   domain_name_label   = "${local.lab04_name}-pip-${local.random_str}"
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_firewall" "lab04" {
@@ -80,20 +71,14 @@ resource "azurerm_firewall" "lab04" {
     subnet_id            = azurerm_subnet.lab04firewall.id
     public_ip_address_id = azurerm_public_ip.lab04.id
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_firewall_policy" "lab04" {
   name                = "${local.lab04_name}-fw-policy-${local.random_str}"
   resource_group_name = azurerm_resource_group.az104.name
   location            = azurerm_resource_group.az104.location
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_firewall_policy_rule_collection_group" "lab04" {
@@ -107,9 +92,9 @@ resource "azurerm_firewall_policy_rule_collection_group" "lab04" {
     action   = "Allow"
 
     rule {
-      name             = "Allow-Google-01"
-      source_addresses = ["10.10.1.0/24"]
-      destination_fqdns     = ["*.google.com"]
+      name              = "Allow-Google-01"
+      source_addresses  = ["10.10.1.0/24"]
+      destination_fqdns = ["*.google.com"]
       protocols {
         port = 443
         type = "Https"
@@ -121,9 +106,9 @@ resource "azurerm_firewall_policy_rule_collection_group" "lab04" {
     }
 
     rule {
-      name             = "Allow-Google-02"
-      source_addresses = ["10.10.1.0/24"]
-      destination_fqdns     = ["google.com"]
+      name              = "Allow-Google-02"
+      source_addresses  = ["10.10.1.0/24"]
+      destination_fqdns = ["google.com"]
       protocols {
         port = 443
         type = "Https"
@@ -135,9 +120,9 @@ resource "azurerm_firewall_policy_rule_collection_group" "lab04" {
     }
 
     rule {
-      name             = "Allow-Bing"
-      source_addresses = ["10.10.1.0/24"]
-      destination_fqdns     = ["*.bing.com"]
+      name              = "Allow-Bing"
+      source_addresses  = ["10.10.1.0/24"]
+      destination_fqdns = ["*.bing.com"]
       protocols {
         port = 443
         type = "Https"
@@ -169,13 +154,13 @@ resource "azurerm_firewall_policy_rule_collection_group" "lab04" {
     action   = "Dnat"
 
     rule {
-      name                  = "RDP-NAT"
-      source_addresses      = ["*"]
-      destination_ports     = ["3389"]
-      destination_address  = azurerm_public_ip.lab04.ip_address
-      translated_port       = 3389
-      translated_address    = azurerm_network_interface.lab04.private_ip_address
-      protocols             = ["TCP", "UDP", ]
+      name                = "RDP-NAT"
+      source_addresses    = ["*"]
+      destination_ports   = ["3389"]
+      destination_address = azurerm_public_ip.lab04.ip_address
+      translated_port     = 3389
+      translated_address  = azurerm_network_interface.lab04.private_ip_address
+      protocols           = ["TCP", "UDP", ]
     }
   }
 }
@@ -192,10 +177,7 @@ resource "azurerm_route_table" "lab04" {
     next_hop_type          = "VirtualAppliance"
     next_hop_in_ip_address = azurerm_firewall.lab04.ip_configuration[0].private_ip_address
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_subnet_route_table_association" "lab04" {
@@ -206,19 +188,13 @@ resource "azurerm_subnet_route_table_association" "lab04" {
 resource "azurerm_dns_zone" "lab04" {
   name                = "${local.lab04_name}-public-dns-${local.random_str}.com"
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_private_dns_zone" "lab04" {
   name                = "${local.lab04_name}-private-dns-${local.random_str}.local"
   resource_group_name = azurerm_resource_group.az104.name
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                = local.default_tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
@@ -227,10 +203,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
   private_dns_zone_name = azurerm_private_dns_zone.lab04.name
   virtual_network_id    = azurerm_virtual_network.lab04.id
   registration_enabled  = true
-
-  tags = {
-    environment = local.group_name
-  }
+  tags                  = local.default_tags
 }
 
 resource "azurerm_network_interface" "lab04" {
@@ -244,10 +217,7 @@ resource "azurerm_network_interface" "lab04" {
     subnet_id                     = azurerm_subnet.lab04.id
     private_ip_address_allocation = "Dynamic"
   }
-
-  tags = {
-    environment = local.group_name
-  }
+  tags = local.default_tags
 }
 
 resource "azurerm_windows_virtual_machine" "lab04" {
@@ -272,18 +242,15 @@ resource "azurerm_windows_virtual_machine" "lab04" {
 
   computer_name  = "${local.lab04_name}-vm-${local.random_str}"
   admin_username = local.user_name
-  admin_password = local.user_passowrd
-
-  tags = {
-    environment = local.group_name
-  }
+  admin_password = local.user_password
+  tags           = local.default_tags
 }
 
 resource "azurerm_virtual_machine_extension" "lab04script" {
   name                       = "${local.lab04_name}-vm-script-${local.random_str}"
   publisher                  = "Microsoft.Compute"
   type                       = "CustomScriptExtension"
-  type_handler_version       = "1.9"
+  type_handler_version       = "1.10"
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab04.id
 
@@ -292,8 +259,5 @@ resource "azurerm_virtual_machine_extension" "lab04script" {
         "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
     }
   SETTINGS
-
-  tags = {
-    environment = local.group_name
-  }
+  tags     = local.default_tags
 }
