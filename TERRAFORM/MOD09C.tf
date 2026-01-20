@@ -5,7 +5,7 @@ resource "azurerm_kubernetes_cluster" "lab09c" {
   resource_group_name = azurerm_resource_group.az104.name
   dns_prefix          = "${local.lab09b_name}-aks-${local.random_str}"
 
-  automatic_channel_upgrade = "stable"
+  automatic_upgrade_channel = "stable"
 
   default_node_pool {
     name       = "default"
