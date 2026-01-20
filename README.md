@@ -53,14 +53,20 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 ## Course Info
 ![Course](https://mdcontent.yu.money/contents/31b5b0d6ee886b9be732c5f12.PNG)
 
-![Certification Areas](https://mdcontent.yu.money/contents/31b5b0d6ee886b9be732c5f13.PNG)
+![Certification Areas](https://mdcontent.yu.money/contents/n1mzaqlliyggc10aj8mwgxys0.png)
 
 ## M01 - Microsoft Entra ID
 [Active Directory Domain Services Overview](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview)
 
 [Compare Active Directory to Microsoft Entra ID](https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-compare-azure-ad-to-ad)
 
-[Microsoft Entra ID terminology](https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-whatis#terminology)
+[What is Microsoft Entra? ](https://learn.microsoft.com/en-us/entra/fundamentals/what-is-entra)
+
+[Microsoft Entra External ID](https://learn.microsoft.com/en-us/entra/external-id/external-identities-overview)
+
+[Microsoft Entra Verified ID](https://learn.microsoft.com/en-us/entra/verified-id/decentralized-identifier-overview)
+
+[Microsoft Entra ID terminology](https://learn.microsoft.com/en-us/entra/identity-platform/developer-glossary)
 
 [Microsoft Entra ID Role](https://learn.microsoft.com/en-us/azure/active-directory/roles/permissions-reference)
 
@@ -80,7 +86,7 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Administrative units in Microsoft Entra ID](https://learn.microsoft.com/en-us/azure/active-directory/roles/administrative-units)
 
-[How long does Microsoft Entra ID store reporting data?](https://learn.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-reports-data-retention)
+[Microsoft Entra data retention](https://learn.microsoft.com/en-us/azure/active-directory/reports-monitoring/reference-reports-data-retention)
 
 [Microsoft Entra ID joined devices](https://learn.microsoft.com/en-us/azure/active-directory/devices/concept-azure-ad-join)
 
@@ -88,7 +94,7 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Microsoft Entra ID Connect: Staging server and disaster recovery](https://learn.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sync-staging-server)
 
-[Microsoft Entra ID Connect Supported Topology](https://learn.microsoft.com/en-us/azure/active-directory/hybrid/plan-connect-topologies)
+[Topologies for Microsoft Entra Connect](https://learn.microsoft.com/en-us/azure/active-directory/hybrid/plan-connect-topologies)
 
 [Tutorial: Enable users to unlock their account or reset passwords using Microsoft Entra ID self-service password reset](https://learn.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-sspr)
 
@@ -215,6 +221,15 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 NSG：功能比较简单（端口开放/关闭），并且不需要创建服务器，是免费使用的
 防火墙：功能更多；是部署的托管服务器；是收费的
 
+### Azure Network Security
+[Azure DDoS Protection (2026 updates)](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
+
+[Network security groups - augmented security rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview#augmented-security-rules)
+
+[Azure Virtual Network Manager](https://learn.microsoft.com/en-us/azure/virtual-network-manager/overview)
+
+[Azure Route Server](https://learn.microsoft.com/en-us/azure/route-server/overview)
+
 ### Azure DNS Zone
 [What is Azure DNS?](https://learn.microsoft.com/en-us/azure/dns/dns-overview)
 
@@ -313,7 +328,7 @@ NSG：功能比较简单（端口开放/关闭），并且不需要创建服务�
 
 [Copy data from S3 to Azure Storage](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-s3)
 
-[Access to blobs and queues using Azure Active Directory](https://learn.microsoft.com/en-us/azure/storage/common/storage-auth-aad)
+[Access to blobs and queues using Microsoft Entra ID](https://learn.microsoft.com/en-us/azure/storage/common/storage-auth-aad)
 
 [Azure File scalability and performance targets](https://learn.microsoft.com/en-us/azure/storage/files/storage-files-scale-targets)
 
@@ -332,10 +347,20 @@ Repulication 复制 = Redundancy 冗余
 
 [Deploy Azure File Sync](https://learn.microsoft.com/en-us/azure/storage/file-sync/file-sync-deployment-guide)
 
-[Azure 存储的授权方式](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-requests-to-azure-storage)
+[Azure 存儲的授權方式](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-requests-to-azure-storage)
 
 Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问密钥”
 
+### Advanced Storage Features
+[Soft delete for blob containers (考试重点)](https://learn.microsoft.com/en-us/azure/storage/blobs/soft-delete-container-overview)
+
+[Soft delete for blobs](https://learn.microsoft.com/en-us/azure/storage/blobs/soft-delete-blob-overview)
+
+[Azure Files premium tier SMB Multichannel](https://learn.microsoft.com/en-us/azure/storage/files/storage-files-smb-multichannel-performance)
+
+[Azure Blob Storage lifecycle management policies](https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure)
+
+[Immutable storage for blob data](https://learn.microsoft.com/en-us/azure/storage/blobs/immutable-storage-overview)
 
 ## M08 - VM
 ### Azure VM
@@ -364,6 +389,17 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 [Default outbound access in Azure](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access)
 
 [Assessment overview (migrate to Azure VMs)](https://learn.microsoft.com/en-us/azure/migrate/concepts-assessment-calculation?view=migrate-classic)
+
+#### Modern VM Features
+[Azure Trusted Launch for VMs](https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch)
+
+[Azure Confidential Computing](https://learn.microsoft.com/en-us/azure/confidential-computing/overview)
+
+[Ephemeral OS disks](https://learn.microsoft.com/en-us/azure/virtual-machines/ephemeral-os-disks)
+
+[Azure VM Image Builder (latest version)](https://learn.microsoft.com/en-us/azure/virtual-machines/image-builder-overview)
+
+[Automatic VM guest patching](https://learn.microsoft.com/en-us/azure/virtual-machines/automatic-vm-guest-patching)
 
 ### VMSS
 [VM scale sets](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview)
@@ -412,7 +448,7 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [Set up staging environments in Azure App Service](https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots)
 > `https://blog.amitapple.com/post/2014/11/azure-websites-slots/#.WH-1CeTrtWw`
->
+
 
 [Azure Web App with Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/tutorial-net-create-vault-azure-web-app)
 
@@ -443,6 +479,28 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 - 价格不同；
 - 实例可以运行任何应用，不仅限于Web应用
 
+### Azure Container Apps
+[Azure Container Apps overview](https://learn.microsoft.com/en-us/azure/container-apps/overview)
+
+[Azure Container Apps environments](https://learn.microsoft.com/en-us/azure/container-apps/environment)
+
+[Comparing Container Apps with other Azure container options](https://learn.microsoft.com/en-us/azure/container-apps/compare-options)
+
+[Set up HTTPS ingress in Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/ingress-overview)
+
+[Scaling in Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/scale-app)
+
+[Microservices with Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/microservices)
+
+[Dapr integration with Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/dapr-overview)
+
+[Deploy to Azure Container Apps using GitHub Actions](https://learn.microsoft.com/en-us/azure/container-apps/github-actions)
+
+**Container Apps vs AKS Decision Guide:**
+- Use Container Apps for:  Serverless microservices, event-driven apps, APIs, background jobs
+- Use AKS for: Complex stateful apps, custom Kubernetes configurations, CNCF ecosystem tools
+
+[ACA vs AKS comparison (2026)](https://www.site24x7.com/learn/azure-aca-vs-aks.html)
 
 ### Azure Kubernets Service
 [Kubernetes core concepts for Azure Kubernetes Service](https://learn.microsoft.com/en-us/azure/aks/concepts-clusters-workloads)
@@ -503,6 +561,13 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 
 [Quickstart: Set up disaster recovery to a secondary Azure region for an Azure VM](https://learn.microsoft.com/en-us/azure/site-recovery/azure-to-azure-quickstart)
 
+### Enhanced Protection Features
+[Azure Backup support for Azure Kubernetes Service](https://learn.microsoft.com/en-us/azure/backup/azure-kubernetes-service-backup-overview)
+
+[Multi-user authorization for Azure Backup](https://learn.microsoft.com/en-us/azure/backup/multi-user-authorization-concept)
+
+[Azure Backup Metrics and Monitoring](https://learn.microsoft.com/en-us/azure/backup/metrics-overview)
+
 ## M11 - Monitor
 ### Azure Monitor
 [Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/overview)
@@ -556,6 +621,15 @@ Azure 存储的“共享密钥”，也叫“存储帐户密钥”或“访问�
 [](https://github.com/Azure-Samples/application-insights-aspnet-sample-opentelemetry)
 
 [](https://github.com/Azure-Samples/applicationinsights-mern-todo)
+
+### Modern Observability Stack
+[Azure Monitor OpenTelemetry overview](https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-overview)
+
+[Azure Monitor workspace (for Prometheus)](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/azure-monitor-workspace-overview)
+
+[Container insights (AKS/Container Apps monitoring)](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-overview)
+
+[Azure Workbooks](https://learn.microsoft.com/en-us/azure/azure-monitor/visualize/workbooks-overview)
 
 ## Whiteboard
 ### Whiteboard
