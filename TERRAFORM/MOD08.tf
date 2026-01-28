@@ -37,8 +37,9 @@ resource "azurerm_bastion_host" "lab08" {
   sku                    = "Standard"
   file_copy_enabled      = true
   ip_connect_enabled     = true
-  shareable_link_enabled = true
-  tunneling_enabled      = true
+  shareable_link_enabled = false
+  tunneling_enabled      = false
+  kerberos_enabled       = true
 
   ip_configuration {
     name                 = "${local.lab08_name}-bastion-ipconfig-${local.random_str}"
@@ -112,3 +113,17 @@ resource "azurerm_virtual_machine_extension" "lab08script" {
   SETTINGS
   tags     = local.default_tags
 }
+
+# Assign "Virtual Machine Administrator Login" role to current user for Entra ID login
+resource "azurerm_role_assignment" "lab08_vm_admin" {
+  scope                = azurerm_windows_virtual_machine.lab08.id
+  role_definition_name = "Virtual Machine Administrator Login"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Alternative: Assign "Virtual Machine User Login" role for non-admin access
+# resource "azurerm_role_assignment" "lab08_vm_user" {
+#   scope                = azurerm_windows_virtual_machine.lab08.id
+#   role_definition_name = "Virtual Machine User Login"
+#   principal_id         = data.azurerm_client_config.current.object_id
+# }

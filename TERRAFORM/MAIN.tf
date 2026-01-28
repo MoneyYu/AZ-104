@@ -61,10 +61,8 @@ locals {
     environment     = local.group_name
     SecurityControl = "Ignore"
   }
-}
-
-data "http" "myip" {
-  url = "http://ipv4.icanhazip.com"
+  
+  myip = "1.2.3.4"  # 固定 IP 地址
 }
 
 data "azurerm_client_config" "current" {}

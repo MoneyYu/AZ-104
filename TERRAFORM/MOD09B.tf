@@ -13,16 +13,17 @@ resource "azurerm_container_registry" "lab09b" {
   }
 
   georeplications {
-    location                = "SouthEastAsia"
+    location                = "JapanWest"
     zone_redundancy_enabled = false
     tags                    = local.default_tags
   }
 
   georeplications {
-    location                = "JapanWest"
+    location                = "SouthEastAsia"
     zone_redundancy_enabled = false
     tags                    = local.default_tags
   }
+  
   tags = local.default_tags
 }
 
