@@ -46,6 +46,13 @@ resource "azurerm_bastion_host" "lab08" {
     subnet_id            = azurerm_subnet.lab08bastion.id
     public_ip_address_id = azurerm_public_ip.lab08.id
   }
+  
+  lifecycle {
+    ignore_changes = [
+      ip_configuration[0].subnet_id
+    ]
+  }
+  
   tags = local.default_tags
 }
 
