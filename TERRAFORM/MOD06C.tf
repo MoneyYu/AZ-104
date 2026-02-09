@@ -100,7 +100,35 @@ resource "azurerm_network_security_group" "lab06c" {
 }
 
 resource "azurerm_network_security_rule" "lab06c" {
-  name                        = "HTTP"
+  name                        = "AllowHTTPFromAppGW"
+  priority                    = 110
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "10.10.2.0/24"
+  destination_port_range      = "80"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab06c.name
+}
+
+# Subnet-level NSG association for backend subnet (shared with existing NSG)
+resource "azurerm_subnet_network_security_group_association" "lab06csub01" {
+  subnet_id                 = azurerm_subnet.lab06csub01.id
+  network_security_group_id = azurerm_network_security_group.lab06c.id
+}
+
+# App Gateway dedicated NSG for frontend subnet
+resource "azurerm_network_security_group" "lab06cagw" {
+  name                = "${local.lab06c_name}-agw-nsg-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
+
+resource "azurerm_network_security_rule" "lab06cagw_http" {
+  name                        = "AllowHTTP"
   priority                    = 110
   direction                   = "Inbound"
   access                      = "Allow"
@@ -110,7 +138,54 @@ resource "azurerm_network_security_rule" "lab06c" {
   destination_port_range      = "80"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.az104.name
-  network_security_group_name = azurerm_network_security_group.lab06c.name
+  network_security_group_name = azurerm_network_security_group.lab06cagw.name
+}
+
+resource "azurerm_network_security_rule" "lab06cagw_https" {
+  name                        = "AllowHTTPS"
+  priority                    = 120
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = "443"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab06cagw.name
+}
+
+resource "azurerm_network_security_rule" "lab06cagw_gwmgr" {
+  name                        = "AllowGatewayManager"
+  priority                    = 130
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "GatewayManager"
+  destination_port_range      = "65200-65535"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab06cagw.name
+}
+
+resource "azurerm_network_security_rule" "lab06cagw_lb" {
+  name                        = "AllowAzureLoadBalancer"
+  priority                    = 140
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefix       = "AzureLoadBalancer"
+  destination_port_range      = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab06cagw.name
+}
+
+resource "azurerm_subnet_network_security_group_association" "lab06csub02" {
+  subnet_id                 = azurerm_subnet.lab06csub02.id
+  network_security_group_id = azurerm_network_security_group.lab06cagw.id
 }
 
 resource "azurerm_network_interface" "lab06c01" {

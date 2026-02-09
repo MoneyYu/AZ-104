@@ -9,6 +9,12 @@ resource "azurerm_subnet" "lab08vmss" {
   address_prefixes     = ["10.10.3.0/24"]
 }
 
+# Subnet-level NSG association for VMSS subnet (shared with MOD08 NSG)
+resource "azurerm_subnet_network_security_group_association" "lab08vmss" {
+  subnet_id                 = azurerm_subnet.lab08vmss.id
+  network_security_group_id = azurerm_network_security_group.lab08.id
+}
+
 # Create a Load Balancer for VMSS
 resource "azurerm_public_ip" "lab08vmss" {
   name                = "${local.lab08_name}b-lb-pip-${local.random_str}"

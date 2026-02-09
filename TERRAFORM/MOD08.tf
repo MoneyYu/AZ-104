@@ -21,6 +21,160 @@ resource "azurerm_subnet" "lab08bastion" {
   address_prefixes     = ["10.10.2.0/24"]
 }
 
+# NSG for default subnet
+resource "azurerm_network_security_group" "lab08" {
+  name                = "${local.lab08_name}-nsg-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
+
+resource "azurerm_network_security_rule" "lab08_rdp" {
+  name                        = "AllowRDP"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = data.http.myip.response_body
+  destination_port_range      = "3389"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08.name
+}
+
+resource "azurerm_subnet_network_security_group_association" "lab08" {
+  subnet_id                 = azurerm_subnet.lab08.id
+  network_security_group_id = azurerm_network_security_group.lab08.id
+}
+
+# Bastion dedicated NSG with required rules
+resource "azurerm_network_security_group" "lab08bastion" {
+  name                = "${local.lab08_name}-bastion-nsg-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
+
+# Inbound rules for Bastion
+resource "azurerm_network_security_rule" "lab08bastion_inbound_https" {
+  name                        = "AllowHttpsInbound"
+  priority                    = 120
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "Internet"
+  destination_port_range      = "443"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+resource "azurerm_network_security_rule" "lab08bastion_inbound_gwmgr" {
+  name                        = "AllowGatewayManagerInbound"
+  priority                    = 130
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "GatewayManager"
+  destination_port_range      = "443"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+resource "azurerm_network_security_rule" "lab08bastion_inbound_lb" {
+  name                        = "AllowAzureLoadBalancerInbound"
+  priority                    = 140
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "AzureLoadBalancer"
+  destination_port_range      = "443"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+resource "azurerm_network_security_rule" "lab08bastion_inbound_host_comm" {
+  name                        = "AllowBastionHostCommunicationInbound"
+  priority                    = 150
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefix       = "VirtualNetwork"
+  destination_port_ranges     = ["8080", "5701"]
+  destination_address_prefix  = "VirtualNetwork"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+# Outbound rules for Bastion
+resource "azurerm_network_security_rule" "lab08bastion_outbound_ssh_rdp" {
+  name                        = "AllowSshRdpOutbound"
+  priority                    = 100
+  direction                   = "Outbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_ranges     = ["22", "3389"]
+  destination_address_prefix  = "VirtualNetwork"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+resource "azurerm_network_security_rule" "lab08bastion_outbound_azure" {
+  name                        = "AllowAzureCloudOutbound"
+  priority                    = 110
+  direction                   = "Outbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = "443"
+  destination_address_prefix  = "AzureCloud"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+resource "azurerm_network_security_rule" "lab08bastion_outbound_host_comm" {
+  name                        = "AllowBastionHostCommunicationOutbound"
+  priority                    = 120
+  direction                   = "Outbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefix       = "VirtualNetwork"
+  destination_port_ranges     = ["8080", "5701"]
+  destination_address_prefix  = "VirtualNetwork"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+resource "azurerm_network_security_rule" "lab08bastion_outbound_session" {
+  name                        = "AllowHttpOutbound"
+  priority                    = 130
+  direction                   = "Outbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = "80"
+  destination_address_prefix  = "Internet"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08bastion.name
+}
+
+resource "azurerm_subnet_network_security_group_association" "lab08bastion" {
+  subnet_id                 = azurerm_subnet.lab08bastion.id
+  network_security_group_id = azurerm_network_security_group.lab08bastion.id
+}
+
 resource "azurerm_public_ip" "lab08" {
   name                = "${local.lab08_name}-pip-${local.random_str}"
   location            = azurerm_resource_group.az104.location

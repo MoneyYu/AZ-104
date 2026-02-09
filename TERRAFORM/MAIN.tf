@@ -62,7 +62,13 @@ locals {
     SecurityControl = "Ignore"
   }
   
-  myip = "1.2.3.4"  # 固定 IP 地址
+  # myip = "1.2.3.4"  # 固定 IP 地址
+}
+
+data "http" "myip" {
+  url = "https://ipv4.icanhazip.com"
+
+  # use: data.http.myip.response_body
 }
 
 data "azurerm_client_config" "current" {}

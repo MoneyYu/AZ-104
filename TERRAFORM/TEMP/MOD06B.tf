@@ -82,6 +82,12 @@ resource "azurerm_network_security_rule" "lab06b" {
   network_security_group_name = azurerm_network_security_group.lab06b.name
 }
 
+# Subnet-level NSG association for default subnet (shared with existing NSG)
+resource "azurerm_subnet_network_security_group_association" "lab06b" {
+  subnet_id                 = azurerm_subnet.lab06b.id
+  network_security_group_id = azurerm_network_security_group.lab06b.id
+}
+
 resource "azurerm_network_interface" "lab06b01" {
   name                = "${local.lab06b_name}-nic-01-${local.random_str}"
   location            = azurerm_resource_group.az104.location
