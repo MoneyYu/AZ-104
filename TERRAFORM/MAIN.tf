@@ -54,6 +54,7 @@ locals {
   lab09d_name   = "lab09d"
   lab10_name    = "lab10"
   lab11_name    = "lab11"
+  lab11b_name   = "lab11b"
   user_name     = "demouser"
   user_password = "Azuredemo2020"
 
