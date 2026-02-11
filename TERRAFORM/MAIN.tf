@@ -101,9 +101,9 @@ resource "azurerm_resource_group" "az104" {
 }
 
 # Demo Resource Group
-resource "azurerm_resource_group" "demo" {
-  name     = "Demo${var.group_postfix}"
-  location = local.location
+# resource "azurerm_resource_group" "demo" {
+#   name     = "Demo${var.group_postfix}"
+#   location = local.location
 
-  tags = local.default_tags
-}
+#   tags = local.default_tags
+# }

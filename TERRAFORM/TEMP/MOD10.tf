@@ -5,9 +5,7 @@ resource "azurerm_recovery_services_vault" "lab10" {
   resource_group_name = azurerm_resource_group.az104.name
   sku = "Standard"
 
-  soft_delete {
-    state = "Disabled"
-  }
+  soft_delete_enabled = false
 
   tags = local.default_tags
 }

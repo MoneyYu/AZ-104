@@ -48,6 +48,32 @@ resource "azurerm_network_security_rule" "lab11b_http" {
   network_security_group_name = azurerm_network_security_group.lab11b.name
 }
 
+# =============================================================================
+# LB Outbound Rule — Required for Standard LB VMs to reach Internet (ASR needs this)
+# =============================================================================
+resource "azurerm_lb_nat_rule" "lab11b_outbound" {
+  # Use an outbound rule to allow VMs behind Standard LB to access the internet
+  # This is required for ASR Mobility Service extension installation
+  resource_group_name            = azurerm_resource_group.az104.name
+  loadbalancer_id                = azurerm_lb.lab11b.id
+  name                           = "outbound-rule"
+  protocol                       = "All"
+  frontend_port                  = 0
+  backend_port                   = 0
+  frontend_ip_configuration_name = "PublicIPAddress"
+}
+
+resource "azurerm_lb_outbound_rule" "lab11b" {
+  name                    = "outbound-rule"
+  loadbalancer_id         = azurerm_lb.lab11b.id
+  protocol                = "All"
+  backend_address_pool_id = azurerm_lb_backend_address_pool.lab11b.id
+
+  frontend_ip_configuration {
+    name = "PublicIPAddress"
+  }
+}
+
 resource "azurerm_subnet_network_security_group_association" "lab11b" {
   subnet_id                 = azurerm_subnet.lab11b.id
   network_security_group_id = azurerm_network_security_group.lab11b.id
@@ -330,9 +356,7 @@ resource "azurerm_recovery_services_vault" "lab11b" {
   resource_group_name = azurerm_resource_group.lab11b_dr.name
   sku = "Standard"
 
-  soft_delete {
-    state = "Disabled"
-  }
+  soft_delete_enabled = false
 
   tags = local.default_tags
 }
@@ -444,7 +468,7 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b01" {
   target_recovery_protection_container_id = azurerm_site_recovery_protection_container.lab11b_recovery.id
 
   managed_disk {
-    disk_id                    = data.azurerm_managed_disk.lab11b01_osdisk.id
+    disk_id                    = lower(data.azurerm_managed_disk.lab11b01_osdisk.id)
     staging_storage_account_id = azurerm_storage_account.lab11b_cache.id
     target_resource_group_id   = azurerm_resource_group.lab11b_dr.id
     target_disk_type           = "Premium_LRS"
@@ -455,6 +479,14 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b01" {
     source_network_interface_id                    = azurerm_network_interface.lab11b01.id
     target_subnet_name                             = azurerm_subnet.lab11b_dr.name
     recovery_load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lab11b_dr.id]
+  }
+
+  lifecycle {
+    ignore_changes = [
+      managed_disk,
+      network_interface,
+      target_virtual_machine_size,
+    ]
   }
 
   depends_on = [
@@ -478,7 +510,7 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b02" {
   target_recovery_protection_container_id = azurerm_site_recovery_protection_container.lab11b_recovery.id
 
   managed_disk {
-    disk_id                    = data.azurerm_managed_disk.lab11b02_osdisk.id
+    disk_id                    = lower(data.azurerm_managed_disk.lab11b02_osdisk.id)
     staging_storage_account_id = azurerm_storage_account.lab11b_cache.id
     target_resource_group_id   = azurerm_resource_group.lab11b_dr.id
     target_disk_type           = "Premium_LRS"
@@ -489,6 +521,14 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b02" {
     source_network_interface_id                    = azurerm_network_interface.lab11b02.id
     target_subnet_name                             = azurerm_subnet.lab11b_dr.name
     recovery_load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lab11b_dr.id]
+  }
+
+  lifecycle {
+    ignore_changes = [
+      managed_disk,
+      network_interface,
+      target_virtual_machine_size,
+    ]
   }
 
   depends_on = [
