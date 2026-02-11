@@ -48,32 +48,6 @@ resource "azurerm_network_security_rule" "lab11b_http" {
   network_security_group_name = azurerm_network_security_group.lab11b.name
 }
 
-# =============================================================================
-# LB Outbound Rule — Required for Standard LB VMs to reach Internet (ASR needs this)
-# =============================================================================
-resource "azurerm_lb_nat_rule" "lab11b_outbound" {
-  # Use an outbound rule to allow VMs behind Standard LB to access the internet
-  # This is required for ASR Mobility Service extension installation
-  resource_group_name            = azurerm_resource_group.az104.name
-  loadbalancer_id                = azurerm_lb.lab11b.id
-  name                           = "outbound-rule"
-  protocol                       = "All"
-  frontend_port                  = 0
-  backend_port                   = 0
-  frontend_ip_configuration_name = "PublicIPAddress"
-}
-
-resource "azurerm_lb_outbound_rule" "lab11b" {
-  name                    = "outbound-rule"
-  loadbalancer_id         = azurerm_lb.lab11b.id
-  protocol                = "All"
-  backend_address_pool_id = azurerm_lb_backend_address_pool.lab11b.id
-
-  frontend_ip_configuration {
-    name = "PublicIPAddress"
-  }
-}
-
 resource "azurerm_subnet_network_security_group_association" "lab11b" {
   subnet_id                 = azurerm_subnet.lab11b.id
   network_security_group_id = azurerm_network_security_group.lab11b.id
@@ -126,7 +100,7 @@ resource "azurerm_lb_rule" "lab11b" {
   frontend_ip_configuration_name = "PublicIPAddress"
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.lab11b.id]
   probe_id                       = azurerm_lb_probe.lab11b.id
-  disable_outbound_snat          = true
+  disable_outbound_snat          = false
 }
 
 # =============================================================================
@@ -332,7 +306,7 @@ resource "azurerm_lb_rule" "lab11b_dr" {
   frontend_ip_configuration_name = "PublicIPAddress"
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.lab11b_dr.id]
   probe_id                       = azurerm_lb_probe.lab11b_dr.id
-  disable_outbound_snat          = true
+  disable_outbound_snat          = false
 }
 
 # =============================================================================
