@@ -328,9 +328,11 @@ resource "azurerm_recovery_services_vault" "lab11b" {
   name                = "${local.lab11b_name}-vault-${local.random_str}"
   location            = azurerm_resource_group.lab11b_dr.location
   resource_group_name = azurerm_resource_group.lab11b_dr.name
-  sku                 = "Standard"
+  sku = "Standard"
 
-  soft_delete_enabled = false
+  soft_delete {
+    state = "Disabled"
+  }
 
   tags = local.default_tags
 }

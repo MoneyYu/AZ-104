@@ -246,10 +246,9 @@ resource "azurerm_storage_account" "lab05c" {
   name                            = "${local.lab05c_name}stor${local.random_str}"
   resource_group_name             = azurerm_resource_group.az104.name
   location                        = azurerm_resource_group.az104.location
-  account_tier                    = "Standard"
-  account_replication_type        = "LRS"
-  allow_nested_items_to_be_public = false
-  public_network_access_enabled   = false
+  account_tier                  = "Standard"
+  account_replication_type      = "LRS"
+  public_network_access_enabled = false
   tags                            = local.default_tags
 }
 

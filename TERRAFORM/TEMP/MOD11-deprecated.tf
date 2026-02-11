@@ -24,7 +24,7 @@ resource "azurerm_public_ip" "lab11" {
   name                = local.lab11_name_with_postfix
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-  allocation_method   = "Dynamic"
+  sku                 = "Standard"
   domain_name_label   = lower(local.lab11_name_with_postfix)
 
   tags = {

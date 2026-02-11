@@ -40,7 +40,7 @@ resource "azurerm_virtual_network_gateway" "lab05b" {
   vpn_type = "RouteBased"
 
   active_active = false
-  enable_bgp    = false
+  bgp_enabled   = false
   sku           = "VpnGw3"
 
   ip_configuration {

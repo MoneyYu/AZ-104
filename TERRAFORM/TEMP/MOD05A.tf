@@ -19,6 +19,7 @@ resource "azurerm_public_ip" "lab05a01" {
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
+  sku                 = "Standard"
   domain_name_label   = "${local.lab05a_name}-pip-01-${local.random_str}"
   tags                = local.default_tags
 }
@@ -125,6 +126,7 @@ resource "azurerm_public_ip" "lab05a02" {
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
+  sku                 = "Standard"
   domain_name_label   = "${local.lab05a_name}-pip-02-${local.random_str}"
   tags                = local.default_tags
 }
@@ -231,6 +233,7 @@ resource "azurerm_public_ip" "lab05a03" {
   location            = "eastasia"
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
+  sku                 = "Standard"
   domain_name_label   = "${local.lab05a_name}-pip-03-${local.random_str}"
   tags                = local.default_tags
 }

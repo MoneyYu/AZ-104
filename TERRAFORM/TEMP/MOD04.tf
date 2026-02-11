@@ -170,14 +170,16 @@ resource "azurerm_route_table" "lab04" {
   location                      = azurerm_resource_group.az104.location
   resource_group_name           = azurerm_resource_group.az104.name
   bgp_route_propagation_enabled = false
+  tags                          = local.default_tags
+}
 
-  route {
-    name                   = "fw-dg"
-    address_prefix         = "0.0.0.0/0"
-    next_hop_type          = "VirtualAppliance"
-    next_hop_in_ip_address = azurerm_firewall.lab04.ip_configuration[0].private_ip_address
-  }
-  tags = local.default_tags
+resource "azurerm_route" "lab04_fw_dg" {
+  name                   = "fw-dg"
+  resource_group_name    = azurerm_resource_group.az104.name
+  route_table_name       = azurerm_route_table.lab04.name
+  address_prefix         = "0.0.0.0/0"
+  next_hop_type          = "VirtualAppliance"
+  next_hop_in_ip_address = azurerm_firewall.lab04.ip_configuration[0].private_ip_address
 }
 
 resource "azurerm_subnet_route_table_association" "lab04" {
