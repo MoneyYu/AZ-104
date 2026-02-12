@@ -120,7 +120,52 @@ resource "azurerm_windows_virtual_machine" "lab11" {
   admin_username = local.user_name
   admin_password = local.user_passowrd
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   tags = {
     environment = local.group_name
   }
+}
+
+resource "azurerm_virtual_machine_extension" "lab11ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab11.id
+
+  tags = {
+    environment = local.group_name
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "lab11da" {
+  name                       = "DependencyAgentWindows"
+  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
+  type                       = "DependencyAgentWindows"
+  type_handler_version       = "9.10"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab11.id
+
+  settings = jsonencode({
+    enableAMA = "true"
+  })
+
+  tags = {
+    environment = local.group_name
+  }
+
+  depends_on = [azurerm_virtual_machine_extension.lab11ama]
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab11" {
+  name                    = "lab11-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab11.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab11"
 }

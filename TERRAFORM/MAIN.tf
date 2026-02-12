@@ -107,3 +107,73 @@ resource "azurerm_resource_group" "az104" {
 
 #   tags = local.default_tags
 # }
+
+# =============================================================================
+# VM Insights — Shared Monitoring Resources
+# =============================================================================
+resource "azurerm_log_analytics_workspace" "vminsights" {
+  name                = "law-vminsights-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+  tags                = local.default_tags
+}
+
+resource "azurerm_log_analytics_solution" "vminsights" {
+  solution_name         = "VMInsights"
+  location              = azurerm_resource_group.az104.location
+  resource_group_name   = azurerm_resource_group.az104.name
+  workspace_resource_id = azurerm_log_analytics_workspace.vminsights.id
+  workspace_name        = azurerm_log_analytics_workspace.vminsights.name
+
+  plan {
+    publisher = "Microsoft"
+    product   = "OMSGallery/VMInsights"
+  }
+}
+
+resource "azurerm_monitor_data_collection_rule" "vminsights" {
+  name                = "MSVMI-law-vminsights-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  kind                = "Windows"
+
+  destinations {
+    log_analytics {
+      workspace_resource_id = azurerm_log_analytics_workspace.vminsights.id
+      name                  = "vminsights-dest-la"
+    }
+  }
+
+  data_flow {
+    streams      = ["Microsoft-InsightsMetrics"]
+    destinations = ["vminsights-dest-la"]
+  }
+
+  data_flow {
+    streams      = ["Microsoft-ServiceMap"]
+    destinations = ["vminsights-dest-la"]
+  }
+
+  data_sources {
+    performance_counter {
+      streams                       = ["Microsoft-InsightsMetrics"]
+      sampling_frequency_in_seconds = 60
+      counter_specifiers = [
+        "\\VmInsights\\DetailedMetrics"
+      ]
+      name = "VMInsightsPerfCounters"
+    }
+
+    extension {
+      streams        = ["Microsoft-ServiceMap"]
+      extension_name = "DependencyAgent"
+      name           = "DependencyAgentDataSource"
+    }
+  }
+
+  tags = local.default_tags
+
+  depends_on = [azurerm_log_analytics_solution.vminsights]
+}

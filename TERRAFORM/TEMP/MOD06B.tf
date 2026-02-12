@@ -135,7 +135,48 @@ resource "azurerm_windows_virtual_machine" "lab06b01" {
   computer_name  = "${local.lab06b_name}-vm01-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_password
-  tags           = local.default_tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab06b01ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b01.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab06b01da" {
+  name                       = "DependencyAgentWindows"
+  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
+  type                       = "DependencyAgentWindows"
+  type_handler_version       = "9.10"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b01.id
+
+  settings = jsonencode({
+    enableAMA = "true"
+  })
+
+  tags = local.default_tags
+
+  depends_on = [azurerm_virtual_machine_extension.lab06b01ama]
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06b01" {
+  name                    = "lab06b01-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06b01.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab06b01"
 }
 
 resource "azurerm_virtual_machine_extension" "lab06b01script" {
@@ -201,7 +242,48 @@ resource "azurerm_windows_virtual_machine" "lab06b02" {
   computer_name  = "${local.lab06b_name}-vm02-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_password
-  tags           = local.default_tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab06b02ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b02.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab06b02da" {
+  name                       = "DependencyAgentWindows"
+  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
+  type                       = "DependencyAgentWindows"
+  type_handler_version       = "9.10"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b02.id
+
+  settings = jsonencode({
+    enableAMA = "true"
+  })
+
+  tags = local.default_tags
+
+  depends_on = [azurerm_virtual_machine_extension.lab06b02ama]
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06b02" {
+  name                    = "lab06b02-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06b02.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab06b02"
 }
 
 resource "azurerm_virtual_machine_extension" "lab06b02script" {

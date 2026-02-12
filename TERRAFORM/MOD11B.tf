@@ -153,7 +153,48 @@ resource "azurerm_windows_virtual_machine" "lab11b01" {
   computer_name  = "${local.lab11b_name}-vm01-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_password
-  tags           = local.default_tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab11b01ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab11b01.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab11b01da" {
+  name                       = "DependencyAgentWindows"
+  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
+  type                       = "DependencyAgentWindows"
+  type_handler_version       = "9.10"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab11b01.id
+
+  settings = jsonencode({
+    enableAMA = "true"
+  })
+
+  tags = local.default_tags
+
+  depends_on = [azurerm_virtual_machine_extension.lab11b01ama]
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab11b01" {
+  name                    = "lab11b01-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab11b01.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab11b01"
 }
 
 resource "azurerm_virtual_machine_extension" "lab11b01script" {
@@ -222,7 +263,48 @@ resource "azurerm_windows_virtual_machine" "lab11b02" {
   computer_name  = "${local.lab11b_name}-vm02-${local.random_str}"
   admin_username = local.user_name
   admin_password = local.user_password
-  tags           = local.default_tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab11b02ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab11b02.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab11b02da" {
+  name                       = "DependencyAgentWindows"
+  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
+  type                       = "DependencyAgentWindows"
+  type_handler_version       = "9.10"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab11b02.id
+
+  settings = jsonencode({
+    enableAMA = "true"
+  })
+
+  tags = local.default_tags
+
+  depends_on = [azurerm_virtual_machine_extension.lab11b02ama]
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab11b02" {
+  name                    = "lab11b02-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab11b02.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab11b02"
 }
 
 resource "azurerm_virtual_machine_extension" "lab11b02script" {
@@ -467,6 +549,8 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b01" {
     azurerm_site_recovery_protection_container_mapping.lab11b,
     azurerm_site_recovery_network_mapping.lab11b,
     azurerm_virtual_machine_extension.lab11b01script,
+    azurerm_virtual_machine_extension.lab11b01ama,
+    azurerm_virtual_machine_extension.lab11b01da,
   ]
 }
 
@@ -509,6 +593,8 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b02" {
     azurerm_site_recovery_protection_container_mapping.lab11b,
     azurerm_site_recovery_network_mapping.lab11b,
     azurerm_virtual_machine_extension.lab11b02script,
+    azurerm_virtual_machine_extension.lab11b02ama,
+    azurerm_virtual_machine_extension.lab11b02da,
     azurerm_site_recovery_replicated_vm.lab11b01,
   ]
 }

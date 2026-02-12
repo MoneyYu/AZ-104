@@ -113,7 +113,47 @@ resource "azurerm_windows_virtual_machine_scale_set" "lab08vmss" {
     }
   }
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   tags = local.default_tags
+}
+
+# Azure Monitor Agent for VMSS
+resource "azurerm_virtual_machine_scale_set_extension" "lab08vmss_ama" {
+  name                         = "AzureMonitorWindowsAgent"
+  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
+  publisher                    = "Microsoft.Azure.Monitor"
+  type                         = "AzureMonitorWindowsAgent"
+  type_handler_version         = "1.0"
+  automatic_upgrade_enabled    = true
+  auto_upgrade_minor_version   = true
+}
+
+# Dependency Agent for VMSS
+resource "azurerm_virtual_machine_scale_set_extension" "lab08vmss_da" {
+  name                         = "DependencyAgentWindows"
+  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
+  publisher                    = "Microsoft.Azure.Monitoring.DependencyAgent"
+  type                         = "DependencyAgentWindows"
+  type_handler_version         = "9.10"
+  automatic_upgrade_enabled    = true
+  auto_upgrade_minor_version   = true
+
+  settings = jsonencode({
+    enableAMA = "true"
+  })
+
+  depends_on = [azurerm_virtual_machine_scale_set_extension.lab08vmss_ama]
+}
+
+# VM Insights DCR association for VMSS
+resource "azurerm_monitor_data_collection_rule_association" "lab08vmss" {
+  name                    = "lab08vmss-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab08vmss"
 }
 
 # Install IIS on VMSS instances
