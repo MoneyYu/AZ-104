@@ -118,6 +118,21 @@ resource "azurerm_role_assignment" "lab09c_grafana_data_reader" {
   skip_service_principal_aad_check = true
 }
 
+# Grafana RBAC — 讀取 VM Insights Log Analytics Workspace
+resource "azurerm_role_assignment" "grafana_vminsights_reader" {
+  principal_id                     = azurerm_dashboard_grafana.lab09c.identity[0].principal_id
+  role_definition_name             = "Monitoring Reader"
+  scope                            = azurerm_log_analytics_workspace.vminsights.id
+  skip_service_principal_aad_check = true
+}
+
+resource "azurerm_role_assignment" "grafana_vminsights_la_reader" {
+  principal_id                     = azurerm_dashboard_grafana.lab09c.identity[0].principal_id
+  role_definition_name             = "Log Analytics Reader"
+  scope                            = azurerm_log_analytics_workspace.vminsights.id
+  skip_service_principal_aad_check = true
+}
+
 # =============================================================================
 # Diagnostic Setting — AKS 控制平面所有日誌 + 平台指標
 # =============================================================================
