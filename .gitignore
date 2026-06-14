@@ -32,3 +32,5 @@ override.tf.json
 .terraformrc
 terraform.rc
 .terraform.lock.hcl
+# Microsoft AZ-104T00 courseware (IRM/DRM-protected) - do not publish
+PPT/
