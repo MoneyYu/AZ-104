@@ -123,6 +123,10 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [FinOps on Azure](https://learn.microsoft.com/en-us/cloud-computing/finops/)
 
+[Create and manage Azure budgets](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/tutorial-acm-create-budgets)
+
+[Azure Advisor overview](https://learn.microsoft.com/en-us/azure/advisor/advisor-overview)
+
 ### Monitoring & Activity
 [Azure Activity Log](https://learn.microsoft.com/en-us/azure/azure-monitor/platform/activity-log)
 
@@ -132,6 +136,10 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 [Management group design recommendations](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-management-groups)
 
 [Cloud Adoption Framework - Governance](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/)
+
+[Lock resources to prevent unexpected changes](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/lock-resources)
+
+[Apply tags to organize Azure resources](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-resources)
 
 ### Azure Policy
 [What is Azure Policy? ](https://learn.microsoft.com/en-us/azure/governance/policy/overview)
@@ -256,6 +264,9 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 [Reserved IP addresses in subnets](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets)
 
 [What is IP address 168.63.129.16?](https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16)
+
+### Routing
+[Virtual network traffic routing (UDR / route tables)](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview)
 
 ### DDoS Protection
 
@@ -450,6 +461,11 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Prevent Shared Key authorization for an Azure Storage account](https://learn.microsoft.com/en-us/azure/storage/common/shared-key-authorization-prevent)
 
+### Storage Security
+[Grant limited access with shared access signatures (SAS)](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview)
+
+[Define a stored access policy](https://learn.microsoft.com/en-us/rest/api/storageservices/define-stored-access-policy)
+
 ### Advanced Storage Features
 [Soft delete for blob containers (考试重点)](https://learn.microsoft.com/en-us/azure/storage/blobs/soft-delete-container-overview)
 
@@ -460,6 +476,12 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 [Azure Blob Storage lifecycle management policies](https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-configure)
 
 [Immutable storage for blob data](https://learn.microsoft.com/en-us/azure/storage/blobs/immutable-storage-overview)
+
+[Blob versioning](https://learn.microsoft.com/en-us/azure/storage/blobs/versioning-overview)
+
+[Share snapshots for Azure Files](https://learn.microsoft.com/en-us/azure/storage/files/storage-snapshots-files)
+
+[Copy or move data with AzCopy](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10)
 
 ## M08 - VM
 ### Azure VM
@@ -480,6 +502,10 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 [FAQs for Azure IaaS VM disks and managed and unmanaged premium disks](https://learn.microsoft.com/en-us/azure/virtual-machines/faq-for-disks)
 
 [How to expand virtual hard disks attached to a Windows virtual machine](https://learn.microsoft.com/en-us/azure/virtual-machines/windows/expand-disks)
+
+[Azure Disk Encryption overview](https://learn.microsoft.com/en-us/azure/virtual-machines/disk-encryption-overview)
+
+[Enable end-to-end encryption using encryption at host](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-enable-host-based-encryption-portal)
 
 [Azure virtual machine extensions and features](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/overview)
 
@@ -533,9 +559,15 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [App Service managed certificate](https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-certificate?tabs=apex#create-a-free-managed-certificate)
 
+[Map an existing custom DNS name to App Service](https://learn.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-custom-domain)
+
+[Secure a custom DNS name with a TLS/SSL binding](https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-bindings)
+
 [Frontdoor](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview)
 
 [Hybrid Connection](https://learn.microsoft.com/en-us/azure/app-service/app-service-hybrid-connections)
+
+[Back up and restore your app in App Service](https://learn.microsoft.com/en-us/azure/app-service/manage-backup)
 
 [Scaling](https://learn.microsoft.com/en-us/azure/app-service/manage-scale-up)
 
@@ -656,6 +688,8 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [What is Azure Network Watcher?](https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-overview)
 
+[Monitor network communication with Connection Monitor](https://learn.microsoft.com/en-us/azure/network-watcher/connection-monitor-overview)
+
 [Monitoring your storage service with Azure Monitor Storage insights](https://learn.microsoft.com/en-us/azure/storage/common/storage-insights-overview)
 
 [Use the Map feature of VM insights to understand application components](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vminsights-maps)
@@ -716,97 +750,177 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 # AZ-104 · Microsoft Azure Administrator
 
 ## M01 - Microsoft Entra ID
+
 ### Identity
+
 - [Entra ID vs AD](https://learn.microsoft.com/en-us/entra/fundamentals/compare)
+
 - [What is Microsoft Entra?](https://learn.microsoft.com/en-us/entra/fundamentals/what-is-entra)
+
 - Users / Groups / Licenses
+
 - External Identities
+
 ### Access
+
 - [Roles & RBAC](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference)
+
 - [Custom Roles](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/custom-overview)
+
 - [Conditional Access](https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview)
+
 - [SSPR](https://learn.microsoft.com/en-us/entra/identity/authentication/tutorial-enable-sspr)
+
 ### Hybrid
+
 - [Entra Connect](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-roadmap)
+
 - [Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/overview)
+
 - [Administrative Units](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/administrative-units)
 
 ## M02 - Compliance
+
 - [Availability Zones](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview)
+
 - [Management Groups](https://learn.microsoft.com/en-us/azure/governance/management-groups/overview)
+
 - [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview)
+
 - [RBAC built-in roles](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles)
+
 - [Cost Management (Reservations)](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/save-compute-costs-reservations)
-- Resource Locks / Tags
+
+- [Resource Locks](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/lock-resources)
+
+- [Tags](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-resources)
 
 ## M03 - Administration
+
 - [Cloud Shell](https://learn.microsoft.com/en-us/azure/cloud-shell/features)
+
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/)
+
 - [Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/)
+
 - [ARM templates](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview)
+
 - [Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview)
+
 - [Template Specs](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-specs)
+
 - [Deployment Stacks](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-stacks)
 
 ## M04 - Virtual Network
+
 - [VNet & Subnets](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview)
+
 - [NSG / ASG](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview)
+
+- [User-defined Routes](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview)
+
 - [Azure Firewall](https://learn.microsoft.com/en-us/azure/firewall/overview)
+
 - [DDoS Protection](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview)
+
 - [Azure DNS](https://learn.microsoft.com/en-us/azure/dns/dns-overview)
+
 - [Private DNS](https://learn.microsoft.com/en-us/azure/dns/private-dns-overview)
+
 - [DNS Private Resolver](https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview)
 
 ## M05 - Intersite Connectivity
+
 - [VNet Peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview)
+
 - [VPN Gateway](https://learn.microsoft.com/en-us/azure/vpn-gateway/about-gateway-skus)
+
 - [ExpressRoute](https://learn.microsoft.com/en-us/azure/expressroute/expressroute-introduction)
+
 - [Hub-Spoke](https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke)
+
 - [Virtual WAN](https://learn.microsoft.com/en-us/azure/virtual-wan/virtual-wan-about)
 
 ## M06 - Network Traffic Management
+
 - [Service Endpoints](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview)
+
 - [Private Link](https://learn.microsoft.com/en-us/azure/private-link/private-link-overview)
+
 - [Load Balancer](https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/load-balancing-overview)
+
 - [Application Gateway](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant)
+
 - [Traffic Manager](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods)
+
 - [Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview)
 
 ## M07 - Storage
+
 - [Account Types](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview)
+
 - [Redundancy](https://learn.microsoft.com/en-us/azure/storage/common/storage-redundancy)
+
 - [Access Tiers](https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview)
+
 - [Lifecycle Management](https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview)
+
 - [Soft Delete](https://learn.microsoft.com/en-us/azure/storage/blobs/soft-delete-blob-overview)
+
 - [Object Replication](https://learn.microsoft.com/en-us/azure/storage/blobs/object-replication-overview)
+
+- [SAS / Stored Access Policy](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview)
+
 - [Entra-based Auth](https://learn.microsoft.com/en-us/azure/storage/common/shared-key-authorization-prevent)
 
 ## M08 - VM
+
 - [VM Sizes](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/overview)
+
 - [Availability Sets / Zones](https://learn.microsoft.com/en-us/azure/virtual-machines/availability)
+
 - [Managed Disks](https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview)
+
+- [Disk Encryption](https://learn.microsoft.com/en-us/azure/virtual-machines/disk-encryption-overview)
+
 - [VMSS](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview)
+
 - [Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-overview)
+
 - [Trusted Launch](https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch)
 
 ## M09 - Platform Service Computing
+
 - [App Service (Slots)](https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots)
+
 - [Container Registry (ACR)](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-skus)
+
 - [Container Instances (ACI)](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-container-groups)
+
 - [Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/overview)
+
 - [AKS](https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts)
 
 ## M10 - Backup
+
 - [Azure Backup](https://learn.microsoft.com/en-us/azure/backup/backup-overview)
+
 - [Recovery Services Vault](https://learn.microsoft.com/en-us/azure/backup/backup-azure-recovery-services-vault-overview)
+
 - [Backup Vault](https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview)
+
 - [Site Recovery](https://learn.microsoft.com/en-us/azure/site-recovery/site-recovery-overview)
 
 ## M11 - Monitor
+
 - [Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/overview)
+
 - [Log Analytics](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-tutorial)
+
 - [KQL](https://learn.microsoft.com/en-us/kusto/query/?view=azure-data-explorer&preserve-view=true)
+
 - [Alerts & Action Groups](https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview)
+
 - [Network Watcher](https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-overview)
 ```
 
