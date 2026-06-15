@@ -619,11 +619,7 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Deploy to Azure Container Apps using GitHub Actions](https://learn.microsoft.com/en-us/azure/container-apps/github-actions)
 
-**Container Apps vs AKS Decision Guide:**
-- Use Container Apps for:  Serverless microservices, event-driven apps, APIs, background jobs
-- Use AKS for: Complex stateful apps, custom Kubernetes configurations, CNCF ecosystem tools
-
-[ACA vs AKS comparison (2026)](https://www.site24x7.com/learn/azure-aca-vs-aks.html)
+[Choose an Azure container service (ACA vs AKS decision guide)](https://learn.microsoft.com/en-us/azure/architecture/guide/choose-azure-container-service)
 
 ### Azure Kubernets Service
 [Kubernetes core concepts for Azure Kubernetes Service](https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts)
