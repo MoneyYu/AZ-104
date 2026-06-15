@@ -966,8 +966,3 @@ SVG: [exam.svg](https://mttcontent.yu.money/common/exam.svg)
 - Money Yu
     - Mail: [Money.Yu@microsoft.com](mailto:Money.Yu@microsoft.com)
     - LinkedIn: [@abc12207](https://www.linkedin.com/in/abc12207/)
-
-## Else
-[Azure for GCP Professionals](https://learn.microsoft.com/en-us/azure/architecture/gcp-professional/)
-
-[Azure for AWS Professionals](https://learn.microsoft.com/en-us/azure/architecture/aws-professional/)
