@@ -29,6 +29,10 @@ resource "azurerm_public_ip" "lab06c" {
   sku                 = "Standard"
   domain_name_label   = "${local.lab06c_name}-pip-${local.random_str}"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_application_gateway" "lab06c" {

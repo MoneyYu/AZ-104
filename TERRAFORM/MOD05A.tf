@@ -22,6 +22,10 @@ resource "azurerm_public_ip" "lab05a01" {
   sku                 = "Standard"
   domain_name_label   = "${local.lab05a_name}-pip-01-${local.random_str}"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_network_security_group" "lab05a01" {
@@ -170,6 +174,10 @@ resource "azurerm_public_ip" "lab05a02" {
   sku                 = "Standard"
   domain_name_label   = "${local.lab05a_name}-pip-02-${local.random_str}"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_network_security_group" "lab05a02" {
@@ -318,6 +326,10 @@ resource "azurerm_public_ip" "lab05a03" {
   sku                 = "Standard"
   domain_name_label   = "${local.lab05a_name}-pip-03-${local.random_str}"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_network_security_group" "lab05a03" {

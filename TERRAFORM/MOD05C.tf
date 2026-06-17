@@ -1,4 +1,4 @@
-## LAB-8-VM
+## LAB-05C-PRIVATE-ENDPOINT
 resource "azurerm_virtual_network" "lab05c" {
   name                = "${local.lab05c_name}-vnet-${local.random_str}"
   address_space       = ["10.10.0.0/16"]
@@ -167,6 +167,10 @@ resource "azurerm_public_ip" "lab05c" {
   allocation_method   = "Static"
   sku                 = "Standard"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_bastion_host" "lab05c" {
@@ -284,13 +288,30 @@ resource "azurerm_virtual_machine_extension" "lab05c" {
 }
 
 resource "azurerm_storage_account" "lab05c" {
-  name                            = "${local.lab05c_name}stor${local.random_str}"
-  resource_group_name             = azurerm_resource_group.az104.name
-  location                        = azurerm_resource_group.az104.location
+  name                          = "${local.lab05c_name}stor${local.random_str}"
+  resource_group_name           = azurerm_resource_group.az104.name
+  location                      = azurerm_resource_group.az104.location
   account_tier                  = "Standard"
   account_replication_type      = "LRS"
   public_network_access_enabled = false
-  tags                            = local.default_tags
+  tags                          = local.default_tags
+}
+
+# Private DNS zone for the storage blob private endpoint.
+# The name MUST be exactly "privatelink.blob.core.windows.net" so the storage
+# FQDN (CNAME -> *.privatelink.blob.core.windows.net) resolves to the PE private IP.
+resource "azurerm_private_dns_zone" "lab05c" {
+  name                = "privatelink.blob.core.windows.net"
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "lab05c" {
+  name                  = "${local.lab05c_name}-blob-zone-link-${local.random_str}"
+  resource_group_name   = azurerm_resource_group.az104.name
+  private_dns_zone_name = azurerm_private_dns_zone.lab05c.name
+  virtual_network_id    = azurerm_virtual_network.lab05c.id
+  tags                  = local.default_tags
 }
 
 resource "azurerm_private_endpoint" "lab05c" {
@@ -305,10 +326,12 @@ resource "azurerm_private_endpoint" "lab05c" {
     private_connection_resource_id = azurerm_storage_account.lab05c.id
     subresource_names              = ["blob"]
   }
-  tags = local.default_tags
+  # Auto-creates the A record (storageaccount -> PE private IP) in the zone above,
+  # so VM nslookup resolves the storage FQDN to the private IP without Azure Policy.
+  private_dns_zone_group {
+    name                 = "default"
+    private_dns_zone_ids = [azurerm_private_dns_zone.lab05c.id]
+  }
 
-  # Should be deployed by Azure policy
-  # lifecycle {
-  #   ignore_changes = [private_dns_zone_group]
-  # }
+  tags = local.default_tags
 }

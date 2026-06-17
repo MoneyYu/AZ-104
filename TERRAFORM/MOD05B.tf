@@ -29,6 +29,10 @@ resource "azurerm_public_ip" "lab05b" {
   sku                 = "Standard"
   domain_name_label   = "${local.lab05b_name}-pip-${local.random_str}"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_virtual_network_gateway" "lab05b" {
@@ -41,7 +45,7 @@ resource "azurerm_virtual_network_gateway" "lab05b" {
 
   active_active = false
   bgp_enabled   = false
-  sku           = "VpnGw3"
+  sku           = "VpnGw3AZ"
 
   ip_configuration {
     name                          = "${local.lab05b_name}-vnetgw-ipconfig-${local.random_str}"
