@@ -36,7 +36,7 @@ resource "azurerm_network_security_rule" "lab08_rdp" {
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  source_address_prefix       = data.http.myip.response_body
+  source_address_prefix       = chomp(data.http.myip.response_body)
   destination_port_range      = "3389"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.az104.name
@@ -182,6 +182,10 @@ resource "azurerm_public_ip" "lab08" {
   allocation_method   = "Static"
   sku                 = "Standard"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_bastion_host" "lab08" {
@@ -200,13 +204,13 @@ resource "azurerm_bastion_host" "lab08" {
     subnet_id            = azurerm_subnet.lab08bastion.id
     public_ip_address_id = azurerm_public_ip.lab08.id
   }
-  
+
   lifecycle {
     ignore_changes = [
       ip_configuration[0].subnet_id
     ]
   }
-  
+
   tags = local.default_tags
 }
 

@@ -23,6 +23,10 @@ resource "azurerm_public_ip" "lab08vmss" {
   allocation_method   = "Static"
   sku                 = "Standard"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_lb" "lab08vmss" {
@@ -77,15 +81,15 @@ resource "azurerm_lb_outbound_rule" "lab08vmss" {
 
 # Create Virtual Machine Scale Set
 resource "azurerm_windows_virtual_machine_scale_set" "lab08vmss" {
-  name                = "${local.lab08_name}b-vmss-${local.random_str}"
-  location            = azurerm_resource_group.az104.location
-  resource_group_name = azurerm_resource_group.az104.name
-  sku                 = local.vm_size
-  instances           = 2
-  admin_username      = local.user_name
-  admin_password      = local.user_password
+  name                 = "${local.lab08_name}b-vmss-${local.random_str}"
+  location             = azurerm_resource_group.az104.location
+  resource_group_name  = azurerm_resource_group.az104.name
+  sku                  = local.vm_size
+  instances            = 2
+  admin_username       = local.user_name
+  admin_password       = local.user_password
   computer_name_prefix = "vmss"
-  
+
   upgrade_mode = "Automatic"
 
   source_image_reference {

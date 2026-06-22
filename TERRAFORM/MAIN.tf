@@ -37,6 +37,7 @@ locals {
   lab02_name    = "lab02"
   lab03_name    = "lab03"
   lab04_name    = "lab04"
+  lab04b_name   = "lab04b"
   lab05a_name   = "lab05a"
   lab05b_name   = "lab05b"
   lab05c_name   = "lab05c"
@@ -62,7 +63,7 @@ locals {
     environment     = local.group_name
     SecurityControl = "Ignore"
   }
-  
+
   # myip = "1.2.3.4"  # 固定 IP 地址
 }
 

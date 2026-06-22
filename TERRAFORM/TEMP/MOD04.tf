@@ -197,21 +197,6 @@ resource "azurerm_dns_zone" "lab04" {
   tags                = local.default_tags
 }
 
-resource "azurerm_private_dns_zone" "lab04" {
-  name                = "${local.lab04_name}-private-dns-${local.random_str}.local"
-  resource_group_name = azurerm_resource_group.az104.name
-  tags                = local.default_tags
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "lab04" {
-  name                  = "${local.lab04_name}-zone-link-${local.random_str}"
-  resource_group_name   = azurerm_resource_group.az104.name
-  private_dns_zone_name = azurerm_private_dns_zone.lab04.name
-  virtual_network_id    = azurerm_virtual_network.lab04.id
-  registration_enabled  = true
-  tags                  = local.default_tags
-}
-
 resource "azurerm_network_interface" "lab04" {
   name                = "${local.lab04_name}-nic-${local.random_str}"
   location            = azurerm_resource_group.az104.location

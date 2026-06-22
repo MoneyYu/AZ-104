@@ -89,7 +89,7 @@ resource "azurerm_dashboard_grafana" "lab09c" {
   name                  = "${local.lab09c_name}-grafana-${local.random_str}"
   location              = azurerm_resource_group.az104.location
   resource_group_name   = azurerm_resource_group.az104.name
-  grafana_major_version = 11
+  grafana_major_version = 12
   sku                   = "Standard"
 
   identity {
