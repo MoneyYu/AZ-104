@@ -354,7 +354,7 @@ resource "azurerm_subnet" "lab11b_dr" {
 # 參考:https://learn.microsoft.com/azure/site-recovery/site-recovery-error-handling
 # =============================================================================
 resource "azurerm_lb" "lab11b_dr" {
-  name                = "${local.lab11b_name}-dr-lb-${local.random_str}"
+  name                = "${local.lab11b_name}-dr-ilb-${local.random_str}"
   location            = azurerm_resource_group.lab11b_dr.location
   resource_group_name = azurerm_resource_group.lab11b_dr.name
   sku                 = "Standard"
