@@ -27,10 +27,10 @@ resource "azurerm_monitor_workspace" "lab09c" {
 # =============================================================================
 
 resource "azurerm_kubernetes_cluster" "lab09c" {
-  name                = "${local.lab09b_name}-aks-${local.random_str}"
+  name                = "${local.lab09c_name}-aks-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
-  dns_prefix          = "${local.lab09b_name}-aks-${local.random_str}"
+  dns_prefix          = "${local.lab09c_name}-aks-${local.random_str}"
 
   automatic_upgrade_channel = "stable"
 

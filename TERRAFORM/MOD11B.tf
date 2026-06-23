@@ -410,9 +410,7 @@ resource "azurerm_recovery_services_vault" "lab11b" {
   name                = "${local.lab11b_name}-vault-${local.random_str}"
   location            = azurerm_resource_group.lab11b_dr.location
   resource_group_name = azurerm_resource_group.lab11b_dr.name
-  sku = "Standard"
-
-  soft_delete_enabled = false
+  sku                 = "Standard"
 
   tags = local.default_tags
 }
@@ -532,8 +530,8 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b01" {
   }
 
   network_interface {
-    source_network_interface_id                    = azurerm_network_interface.lab11b01.id
-    target_subnet_name                             = azurerm_subnet.lab11b_dr.name
+    source_network_interface_id                     = azurerm_network_interface.lab11b01.id
+    target_subnet_name                              = azurerm_subnet.lab11b_dr.name
     recovery_load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lab11b_dr.id]
   }
 
@@ -576,8 +574,8 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b02" {
   }
 
   network_interface {
-    source_network_interface_id                    = azurerm_network_interface.lab11b02.id
-    target_subnet_name                             = azurerm_subnet.lab11b_dr.name
+    source_network_interface_id                     = azurerm_network_interface.lab11b02.id
+    target_subnet_name                              = azurerm_subnet.lab11b_dr.name
     recovery_load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lab11b_dr.id]
   }
 
