@@ -64,6 +64,10 @@ resource "azurerm_public_ip" "lab11b" {
   sku                 = "Standard"
   domain_name_label   = "${local.lab11b_name}-pip-${local.random_str}"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_lb" "lab11b" {
@@ -352,6 +356,10 @@ resource "azurerm_public_ip" "lab11b_dr" {
   sku                 = "Standard"
   domain_name_label   = "${local.lab11b_name}-dr-pip-${local.random_str}"
   tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_lb" "lab11b_dr" {
