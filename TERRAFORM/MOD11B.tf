@@ -346,22 +346,13 @@ resource "azurerm_subnet" "lab11b_dr" {
 }
 
 # =============================================================================
-# DR Load Balancer (Japan West) — Empty backend pool, used after failover
+# DR Load Balancer (Japan West) — Internal (private) Load Balancer
+# 複寫 VM 失容後會自動加入此後端集區。Azure Site Recovery 僅支援「內部
+# 負載平衡器」作為 failover 目標；使用公用 LB 會回報錯誤 150276
+# (The public load balancer being used is unsupported)。故此處改為 internal LB,
+# 並移除原本的公用 IP。
+# 參考:https://learn.microsoft.com/azure/site-recovery/site-recovery-error-handling
 # =============================================================================
-resource "azurerm_public_ip" "lab11b_dr" {
-  name                = "${local.lab11b_name}-dr-pip-${local.random_str}"
-  location            = azurerm_resource_group.lab11b_dr.location
-  resource_group_name = azurerm_resource_group.lab11b_dr.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  domain_name_label   = "${local.lab11b_name}-dr-pip-${local.random_str}"
-  tags                = local.default_tags
-
-  lifecycle {
-    ignore_changes = [ip_tags]
-  }
-}
-
 resource "azurerm_lb" "lab11b_dr" {
   name                = "${local.lab11b_name}-dr-lb-${local.random_str}"
   location            = azurerm_resource_group.lab11b_dr.location
@@ -369,8 +360,9 @@ resource "azurerm_lb" "lab11b_dr" {
   sku                 = "Standard"
 
   frontend_ip_configuration {
-    name                 = "PublicIPAddress"
-    public_ip_address_id = azurerm_public_ip.lab11b_dr.id
+    name                          = "PrivateIPAddress"
+    subnet_id                     = azurerm_subnet.lab11b_dr.id
+    private_ip_address_allocation = "Dynamic"
   }
   tags = local.default_tags
 }
@@ -393,7 +385,7 @@ resource "azurerm_lb_rule" "lab11b_dr" {
   protocol                       = "Tcp"
   frontend_port                  = 80
   backend_port                   = 80
-  frontend_ip_configuration_name = "PublicIPAddress"
+  frontend_ip_configuration_name = "PrivateIPAddress"
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.lab11b_dr.id]
   probe_id                       = azurerm_lb_probe.lab11b_dr.id
   disable_outbound_snat          = false
@@ -625,7 +617,7 @@ resource "azurerm_site_recovery_replication_recovery_plan" "lab11b" {
       type                      = "ManualActionDetails"
       fail_over_directions      = ["PrimaryToRecovery"]
       fail_over_types           = ["TestFailover", "UnplannedFailover"]
-      manual_action_instruction = "VMs are automatically added to DR LB backend pool. Verify IIS is accessible via DR LB public IP: http://${local.lab11b_name}-dr-pip-${local.random_str}.japanwest.cloudapp.azure.com"
+      manual_action_instruction = "VMs are automatically added to the DR internal LB backend pool. Verify IIS is reachable on the DR internal LB private IP from within the ${local.lab11b_name}-dr-vnet VNet (e.g. from a VM or Bastion in the DR region)."
     }
   }
 
