@@ -335,3 +335,153 @@ resource "azurerm_private_endpoint" "lab05c" {
 
   tags = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_bastion" {
+  name                       = "lab05c-diag"
+  target_resource_id         = azurerm_bastion_host.lab05c.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "BastionAuditLogs"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_storage_blob" {
+  name                       = "lab05c-blob-diag"
+  target_resource_id         = "${azurerm_storage_account.lab05c.id}/blobServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_storage_file" {
+  name                       = "lab05c-file-diag"
+  target_resource_id         = "${azurerm_storage_account.lab05c.id}/fileServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_storage_queue" {
+  name                       = "lab05c-queue-diag"
+  target_resource_id         = "${azurerm_storage_account.lab05c.id}/queueServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_storage_table" {
+  name                       = "lab05c-table-diag"
+  target_resource_id         = "${azurerm_storage_account.lab05c.id}/tableServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_nsg" {
+  name                       = "lab05c-diag"
+  target_resource_id         = azurerm_network_security_group.lab05c.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05cbastion_nsg" {
+  name                       = "lab05cbastion-diag"
+  target_resource_id         = azurerm_network_security_group.lab05cbastion.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_public_ip" {
+  name                       = "lab05c-diag"
+  target_resource_id         = azurerm_public_ip.lab05c.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05c_vnet" {
+  name                       = "lab05c-diag"
+  target_resource_id         = azurerm_virtual_network.lab05c.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

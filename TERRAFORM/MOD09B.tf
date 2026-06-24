@@ -72,3 +72,21 @@ resource "azurerm_container_group" "lab09b" {
   # }
   tags = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab09b_acr_diag" {
+  name                       = "${azurerm_container_registry.lab09b.name}-diag"
+  target_resource_id         = azurerm_container_registry.lab09b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "ContainerRegistryRepositoryEvents"
+  }
+
+  enabled_log {
+    category = "ContainerRegistryLoginEvents"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

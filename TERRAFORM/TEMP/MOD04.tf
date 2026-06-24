@@ -40,6 +40,8 @@ resource "azurerm_subnet_network_security_group_association" "lab04" {
   network_security_group_id = azurerm_network_security_group.lab04.id
 }
 
+# 注意:AzureFirewallSubnet 刻意「不」綁定 NSG — Azure 不支援在 Azure Firewall 子網路關聯
+# NSG(防火牆自行管理流量)。公司「自動掛載 NSG」的 Azure Policy 應已排除此子網路。
 resource "azurerm_subnet" "lab04firewall" {
   name                 = "AzureFirewallSubnet"
   resource_group_name  = azurerm_resource_group.az104.name
@@ -292,4 +294,88 @@ resource "azurerm_virtual_machine_extension" "lab04script" {
     }
   SETTINGS
   tags     = local.default_tags
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04_fw" {
+  name                       = "lab04-fw-diag"
+  target_resource_id         = azurerm_firewall.lab04.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "AZFWApplicationRule"
+  }
+
+  enabled_log {
+    category = "AZFWNetworkRule"
+  }
+
+  enabled_log {
+    category = "AZFWNatRule"
+  }
+
+  enabled_log {
+    category = "AZFWThreatIntel"
+  }
+
+  enabled_log {
+    category = "AZFWDnsQuery"
+  }
+
+  enabled_log {
+    category = "AZFWFatFlow"
+  }
+
+  enabled_log {
+    category = "AZFWFlowTrace"
+  }
+
+  enabled_log {
+    category = "AZFWApplicationRuleAggregation"
+  }
+
+  enabled_log {
+    category = "AZFWNetworkRuleAggregation"
+  }
+
+  enabled_log {
+    category = "AZFWNatRuleAggregation"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04_nsg" {
+  name                       = "lab04-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab04.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04_pip" {
+  name                       = "lab04-pip-diag"
+  target_resource_id         = azurerm_public_ip.lab04.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04_vnet" {
+  name                       = "lab04-vnet-diag"
+  target_resource_id         = azurerm_virtual_network.lab04.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
 }

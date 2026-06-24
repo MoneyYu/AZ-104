@@ -702,8 +702,6 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Azure Monitor managed service for Prometheus](https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/prometheus-metrics-overview)
 
-[Azure Monitor SCOM Managed Instance](https://learn.microsoft.com/en-us/previous-versions/azure/azure-monitor/scom-manage-instance/overview)
-
 <!--
 ### Application Insight
 [What is Application Insights](https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview)

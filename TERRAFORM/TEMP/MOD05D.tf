@@ -476,3 +476,85 @@ resource "azurerm_point_to_site_vpn_gateway" "lab05d01" {
   }
   tags = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab05d01_nsg" {
+  name                       = "lab05d01-diag"
+  target_resource_id         = azurerm_network_security_group.lab05d01.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05d02_nsg" {
+  name                       = "lab05d02-diag"
+  target_resource_id         = azurerm_network_security_group.lab05d02.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05d03_nsg" {
+  name                       = "lab05d03-diag"
+  target_resource_id         = azurerm_network_security_group.lab05d03.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05d01_vnet" {
+  name                       = "lab05d01-diag"
+  target_resource_id         = azurerm_virtual_network.lab05d01.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05d02_vnet" {
+  name                       = "lab05d02-diag"
+  target_resource_id         = azurerm_virtual_network.lab05d02.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05d03_vnet" {
+  name                       = "lab05d03-diag"
+  target_resource_id         = azurerm_virtual_network.lab05d03.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05d01_p2s_vpn_gateway" {
+  name                       = "lab05d01-diag"
+  target_resource_id         = azurerm_point_to_site_vpn_gateway.lab05d01.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

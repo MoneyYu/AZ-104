@@ -64,3 +64,25 @@ resource "azurerm_container_app" "lab09d" {
     ignore_changes = [tags]
   }
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab09d_aca_environment_diag" {
+  name                       = "${azurerm_container_app_environment.lab09d.name}-diag"
+  target_resource_id         = azurerm_container_app_environment.lab09d.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "ContainerAppConsoleLogs"
+  }
+
+  enabled_log {
+    category = "ContainerAppSystemLogs"
+  }
+
+  enabled_log {
+    category = "ContainerAppHTTPLogs"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

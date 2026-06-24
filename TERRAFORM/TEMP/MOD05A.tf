@@ -454,3 +454,105 @@ resource "azurerm_virtual_machine_extension" "lab05a03script" {
   SETTINGS
   tags     = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a01nsg" {
+  name                       = "lab05a01-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab05a01.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a02nsg" {
+  name                       = "lab05a02-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab05a02.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a03nsg" {
+  name                       = "lab05a03-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab05a03.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a01pip" {
+  name                       = "lab05a01-pip-diag"
+  target_resource_id         = azurerm_public_ip.lab05a01.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a02pip" {
+  name                       = "lab05a02-pip-diag"
+  target_resource_id         = azurerm_public_ip.lab05a02.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a03pip" {
+  name                       = "lab05a03-pip-diag"
+  target_resource_id         = azurerm_public_ip.lab05a03.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a01vnet" {
+  name                       = "lab05a01-vnet-diag"
+  target_resource_id         = azurerm_virtual_network.lab05a01.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a02vnet" {
+  name                       = "lab05a02-vnet-diag"
+  target_resource_id         = azurerm_virtual_network.lab05a02.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05a03vnet" {
+  name                       = "lab05a03-vnet-diag"
+  target_resource_id         = azurerm_virtual_network.lab05a03.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

@@ -31,3 +31,17 @@ resource "azurerm_traffic_manager_external_endpoint" "lab06d02" {
   endpoint_location = "westus"
   weight            = 50
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab06d_tfm" {
+  name                       = "lab06d-tfm-diag"
+  target_resource_id         = azurerm_traffic_manager_profile.lab06d.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "ProbeHealthStatusEvents"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

@@ -197,3 +197,27 @@ output "lab08b_bastion_name" {
   value       = azurerm_bastion_host.lab08.name
   description = "Name of the Bastion host for connecting to VMSS instances"
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab08vmss_lb" {
+  name                       = "lab08vmss-diag"
+  target_resource_id         = azurerm_lb.lab08vmss.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "LoadBalancerHealthEvent"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab08vmss_public_ip" {
+  name                       = "lab08vmss-diag"
+  target_resource_id         = azurerm_public_ip.lab08vmss.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

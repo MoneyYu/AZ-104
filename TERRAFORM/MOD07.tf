@@ -7,3 +7,91 @@ resource "azurerm_storage_account" "lab07" {
   account_replication_type = "RAGRS"
   tags                     = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab07_blob" {
+  name                       = "lab07-blob-diag"
+  target_resource_id         = "${azurerm_storage_account.lab07.id}/blobServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab07_file" {
+  name                       = "lab07-file-diag"
+  target_resource_id         = "${azurerm_storage_account.lab07.id}/fileServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab07_queue" {
+  name                       = "lab07-queue-diag"
+  target_resource_id         = "${azurerm_storage_account.lab07.id}/queueServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab07_table" {
+  name                       = "lab07-table-diag"
+  target_resource_id         = "${azurerm_storage_account.lab07.id}/tableServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}

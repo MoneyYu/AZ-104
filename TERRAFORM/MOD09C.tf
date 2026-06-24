@@ -38,6 +38,11 @@ resource "azurerm_kubernetes_cluster" "lab09c" {
     name       = "default"
     node_count = 1
     vm_size    = "Standard_DS2_v2"
+
+    # Azure 預設會帶入 max_surge=10%;明確指定以避免每次 plan 都出現差異
+    upgrade_settings {
+      max_surge = "10%"
+    }
   }
 
   identity {
@@ -131,6 +136,41 @@ resource "azurerm_role_assignment" "grafana_vminsights_la_reader" {
   role_definition_name             = "Log Analytics Reader"
   scope                            = azurerm_log_analytics_workspace.vminsights.id
   skip_service_principal_aad_check = true
+}
+
+# Grafana RBAC — 資源群組層級：讀取群組內「所有資源」的 Azure Monitor 平台指標 + Activity Log
+# 讓 Grafana 內建的 Azure Monitor 資料來源可視覺化全部 demo 資源（Storage / App Service /
+# Load Balancer / Firewall / Recovery Vault…），而不需逐一指派。
+resource "azurerm_role_assignment" "grafana_rg_monitoring_reader" {
+  principal_id                     = azurerm_dashboard_grafana.lab09c.identity[0].principal_id
+  role_definition_name             = "Monitoring Reader"
+  scope                            = azurerm_resource_group.az104.id
+  skip_service_principal_aad_check = true
+}
+
+# Grafana RBAC — 資源群組層級：讀取群組內「所有」Log Analytics 工作區的日誌
+# 涵蓋 law-vminsights、lab09c-law（Container Insights）、lab09d-law（Container Apps）等。
+resource "azurerm_role_assignment" "grafana_rg_la_reader" {
+  principal_id                     = azurerm_dashboard_grafana.lab09c.identity[0].principal_id
+  role_definition_name             = "Log Analytics Reader"
+  scope                            = azurerm_resource_group.az104.id
+  skip_service_principal_aad_check = true
+}
+
+# Grafana 使用者存取 — 授予 Grafana Admin 角色,讓使用者能登入入口網站管理儀表板。
+# 預設授予「執行 terraform 的部署者」(目前 admin@devmtt.com);若要指定其他帳號,
+# 設定 var.grafana_admin_object_id 即可。未硬編 principal_type,讓 Azure 自動判斷
+# (使用者或服務主體皆適用),避免以服務主體部署時型別不符。
+variable "grafana_admin_object_id" {
+  type        = string
+  default     = ""
+  description = "授予 Grafana Admin 的 Entra ID 物件識別碼;留空則預設為部署者身分"
+}
+
+resource "azurerm_role_assignment" "lab09c_grafana_admin_user" {
+  principal_id         = coalesce(var.grafana_admin_object_id, data.azurerm_client_config.current.object_id)
+  role_definition_name = "Grafana Admin"
+  scope                = azurerm_dashboard_grafana.lab09c.id
 }
 
 # =============================================================================

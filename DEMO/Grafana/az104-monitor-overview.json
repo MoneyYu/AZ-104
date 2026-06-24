@@ -1,0 +1,184 @@
+{
+  "uid": "az104-monitor-overview",
+  "title": "AZ-104 | Monitor Overview",
+  "tags": ["az-104", "demo", "monitor"],
+  "timezone": "browser",
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Activity Log events (24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": null }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "area" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "AzureActivity | where TimeGenerated > ago(24h) | summarize Count = count()", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Platform metric samples (24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "area" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "AzureMetrics | where TimeGenerated > ago(24h) | summarize Count = count()", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Resource log records (24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "purple", "value": null }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "area" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "AzureDiagnostics | where TimeGenerated > ago(24h) | summarize Count = count()", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Active VMs (heartbeat 5m)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "Heartbeat | where TimeGenerated > ago(5m) | summarize Count = dcount(Computer)", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "VM CPU % — VM Insights",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "InsightsMetrics | where Namespace == 'Processor' and Name == 'UtilizationPercentage' | where $__timeFilter(TimeGenerated) | summarize CPU = avg(Val) by Computer, bin(TimeGenerated, 5m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Platform metric volume over time",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "bars", "fillOpacity": 50, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "AzureMetrics | where $__timeFilter(TimeGenerated) | summarize Samples = count() by bin(TimeGenerated, 15m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Top Activity Log operations (24h)",
+      "type": "table",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 13 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "AzureActivity | where TimeGenerated > ago(24h) | summarize Count = count() by OperationNameValue, ActivityStatusValue | top 15 by Count", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Resource logs by type & category (24h)",
+      "type": "table",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 13 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "AzureDiagnostics | where TimeGenerated > ago(24h) | summarize Count = count() by ResourceType, Category | top 20 by Count", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "IIS requests over time (W3CIISLog)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 22 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "bars", "fillOpacity": 50, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "W3CIISLog | where $__timeFilter(TimeGenerated) | summarize Requests = count() by Computer, bin(TimeGenerated, 5m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "DR — Site Recovery & Backup activity (7d)",
+      "type": "table",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 22 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "AzureDiagnostics | where TimeGenerated > ago(7d) | where Category contains 'Recovery' or Category contains 'Backup' | summarize Count = count() by Category, ResourceType | top 20 by Count", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,9 @@ resource "azurerm_subnet" "lab05b" {
   address_prefixes     = ["10.1.1.0/24"]
 }
 
+# 注意:GatewaySubnet 刻意「不」綁定 NSG。Microsoft 明確建議勿在 GatewaySubnet 關聯 NSG,
+# 否則可能導致 VPN Gateway 無法正常運作。請確認公司「自動掛載 NSG」的 Azure Policy 已排除
+# GatewaySubnet(標準內建政策預設排除),以免被自動加上 NSG 而中斷閘道。
 resource "azurerm_subnet" "lab05bgateway" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.az104.name
@@ -223,4 +226,68 @@ resource "azurerm_virtual_machine_extension" "lab05bscript" {
     }
   SETTINGS
   tags     = local.default_tags
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05bvnetgw" {
+  name                       = "lab05b-vnetgw-diag"
+  target_resource_id         = azurerm_virtual_network_gateway.lab05b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "GatewayDiagnosticLog"
+  }
+
+  enabled_log {
+    category = "TunnelDiagnosticLog"
+  }
+
+  enabled_log {
+    category = "RouteDiagnosticLog"
+  }
+
+  enabled_log {
+    category = "IKEDiagnosticLog"
+  }
+
+  enabled_log {
+    category = "P2SDiagnosticLog"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05bnsg" {
+  name                       = "lab05b-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab05b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05bpip" {
+  name                       = "lab05b-pip-diag"
+  target_resource_id         = azurerm_public_ip.lab05b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab05bvnet" {
+  name                       = "lab05b-vnet-diag"
+  target_resource_id         = azurerm_virtual_network.lab05b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
 }

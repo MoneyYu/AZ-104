@@ -287,3 +287,67 @@ resource "azurerm_windows_virtual_machine" "lab04b_b1" {
 
   tags = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab04b_nsg" {
+  name                       = "lab04b-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab04b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04b_pip_a1" {
+  name                       = "lab04b-pip-a1-diag"
+  target_resource_id         = azurerm_public_ip.lab04b_a1.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04b_pip_a2" {
+  name                       = "lab04b-pip-a2-diag"
+  target_resource_id         = azurerm_public_ip.lab04b_a2.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04b_pip_b1" {
+  name                       = "lab04b-pip-b1-diag"
+  target_resource_id         = azurerm_public_ip.lab04b_b1.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04b_vnet_a" {
+  name                       = "lab04b-vnet-a-diag"
+  target_resource_id         = azurerm_virtual_network.lab04b_a.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab04b_vnet_b" {
+  name                       = "lab04b-vnet-b-diag"
+  target_resource_id         = azurerm_virtual_network.lab04b_b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

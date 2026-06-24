@@ -94,3 +94,69 @@ resource "azurerm_windows_web_app" "lab06e" {
   }
   tags = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab06e_frontdoor_profile" {
+  name                       = "${local.lab06e_name}-fd-diag"
+  target_resource_id         = azurerm_cdn_frontdoor_profile.lab06e.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "FrontDoorAccessLog"
+  }
+
+  enabled_log {
+    category = "FrontDoorHealthProbeLog"
+  }
+
+  enabled_log {
+    category = "FrontDoorWebApplicationFirewallLog"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab06e_windows_web_app" {
+  name                       = "${local.lab06e_name}-web-diag"
+  target_resource_id         = azurerm_windows_web_app.lab06e.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "AppServiceHTTPLogs"
+  }
+
+  enabled_log {
+    category = "AppServiceConsoleLogs"
+  }
+
+  enabled_log {
+    category = "AppServiceAppLogs"
+  }
+
+  enabled_log {
+    category = "AppServiceAuditLogs"
+  }
+
+  enabled_log {
+    category = "AppServiceIPSecAuditLogs"
+  }
+
+  enabled_log {
+    category = "AppServicePlatformLogs"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab06e_service_plan" {
+  name                       = "${local.lab06e_name}-app-plan-diag"
+  target_resource_id         = azurerm_service_plan.lab06e.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

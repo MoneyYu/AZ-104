@@ -305,3 +305,51 @@ resource "azurerm_virtual_machine_extension" "lab06b02script" {
   SETTINGS
   tags     = local.default_tags
 }
+
+resource "azurerm_monitor_diagnostic_setting" "lab06b_lb" {
+  name                       = "lab06b-lb-diag"
+  target_resource_id         = azurerm_lb.lab06b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "LoadBalancerHealthEvent"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab06b_nsg" {
+  name                       = "lab06b-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab06b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab06b_pip" {
+  name                       = "lab06b-pip-diag"
+  target_resource_id         = azurerm_public_ip.lab06b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab06b_vnet" {
+  name                       = "lab06b-vnet-diag"
+  target_resource_id         = azurerm_virtual_network.lab06b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

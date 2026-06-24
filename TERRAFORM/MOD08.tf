@@ -333,3 +333,65 @@ resource "azurerm_role_assignment" "lab08_vm_admin" {
 #   role_definition_name = "Virtual Machine User Login"
 #   principal_id         = data.azurerm_client_config.current.object_id
 # }
+
+resource "azurerm_monitor_diagnostic_setting" "lab08_nsg" {
+  name                       = "lab08-diag"
+  target_resource_id         = azurerm_network_security_group.lab08.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab08bastion_nsg" {
+  name                       = "lab08bastion-diag"
+  target_resource_id         = azurerm_network_security_group.lab08bastion.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab08_bastion" {
+  name                       = "lab08-diag"
+  target_resource_id         = azurerm_bastion_host.lab08.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "BastionAuditLogs"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab08_public_ip" {
+  name                       = "lab08-diag"
+  target_resource_id         = azurerm_public_ip.lab08.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab08_virtual_network" {
+  name                       = "lab08-diag"
+  target_resource_id         = azurerm_virtual_network.lab08.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}

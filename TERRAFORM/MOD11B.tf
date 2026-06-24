@@ -345,24 +345,64 @@ resource "azurerm_subnet" "lab11b_dr" {
   address_prefixes     = ["10.12.1.0/24"]
 }
 
+# DR 子網路 NSG — 允許來自 Internet 的 HTTP(80),讓 public LB 能對外服務失容後的 VM
+resource "azurerm_network_security_group" "lab11b_dr" {
+  name                = "${local.lab11b_name}-dr-nsg-${local.random_str}"
+  location            = azurerm_resource_group.lab11b_dr.location
+  resource_group_name = azurerm_resource_group.lab11b_dr.name
+  tags                = local.default_tags
+}
+
+resource "azurerm_network_security_rule" "lab11b_dr_http" {
+  name                        = "HTTP"
+  priority                    = 110
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = "80"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.lab11b_dr.name
+  network_security_group_name = azurerm_network_security_group.lab11b_dr.name
+}
+
+resource "azurerm_subnet_network_security_group_association" "lab11b_dr" {
+  subnet_id                 = azurerm_subnet.lab11b_dr.id
+  network_security_group_id = azurerm_network_security_group.lab11b_dr.id
+}
+
 # =============================================================================
-# DR Load Balancer (Japan West) — Internal (private) Load Balancer
-# 複寫 VM 失容後會自動加入此後端集區。Azure Site Recovery 僅支援「內部
-# 負載平衡器」作為 failover 目標；使用公用 LB 會回報錯誤 150276
-# (The public load balancer being used is unsupported)。故此處改為 internal LB,
-# 並移除原本的公用 IP。
-# 參考:https://learn.microsoft.com/azure/site-recovery/site-recovery-error-handling
+# DR Load Balancer (Japan West) — Public (對外服務) Load Balancer
+# 失容後由 Recovery Plan 的 Automation Runbook (azurerm_automation_runbook.lab11b)
+# 自動把複寫 VM 的 NIC 加入此後端集區。ASR 內建的
+# recovery_load_balancer_backend_address_pool_ids 只支援 internal LB(否則回報錯誤
+# 150276),改用 runbook 後即可使用 public LB 對外服務,並可在前面掛 Traffic Manager。
+# 注意:執行 Test Failover 時請選 DR VNet 作為測試網路,失容 VM 才會與此 LB 同 VNet。
 # =============================================================================
+resource "azurerm_public_ip" "lab11b_dr" {
+  name                = "${local.lab11b_name}-dr-pip-${local.random_str}"
+  location            = azurerm_resource_group.lab11b_dr.location
+  resource_group_name = azurerm_resource_group.lab11b_dr.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  domain_name_label   = "${local.lab11b_name}-dr-pip-${local.random_str}"
+  tags                = local.default_tags
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
+}
+
 resource "azurerm_lb" "lab11b_dr" {
-  name                = "${local.lab11b_name}-dr-ilb-${local.random_str}"
+  name                = "${local.lab11b_name}-dr-lb-${local.random_str}"
   location            = azurerm_resource_group.lab11b_dr.location
   resource_group_name = azurerm_resource_group.lab11b_dr.name
   sku                 = "Standard"
 
   frontend_ip_configuration {
-    name                          = "PrivateIPAddress"
-    subnet_id                     = azurerm_subnet.lab11b_dr.id
-    private_ip_address_allocation = "Dynamic"
+    name                 = "PublicIPAddress"
+    public_ip_address_id = azurerm_public_ip.lab11b_dr.id
   }
   tags = local.default_tags
 }
@@ -385,7 +425,7 @@ resource "azurerm_lb_rule" "lab11b_dr" {
   protocol                       = "Tcp"
   frontend_port                  = 80
   backend_port                   = 80
-  frontend_ip_configuration_name = "PrivateIPAddress"
+  frontend_ip_configuration_name = "PublicIPAddress"
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.lab11b_dr.id]
   probe_id                       = azurerm_lb_probe.lab11b_dr.id
   disable_outbound_snat          = false
@@ -530,9 +570,8 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b01" {
   }
 
   network_interface {
-    source_network_interface_id                     = azurerm_network_interface.lab11b01.id
-    target_subnet_name                              = azurerm_subnet.lab11b_dr.name
-    recovery_load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lab11b_dr.id]
+    source_network_interface_id = azurerm_network_interface.lab11b01.id
+    target_subnet_name          = azurerm_subnet.lab11b_dr.name
   }
 
   lifecycle {
@@ -574,9 +613,8 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b02" {
   }
 
   network_interface {
-    source_network_interface_id                     = azurerm_network_interface.lab11b02.id
-    target_subnet_name                              = azurerm_subnet.lab11b_dr.name
-    recovery_load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lab11b_dr.id]
+    source_network_interface_id = azurerm_network_interface.lab11b02.id
+    target_subnet_name          = azurerm_subnet.lab11b_dr.name
   }
 
   lifecycle {
@@ -598,7 +636,131 @@ resource "azurerm_site_recovery_replicated_vm" "lab11b02" {
 }
 
 # =============================================================================
-# Recovery Plan with manual action for DR LB binding
+# Azure Automation — 失容後自動把 VM 加入 DR public LB 後端集區的 Runbook
+# Recovery Plan 的 post-action 會在 Test/Unplanned Failover 後執行此 runbook,
+# runbook 讀取 Recovery Plan Context 取得失容 VM,把其 NIC 加入 public LB 後端集區
+# (public LB 無法使用 ASR 內建 recovery_load_balancer 設定,故改用 runbook)。
+# 需求:Automation Account 與 Recovery Services Vault 同訂閱;受控識別碼需有權限
+# 修改 DR 資源群組內的 NIC / LB(此處指派 Contributor)。
+# =============================================================================
+resource "azurerm_automation_account" "lab11b" {
+  name                = "${local.lab11b_name}-automation-${local.random_str}"
+  location            = azurerm_resource_group.lab11b_dr.location
+  resource_group_name = azurerm_resource_group.lab11b_dr.name
+  sku_name            = "Basic"
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.default_tags
+}
+
+# Runbook 受控識別碼權限 — 可在 DR 資源群組修改 NIC 與 Load Balancer
+# Runbook 受控識別碼權限(最小權限):Network Contributor 可改 NIC 並 join LB 後端集區,
+# Reader 提供 Get-AzVM 所需的 Microsoft.Compute/.../read。skip_service_principal_aad_check
+# 避免新建識別碼因 AAD 複寫延遲而出現 PrincipalNotFound。
+resource "azurerm_role_assignment" "lab11b_automation_network" {
+  scope                            = azurerm_resource_group.lab11b_dr.id
+  role_definition_name             = "Network Contributor"
+  principal_id                     = azurerm_automation_account.lab11b.identity[0].principal_id
+  skip_service_principal_aad_check = true
+}
+
+resource "azurerm_role_assignment" "lab11b_automation_reader" {
+  scope                            = azurerm_resource_group.lab11b_dr.id
+  role_definition_name             = "Reader"
+  principal_id                     = azurerm_automation_account.lab11b.identity[0].principal_id
+  skip_service_principal_aad_check = true
+}
+
+# 把 DR public LB 後端集區的資源 ID 存成 Automation 變數,供 runbook 讀取
+resource "azurerm_automation_variable_string" "lab11b_dr_backend_pool" {
+  name                    = "DrBackendPoolId"
+  resource_group_name     = azurerm_resource_group.lab11b_dr.name
+  automation_account_name = azurerm_automation_account.lab11b.name
+  value                   = azurerm_lb_backend_address_pool.lab11b_dr.id
+}
+
+resource "azurerm_automation_runbook" "lab11b" {
+  name                    = "${local.lab11b_name}-add-to-lb"
+  location                = azurerm_resource_group.lab11b_dr.location
+  resource_group_name     = azurerm_resource_group.lab11b_dr.name
+  automation_account_name = azurerm_automation_account.lab11b.name
+  log_verbose             = false
+  log_progress            = true
+  runbook_type            = "PowerShell"
+  description             = "ASR post-failover: 把失容後的 VM NIC 加入 DR public LB 後端集區"
+
+  content = <<-CONTENT
+    param([parameter(Mandatory = $false)][Object]$RecoveryPlanContext)
+
+    $ErrorActionPreference = "Stop"
+
+    Write-Output "Authenticating with the Automation account managed identity..."
+    Disable-AzContextAutosave -Scope Process | Out-Null
+    Connect-AzAccount -Identity | Out-Null
+
+    $backendPoolId = Get-AutomationVariable -Name "DrBackendPoolId"
+    Write-Output ("Target backend pool: " + $backendPoolId)
+
+    $parts = $backendPoolId.Trim("/").Split("/")
+    $lbResourceGroup = $parts[3]
+    $lbName = $parts[7]
+    $poolName = $parts[9]
+
+    $lb = Get-AzLoadBalancer -ResourceGroupName $lbResourceGroup -Name $lbName
+    $backendPool = Get-AzLoadBalancerBackendAddressPoolConfig -Name $poolName -LoadBalancer $lb
+
+    if ($null -eq $RecoveryPlanContext) {
+        Write-Output "No RecoveryPlanContext supplied (manual run); nothing to do."
+        return
+    }
+
+    Write-Output ("Failover type: " + $RecoveryPlanContext.FailoverType)
+    $vmKeys = $RecoveryPlanContext.VmMap.PSObject.Properties.Name
+
+    foreach ($key in $vmKeys) {
+        $vm = $RecoveryPlanContext.VmMap.$key
+        $rg = $vm.ResourceGroupName
+        $vmName = $vm.RoleName
+        if ([string]::IsNullOrEmpty($rg) -or [string]::IsNullOrEmpty($vmName)) { continue }
+        Write-Output ("Processing failed-over VM: " + $vmName + " (RG: " + $rg + ")")
+
+        # Test Failover 會建立帶 "-test" 後綴的 VM(正式 failover 維持原名),兩者都要涵蓋,
+        # 否則 Test Failover 時用原名找不到 VM 會中斷 runbook,NIC 就不會被加入後端集區。
+        $azVm = Get-AzVM -ResourceGroupName $rg -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -eq $vmName -or $_.Name -eq ($vmName + "-test") } |
+            Select-Object -First 1
+        if ($null -eq $azVm) {
+            Write-Output ("  找不到 role " + $vmName + " 對應的 VM(已試 '" + $vmName + "' 與 '" + $vmName + "-test'),略過。")
+            continue
+        }
+        foreach ($nicRef in $azVm.NetworkProfile.NetworkInterfaces) {
+            $nic = Get-AzNetworkInterface -ResourceId $nicRef.Id
+            $ipcfg = $nic.IpConfigurations | Where-Object { $_.Primary } | Select-Object -First 1
+            if ($null -eq $ipcfg) { $ipcfg = $nic.IpConfigurations[0] }
+            if ($null -eq $ipcfg.LoadBalancerBackendAddressPools) {
+                $ipcfg.LoadBalancerBackendAddressPools = New-Object "System.Collections.Generic.List[Microsoft.Azure.Commands.Network.Models.PSBackendAddressPool]"
+            }
+            if ($ipcfg.LoadBalancerBackendAddressPools.Id -contains $backendPool.Id) {
+                Write-Output ("  NIC " + $nic.Name + " already in pool; skipping.")
+                continue
+            }
+            $ipcfg.LoadBalancerBackendAddressPools.Add($backendPool)
+            Set-AzNetworkInterface -NetworkInterface $nic | Out-Null
+            Write-Output ("  Added NIC " + $nic.Name + " to backend pool " + $poolName + ".")
+        }
+    }
+
+    Write-Output "Backend pool association complete."
+  CONTENT
+
+  tags = local.default_tags
+}
+
+# =============================================================================
+# Recovery Plan — Test/Unplanned Failover 後自動把 VM 加入 DR public LB
 # =============================================================================
 resource "azurerm_site_recovery_replication_recovery_plan" "lab11b" {
   name                      = "${local.lab11b_name}-recovery-plan"
@@ -613,15 +775,292 @@ resource "azurerm_site_recovery_replication_recovery_plan" "lab11b" {
     ]
 
     post_action {
-      name                      = "Verify-DR-LB-Access"
+      name                 = "Add-VMs-To-DR-Public-LB"
+      type                 = "AutomationRunbookActionDetails"
+      fail_over_directions = ["PrimaryToRecovery"]
+      fail_over_types      = ["TestFailover", "UnplannedFailover"]
+      runbook_id           = azurerm_automation_runbook.lab11b.id
+      fabric_location      = "Recovery"
+    }
+
+    post_action {
+      name                      = "Verify-via-Traffic-Manager"
       type                      = "ManualActionDetails"
       fail_over_directions      = ["PrimaryToRecovery"]
       fail_over_types           = ["TestFailover", "UnplannedFailover"]
-      manual_action_instruction = "VMs are automatically added to the DR internal LB backend pool. Verify IIS is reachable on the DR internal LB private IP from within the ${local.lab11b_name}-dr-vnet VNet (e.g. from a VM or Bastion in the DR region)."
+      manual_action_instruction = "驗證:(1) 用瀏覽器存取「DR public LB 的 FQDN」確認失容後 IIS 可對外服務(runbook 已把 VM 加入後端集區)。(2) Traffic Manager 為 Priority 路由,primary 健康時一律導向 primary;要示範 TM 自動切換到 DR,需先讓 primary 不健康(停掉 primary VM/IIS 或停用 primary 端點)。注意:Test Failover 請選 DR VNet (${local.lab11b_name}-dr-vnet) 作為測試網路,VM 才會與 public LB 同屬一個 VNet。"
     }
   }
 
   failover_recovery_group {}
 
   shutdown_recovery_group {}
+}
+
+# =============================================================================
+# Traffic Manager — 對外入口,Priority 路由:Primary(Japan East)優先、DR(Japan West)備援
+# 平時導向 primary public LB;primary 失效時自動切到 DR public LB,模擬真實 DR 架構。
+# =============================================================================
+resource "azurerm_traffic_manager_profile" "lab11b" {
+  name                   = "${local.lab11b_name}-tm-${var.group_postfix}-${random_string.rid.result}"
+  resource_group_name    = azurerm_resource_group.az104.name
+  traffic_routing_method = "Priority"
+
+  dns_config {
+    relative_name = "${local.lab11b_name}-tm-${var.group_postfix}-${random_string.rid.result}"
+    ttl           = 30
+  }
+
+  monitor_config {
+    protocol                     = "HTTP"
+    port                         = 80
+    path                         = "/"
+    interval_in_seconds          = 30
+    timeout_in_seconds           = 10
+    tolerated_number_of_failures = 3
+  }
+
+  tags = local.default_tags
+}
+
+resource "azurerm_traffic_manager_azure_endpoint" "lab11b_primary" {
+  name               = "primary-japaneast"
+  profile_id         = azurerm_traffic_manager_profile.lab11b.id
+  priority           = 1
+  target_resource_id = azurerm_public_ip.lab11b.id
+}
+
+resource "azurerm_traffic_manager_azure_endpoint" "lab11b_dr" {
+  name               = "dr-japanwest"
+  profile_id         = azurerm_traffic_manager_profile.lab11b.id
+  priority           = 2
+  target_resource_id = azurerm_public_ip.lab11b_dr.id
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_recovery_services_vault" {
+  name                       = "${azurerm_recovery_services_vault.lab11b.name}-diag"
+  target_resource_id         = azurerm_recovery_services_vault.lab11b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "CoreAzureBackup"
+  }
+
+  enabled_log {
+    category = "AddonAzureBackupJobs"
+  }
+
+  enabled_log {
+    category = "AddonAzureBackupAlerts"
+  }
+
+  enabled_log {
+    category = "AddonAzureBackupPolicy"
+  }
+
+  enabled_log {
+    category = "AddonAzureBackupStorage"
+  }
+
+  enabled_log {
+    category = "AddonAzureBackupProtectedInstance"
+  }
+
+  enabled_log {
+    category = "AzureSiteRecoveryJobs"
+  }
+
+  enabled_log {
+    category = "AzureSiteRecoveryEvents"
+  }
+
+  enabled_log {
+    category = "AzureSiteRecoveryReplicatedItems"
+  }
+
+  enabled_log {
+    category = "AzureSiteRecoveryReplicationStats"
+  }
+
+  enabled_log {
+    category = "AzureSiteRecoveryRecoveryPoints"
+  }
+
+  enabled_log {
+    category = "AzureSiteRecoveryReplicationDataUploadRate"
+  }
+
+  enabled_log {
+    category = "AzureSiteRecoveryProtectedDiskDataChurn"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_nsg" {
+  name                       = "${azurerm_network_security_group.lab11b.name}-diag"
+  target_resource_id         = azurerm_network_security_group.lab11b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_lb" {
+  name                       = "${azurerm_lb.lab11b.name}-diag"
+  target_resource_id         = azurerm_lb.lab11b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "LoadBalancerHealthEvent"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_dr_lb" {
+  name                       = "${azurerm_lb.lab11b_dr.name}-diag"
+  target_resource_id         = azurerm_lb.lab11b_dr.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "LoadBalancerHealthEvent"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_public_ip" {
+  name                       = "${azurerm_public_ip.lab11b.name}-diag"
+  target_resource_id         = azurerm_public_ip.lab11b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_dr_public_ip" {
+  name                       = "${azurerm_public_ip.lab11b_dr.name}-diag"
+  target_resource_id         = azurerm_public_ip.lab11b_dr.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_cache_blob" {
+  name                       = "${azurerm_storage_account.lab11b_cache.name}-blob-diag"
+  target_resource_id         = "${azurerm_storage_account.lab11b_cache.id}/blobServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_cache_file" {
+  name                       = "${azurerm_storage_account.lab11b_cache.name}-file-diag"
+  target_resource_id         = "${azurerm_storage_account.lab11b_cache.id}/fileServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_cache_queue" {
+  name                       = "${azurerm_storage_account.lab11b_cache.name}-queue-diag"
+  target_resource_id         = "${azurerm_storage_account.lab11b_cache.id}/queueServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_cache_table" {
+  name                       = "${azurerm_storage_account.lab11b_cache.name}-table-diag"
+  target_resource_id         = "${azurerm_storage_account.lab11b_cache.id}/tableServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  enabled_metric {
+    category = "Transaction"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_virtual_network" {
+  name                       = "${azurerm_virtual_network.lab11b.name}-diag"
+  target_resource_id         = azurerm_virtual_network.lab11b.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "lab11b_dr_virtual_network" {
+  name                       = "${azurerm_virtual_network.lab11b_dr.name}-diag"
+  target_resource_id         = azurerm_virtual_network.lab11b_dr.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
 }

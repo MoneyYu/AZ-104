@@ -1,0 +1,133 @@
+{
+  "uid": "az104-vm-guest-insights",
+  "title": "AZ-104 | VM Guest Insights",
+  "tags": ["az-104", "demo", "vm-insights"],
+  "timezone": "browser",
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "title": "CPU utilization %",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "InsightsMetrics | where Namespace == 'Processor' and Name == 'UtilizationPercentage' | where $__timeFilter(TimeGenerated) | summarize CPU = avg(Val) by Computer, bin(TimeGenerated, 5m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Available memory (MB)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "decmbytes", "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "min"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "InsightsMetrics | where Namespace == 'Memory' and Name == 'AvailableMB' | where $__timeFilter(TimeGenerated) | summarize AvailableMB = avg(Val) by Computer, bin(TimeGenerated, 5m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Logical disk free %",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "min"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "InsightsMetrics | where Namespace == 'LogicalDisk' and Name == 'FreeSpacePercentage' | where $__timeFilter(TimeGenerated) | summarize FreePct = avg(Val) by Computer, bin(TimeGenerated, 5m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Network throughput (bytes/sec)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "InsightsMetrics | where Namespace == 'Network' and Name in ('ReadBytesPerSecond','WriteBytesPerSecond') | where $__timeFilter(TimeGenerated) | summarize Bytes = avg(Val) by Computer, Name, bin(TimeGenerated, 5m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "VM availability (Heartbeat, last 1h)",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "Heartbeat | where TimeGenerated > ago(1h) | summarize LastSeen = max(TimeGenerated), OS = any(OSType) by Computer, ResourceGroup | order by LastSeen desc", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Windows events by computer & level (7d)",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "Event | where TimeGenerated > ago(7d) | summarize Count = count() by Computer, EventLevelName, Source | top 20 by Count", "resultFormat": "table", "dashboardTime": false },
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Disk latency — Perf table (sec/op)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 26 },
+      "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-azure-monitor-datasource", "uid": "azure-monitor-oob" },
+          "queryType": "Azure Log Analytics",
+          "azureLogAnalytics": { "resources": ["__WORKSPACE_ID__"], "query": "Perf | where CounterName in ('Avg. Disk sec/Read','Avg. Disk sec/Write') | where $__timeFilter(TimeGenerated) | summarize Latency = avg(CounterValue) by Computer, CounterName, bin(TimeGenerated, 5m) | order by TimeGenerated asc", "resultFormat": "time_series", "dashboardTime": true },
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}
