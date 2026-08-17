@@ -231,6 +231,10 @@ resource "azurerm_windows_virtual_machine" "lab04b_a1" {
   admin_username = local.user_name
   admin_password = local.user_password
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   tags = local.default_tags
 }
 
@@ -257,6 +261,10 @@ resource "azurerm_windows_virtual_machine" "lab04b_a2" {
   computer_name  = "vm-a2"
   admin_username = local.user_name
   admin_password = local.user_password
+
+  identity {
+    type = "SystemAssigned"
+  }
 
   tags = local.default_tags
 }
@@ -285,7 +293,86 @@ resource "azurerm_windows_virtual_machine" "lab04b_b1" {
   admin_username = local.user_name
   admin_password = local.user_password
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   tags = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab04b_a1ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab04b_a1.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab04b_a1" {
+  name                    = "lab04b-a1-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab04b_a1.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab04b_a1"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab04b_a1_otel" {
+  name                    = "lab04b-a1-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab04b_a1.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab04b_a1"
+}
+
+resource "azurerm_virtual_machine_extension" "lab04b_a2ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab04b_a2.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab04b_a2" {
+  name                    = "lab04b-a2-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab04b_a2.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab04b_a2"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab04b_a2_otel" {
+  name                    = "lab04b-a2-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab04b_a2.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab04b_a2"
+}
+
+resource "azurerm_virtual_machine_extension" "lab04b_b1ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab04b_b1.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab04b_b1" {
+  name                    = "lab04b-b1-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab04b_b1.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab04b_b1"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab04b_b1_otel" {
+  name                    = "lab04b-b1-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab04b_b1.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab04b_b1"
 }
 
 resource "azurerm_monitor_diagnostic_setting" "lab04b_nsg" {

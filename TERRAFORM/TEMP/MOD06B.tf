@@ -158,29 +158,18 @@ resource "azurerm_virtual_machine_extension" "lab06b01ama" {
   tags                       = local.default_tags
 }
 
-resource "azurerm_virtual_machine_extension" "lab06b01da" {
-  name                       = "DependencyAgentWindows"
-  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
-  type                       = "DependencyAgentWindows"
-  type_handler_version       = "9.10"
-  automatic_upgrade_enabled  = true
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b01.id
-
-  settings = jsonencode({
-    enableAMA = "true"
-  })
-
-  tags = local.default_tags
-
-  depends_on = [azurerm_virtual_machine_extension.lab06b01ama]
-}
-
 resource "azurerm_monitor_data_collection_rule_association" "lab06b01" {
   name                    = "lab06b01-dcra"
   target_resource_id      = azurerm_windows_virtual_machine.lab06b01.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
   description             = "VM Insights DCR association for lab06b01"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06b01_otel" {
+  name                    = "lab06b01-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06b01.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab06b01"
 }
 
 resource "azurerm_virtual_machine_extension" "lab06b01script" {
@@ -265,29 +254,18 @@ resource "azurerm_virtual_machine_extension" "lab06b02ama" {
   tags                       = local.default_tags
 }
 
-resource "azurerm_virtual_machine_extension" "lab06b02da" {
-  name                       = "DependencyAgentWindows"
-  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
-  type                       = "DependencyAgentWindows"
-  type_handler_version       = "9.10"
-  automatic_upgrade_enabled  = true
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab06b02.id
-
-  settings = jsonencode({
-    enableAMA = "true"
-  })
-
-  tags = local.default_tags
-
-  depends_on = [azurerm_virtual_machine_extension.lab06b02ama]
-}
-
 resource "azurerm_monitor_data_collection_rule_association" "lab06b02" {
   name                    = "lab06b02-dcra"
   target_resource_id      = azurerm_windows_virtual_machine.lab06b02.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
   description             = "VM Insights DCR association for lab06b02"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06b02_otel" {
+  name                    = "lab06b02-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06b02.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab06b02"
 }
 
 resource "azurerm_virtual_machine_extension" "lab06b02script" {

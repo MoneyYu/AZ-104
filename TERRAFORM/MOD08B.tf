@@ -90,7 +90,8 @@ resource "azurerm_windows_virtual_machine_scale_set" "lab08vmss" {
   admin_password       = local.user_password
   computer_name_prefix = "vmss"
 
-  upgrade_mode = "Automatic"
+  # 保留給 Lab 08 示範：映像或設定更新需由講師手動套用至執行個體。
+  upgrade_mode = "Manual"
 
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
@@ -121,69 +122,45 @@ resource "azurerm_windows_virtual_machine_scale_set" "lab08vmss" {
     type = "SystemAssigned"
   }
 
+  # 必要 extension 直接納入 VMSS model，確保全新建立的執行個體設定一致。
+  extension {
+    name                       = "AzureMonitorWindowsAgent"
+    publisher                  = "Microsoft.Azure.Monitor"
+    type                       = "AzureMonitorWindowsAgent"
+    type_handler_version       = "1.0"
+    automatic_upgrade_enabled  = true
+    auto_upgrade_minor_version = true
+  }
+
+  extension {
+    name                       = "${local.lab08_name}b-vmss-iis-${local.random_str}"
+    publisher                  = "Microsoft.Compute"
+    type                       = "CustomScriptExtension"
+    type_handler_version       = "1.10"
+    auto_upgrade_minor_version = true
+
+    settings = jsonencode({
+      commandToExecute = "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from VMSS instance: ' + $env:computername)"
+    })
+  }
+
+  extension {
+    name                       = "${local.lab08_name}b-vmss-aad-${local.random_str}"
+    publisher                  = "Microsoft.Azure.ActiveDirectory"
+    type                       = "AADLoginForWindows"
+    type_handler_version       = "1.0"
+    auto_upgrade_minor_version = true
+  }
+
   tags = local.default_tags
 }
 
-# Azure Monitor Agent for VMSS
-resource "azurerm_virtual_machine_scale_set_extension" "lab08vmss_ama" {
-  name                         = "AzureMonitorWindowsAgent"
-  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
-  publisher                    = "Microsoft.Azure.Monitor"
-  type                         = "AzureMonitorWindowsAgent"
-  type_handler_version         = "1.0"
-  automatic_upgrade_enabled    = true
-  auto_upgrade_minor_version   = true
-}
-
-# Dependency Agent for VMSS
-resource "azurerm_virtual_machine_scale_set_extension" "lab08vmss_da" {
-  name                         = "DependencyAgentWindows"
-  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
-  publisher                    = "Microsoft.Azure.Monitoring.DependencyAgent"
-  type                         = "DependencyAgentWindows"
-  type_handler_version         = "9.10"
-  automatic_upgrade_enabled    = true
-  auto_upgrade_minor_version   = true
-
-  settings = jsonencode({
-    enableAMA = "true"
-  })
-
-  depends_on = [azurerm_virtual_machine_scale_set_extension.lab08vmss_ama]
-}
-
-# VM Insights DCR association for VMSS
+# VMSS 目前僅支援 log-based VM Insights，不支援新的 OTel metrics 體驗。
 resource "azurerm_monitor_data_collection_rule_association" "lab08vmss" {
   name                    = "lab08vmss-dcra"
   target_resource_id      = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
   description             = "VM Insights DCR association for lab08vmss"
-}
-
-# Install IIS on VMSS instances
-resource "azurerm_virtual_machine_scale_set_extension" "lab08vmss_iis" {
-  name                         = "${local.lab08_name}b-vmss-iis-${local.random_str}"
-  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
-  publisher                    = "Microsoft.Compute"
-  type                         = "CustomScriptExtension"
-  type_handler_version         = "1.10"
-  auto_upgrade_minor_version   = true
-
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from VMSS instance: ' + $env:computername)"
-    }
-  SETTINGS
-}
-
-# Enable AAD login for VMSS instances
-resource "azurerm_virtual_machine_scale_set_extension" "lab08vmss_aad" {
-  name                         = "${local.lab08_name}b-vmss-aad-${local.random_str}"
-  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.lab08vmss.id
-  publisher                    = "Microsoft.Azure.ActiveDirectory"
-  type                         = "AADLoginForWindows"
-  type_handler_version         = "1.0"
-  auto_upgrade_minor_version   = true
 }
 
 # Output the Load Balancer public IP

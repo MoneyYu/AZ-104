@@ -688,7 +688,11 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Monitoring your storage service with Azure Monitor Storage insights](https://learn.microsoft.com/en-us/azure/storage/common/storage-insights-overview)
 
-[Use the Map feature of VM insights to understand application components](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vminsights-maps)
+[Metrics experience for virtual machines in Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/metrics-opentelemetry-guest)
+
+[Enable VM monitoring in Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vm-enable-monitoring)
+
+[VM Insights Map and Dependency Agent retirement guidance](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vminsights-maps-retirement)
 
 [Azure Data Explorer](https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview)
 
