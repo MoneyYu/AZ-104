@@ -6,11 +6,19 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~>4.0"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~>2.12"
+    }
   }
 }
 
 provider "azurerm" {
   features {}
+  subscription_id = "ffc7fbc7-3840-4835-ad88-4eb5015d7dac"
+}
+
+provider "azapi" {
   subscription_id = "ffc7fbc7-3840-4835-ad88-4eb5015d7dac"
 }
 
@@ -121,22 +129,24 @@ resource "azurerm_log_analytics_workspace" "vminsights" {
   tags                = local.default_tags
 }
 
-resource "azurerm_log_analytics_solution" "vminsights" {
-  solution_name         = "VMInsights"
-  location              = azurerm_resource_group.az104.location
-  resource_group_name   = azurerm_resource_group.az104.name
-  workspace_resource_id = azurerm_log_analytics_workspace.vminsights.id
-  workspace_name        = azurerm_log_analytics_workspace.vminsights.name
+resource "azurerm_monitor_workspace" "vminsights" {
+  name                = "amw-vminsights-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
 
-  plan {
-    publisher = "Microsoft"
-    product   = "OMSGallery/VMInsights"
-  }
+# 明確採用 resource-context 存取模式，讓 VM 的 Monitor / Metrics 分頁可查詢 OTel 指標。
+resource "azapi_update_resource" "vminsights_resource_context" {
+  type        = "Microsoft.Monitor/accounts@2025-10-03"
+  resource_id = azurerm_monitor_workspace.vminsights.id
 
-  # 租戶的標籤繼承 Policy 會自動補上 environment 標籤,且此資源型別對 tags 處理特殊,
-  # 忽略 tags 變更以避免每次 plan 都出現差異。
-  lifecycle {
-    ignore_changes = [tags]
+  body = {
+    properties = {
+      metrics = {
+        enableAccessUsingResourcePermissions = true
+      }
+    }
   }
 }
 
@@ -167,11 +177,6 @@ resource "azurerm_monitor_data_collection_rule" "vminsights" {
   data_flow {
     streams      = ["Microsoft-InsightsMetrics"]
     destinations = ["vminsights-dest-metrics"]
-  }
-
-  data_flow {
-    streams      = ["Microsoft-ServiceMap"]
-    destinations = ["vminsights-dest-la"]
   }
 
   # Windows 事件日誌(System / Application / Security)→ Log Analytics 的 Event 表
@@ -220,12 +225,6 @@ resource "azurerm_monitor_data_collection_rule" "vminsights" {
       name = "detailedPerfCounters"
     }
 
-    extension {
-      streams        = ["Microsoft-ServiceMap"]
-      extension_name = "DependencyAgent"
-      name           = "DependencyAgentDataSource"
-    }
-
     # Windows 事件日誌:System / Application(Critical/Error/Warning)+ Security 登入稽核事件
     windows_event_log {
       streams = ["Microsoft-Event"]
@@ -246,8 +245,60 @@ resource "azurerm_monitor_data_collection_rule" "vminsights" {
   }
 
   tags = local.default_tags
+}
 
-  depends_on = [azurerm_log_analytics_solution.vminsights]
+# 新的 VM 監控體驗使用 OpenTelemetry 指標；預設系統指標不另計費。
+resource "azapi_resource" "vminsights_otel" {
+  type      = "Microsoft.Insights/dataCollectionRules@2024-03-11"
+  name      = "MSVMOtel-japaneast-${local.random_str}"
+  parent_id = azurerm_resource_group.az104.id
+  location  = azurerm_resource_group.az104.location
+  tags      = local.default_tags
+
+  body = {
+    kind = "Windows"
+    properties = {
+      dataSources = {
+        performanceCountersOTel = [
+          {
+            name                       = "OtelPerfCounters"
+            streams                    = ["Microsoft-OtelPerfMetrics"]
+            samplingFrequencyInSeconds = 60
+            counterSpecifiers = [
+              "system.cpu.time",
+              "system.memory.usage",
+              "system.disk.io",
+              "system.disk.operations",
+              "system.disk.operation_time",
+              "system.filesystem.usage",
+              "system.network.io",
+              "system.network.dropped",
+              "system.network.errors",
+              "system.uptime",
+            ]
+          },
+        ]
+      }
+
+      destinations = {
+        monitoringAccounts = [
+          {
+            name              = "vminsights-dest-amw"
+            accountResourceId = azurerm_monitor_workspace.vminsights.id
+          },
+        ]
+      }
+
+      dataFlows = [
+        {
+          streams      = ["Microsoft-OtelPerfMetrics"]
+          destinations = ["vminsights-dest-amw"]
+        },
+      ]
+    }
+  }
+
+  depends_on = [azapi_update_resource.vminsights_resource_context]
 }
 
 # =============================================================================

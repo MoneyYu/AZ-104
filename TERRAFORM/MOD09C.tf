@@ -105,6 +105,10 @@ resource "azurerm_dashboard_grafana" "lab09c" {
     resource_id = azurerm_monitor_workspace.lab09c.id
   }
 
+  azure_monitor_workspace_integrations {
+    resource_id = azurerm_monitor_workspace.vminsights.id
+  }
+
   tags = local.default_tags
 }
 
@@ -120,6 +124,13 @@ resource "azurerm_role_assignment" "lab09c_grafana_data_reader" {
   principal_id                     = azurerm_dashboard_grafana.lab09c.identity[0].principal_id
   role_definition_name             = "Monitoring Data Reader"
   scope                            = azurerm_monitor_workspace.lab09c.id
+  skip_service_principal_aad_check = true
+}
+
+resource "azurerm_role_assignment" "grafana_vminsights_amw_data_reader" {
+  principal_id                     = azurerm_dashboard_grafana.lab09c.identity[0].principal_id
+  role_definition_name             = "Monitoring Data Reader"
+  scope                            = azurerm_monitor_workspace.vminsights.id
   skip_service_principal_aad_check = true
 }
 

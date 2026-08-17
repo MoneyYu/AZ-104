@@ -1,4 +1,8 @@
 ## LAB-06-C-APP-GATEWAY
+locals {
+  lab06c_bepool_name = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
+}
+
 resource "azurerm_virtual_network" "lab06c" {
   name                = "${local.lab06c_name}-vnet-${local.random_str}"
   address_space       = ["10.10.0.0/16"]
@@ -62,11 +66,7 @@ resource "azurerm_application_gateway" "lab06c" {
   }
 
   backend_address_pool {
-    name = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
-    ip_addresses = [
-      azurerm_network_interface.lab06c01.private_ip_address,
-      azurerm_network_interface.lab06c02.private_ip_address
-    ]
+    name = local.lab06c_bepool_name
   }
 
   backend_http_settings {
@@ -89,7 +89,7 @@ resource "azurerm_application_gateway" "lab06c" {
     name                       = "${local.lab06c_name}-appgw-rule-${local.random_str}"
     rule_type                  = "Basic"
     http_listener_name         = "${local.lab06c_name}-appgw-listener-${local.random_str}"
-    backend_address_pool_name  = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
+    backend_address_pool_name  = local.lab06c_bepool_name
     backend_http_settings_name = "${local.lab06c_name}-appgw-http-setting-${local.random_str}"
     priority                   = 100
   }
@@ -210,6 +210,12 @@ resource "azurerm_network_interface_security_group_association" "lab06c01" {
   network_security_group_id = azurerm_network_security_group.lab06c.id
 }
 
+resource "azurerm_network_interface_application_gateway_backend_address_pool_association" "lab06c01" {
+  network_interface_id    = azurerm_network_interface.lab06c01.id
+  ip_configuration_name   = azurerm_network_interface.lab06c01.ip_configuration[0].name
+  backend_address_pool_id = "${azurerm_application_gateway.lab06c.id}/backendAddressPools/${local.lab06c_bepool_name}"
+}
+
 resource "azurerm_windows_virtual_machine" "lab06c01" {
   name                  = "${local.lab06c_name}-vm01-${local.random_str}"
   location              = azurerm_resource_group.az104.location
@@ -252,29 +258,18 @@ resource "azurerm_virtual_machine_extension" "lab06c01ama" {
   tags                       = local.default_tags
 }
 
-resource "azurerm_virtual_machine_extension" "lab06c01da" {
-  name                       = "DependencyAgentWindows"
-  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
-  type                       = "DependencyAgentWindows"
-  type_handler_version       = "9.10"
-  automatic_upgrade_enabled  = true
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab06c01.id
-
-  settings = jsonencode({
-    enableAMA = "true"
-  })
-
-  tags = local.default_tags
-
-  depends_on = [azurerm_virtual_machine_extension.lab06c01ama]
-}
-
 resource "azurerm_monitor_data_collection_rule_association" "lab06c01" {
   name                    = "lab06c01-dcra"
   target_resource_id      = azurerm_windows_virtual_machine.lab06c01.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
   description             = "VM Insights DCR association for lab06c01"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06c01_otel" {
+  name                    = "lab06c01-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06c01.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab06c01"
 }
 
 resource "azurerm_virtual_machine_extension" "lab06c01script" {
@@ -309,6 +304,12 @@ resource "azurerm_network_interface" "lab06c02" {
 resource "azurerm_network_interface_security_group_association" "lab06c02" {
   network_interface_id      = azurerm_network_interface.lab06c02.id
   network_security_group_id = azurerm_network_security_group.lab06c.id
+}
+
+resource "azurerm_network_interface_application_gateway_backend_address_pool_association" "lab06c02" {
+  network_interface_id    = azurerm_network_interface.lab06c02.id
+  ip_configuration_name   = azurerm_network_interface.lab06c02.ip_configuration[0].name
+  backend_address_pool_id = "${azurerm_application_gateway.lab06c.id}/backendAddressPools/${local.lab06c_bepool_name}"
 }
 
 resource "azurerm_windows_virtual_machine" "lab06c02" {
@@ -353,29 +354,18 @@ resource "azurerm_virtual_machine_extension" "lab06c02ama" {
   tags                       = local.default_tags
 }
 
-resource "azurerm_virtual_machine_extension" "lab06c02da" {
-  name                       = "DependencyAgentWindows"
-  publisher                  = "Microsoft.Azure.Monitoring.DependencyAgent"
-  type                       = "DependencyAgentWindows"
-  type_handler_version       = "9.10"
-  automatic_upgrade_enabled  = true
-  auto_upgrade_minor_version = true
-  virtual_machine_id         = azurerm_windows_virtual_machine.lab06c02.id
-
-  settings = jsonencode({
-    enableAMA = "true"
-  })
-
-  tags = local.default_tags
-
-  depends_on = [azurerm_virtual_machine_extension.lab06c02ama]
-}
-
 resource "azurerm_monitor_data_collection_rule_association" "lab06c02" {
   name                    = "lab06c02-dcra"
   target_resource_id      = azurerm_windows_virtual_machine.lab06c02.id
   data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
   description             = "VM Insights DCR association for lab06c02"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06c02_otel" {
+  name                    = "lab06c02-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06c02.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab06c02"
 }
 
 resource "azurerm_virtual_machine_extension" "lab06c02script" {
