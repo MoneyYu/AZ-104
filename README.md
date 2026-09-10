@@ -420,6 +420,14 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Application Gateway Tier Compare](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant)
 
+[Application Gateway URL path-based routing](https://learn.microsoft.com/en-us/azure/application-gateway/url-route-overview)
+
+[Application Gateway backend settings](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-http-settings)
+
+[Application Gateway health probes](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-probe-overview)
+
+[Application Gateway redirects](https://learn.microsoft.com/en-us/azure/application-gateway/redirect-overview)
+
 [Traffic Manager Routing](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods)
 
 [What is Azure Front Door?](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview)
@@ -848,6 +856,14 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 - [Load Balancer](https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/load-balancing-overview)
 
 - [Application Gateway](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant)
+
+    - [Application Gateway URL path-based routing](https://learn.microsoft.com/en-us/azure/application-gateway/url-route-overview)
+
+    - [Application Gateway backend settings](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-http-settings)
+
+    - [Application Gateway health probes](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-probe-overview)
+
+    - [Application Gateway redirects](https://learn.microsoft.com/en-us/azure/application-gateway/redirect-overview)
 
 - [Traffic Manager](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods)
 

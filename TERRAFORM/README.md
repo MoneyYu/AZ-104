@@ -363,6 +363,53 @@ if ($stateInstance.status -eq 'tainted') {
 
 不要使用 `-allow-missing`、`state rm` 或手工編輯 state。
 
+## M06C: Application Gateway path-based routing
+
+M06C 以 Contoso 線上媒體商店示範 Application Gateway 如何先依 URL path 選擇 backend pool，再於選定的 pool 內執行負載平衡。
+
+| Request path | Backend pool / target | 示範重點 |
+| --- | --- | --- |
+| `/` | default pool：vm01 + vm02 | 多次要求會在 pool 內負載平衡 |
+| `/images/*` | vm03 | backend 保留並收到 `/images/*`，未設定 path override |
+| `/video/*` | vm04 | backend 收到 `/`，刻意設定 path override |
+| `/legacy/*` | `/` | 永久重新導向至根路徑 |
+
+`/images/*` 與 `/video/*` 的差異是刻意安排：images 的 backend HTTP settings 不覆寫 path，因此 IIS 收到原始 `/images/*`；video 的 settings 將 path 覆寫為 `/`，因此 vm04 以網站根目錄內容回應。Path-based routing 決定要進入哪個 pool；若 pool 內有多個健康成員（例如 default pool 的 vm01 與 vm02），才會在該 pool 內進行負載平衡。
+
+Backend 成員是透過 NIC association 加入 pool，不是直接寫在 Application Gateway 的 `backend_address_pool` block。部署後，Azure CLI 應在 `backendIPConfigurations` 顯示成員，`backendAddresses` 則為空：
+
+```powershell
+az network application-gateway show -g AZ104-<postfix> -n lab06c-appgw-cat --query "backendAddressPools[].{name:name,ipcfg:length(backendIPConfigurations),addr:length(backendAddresses)}" -o table
+```
+
+檢閱 `azurerm_application_gateway.lab06c` 的 Terraform plan 時，注意 provider 將 gateway 的巢狀 blocks 視為 Sets；即使實際只修改其中一部分，文字輸出也可能看起來像整個 block 被移除後重新加入。Gateway 必須顯示為 `~ update in-place`，不可出現 `-/+ destroy and then create replacement`。逐項核對 backend pools、HTTP settings、probes、path rules 與 redirect，不能只依增刪行數判斷風險。
+
+### Post-deployment validation
+
+從 repo 根目錄執行完整講師腳本，確認 root pool 的 vm01/vm02 回應、images、video、legacy redirect 與 backend health：
+
+```powershell
+.\DEMO\Module06\AGW-PathRouting.ps1 -ResourceGroup AZ104-<postfix>
+```
+
+也可以逐項檢查資料平面路由：
+
+```powershell
+$fqdn = az network public-ip show -g AZ104-<postfix> -n lab06c-pip-cat --query "dnsSettings.fqdn" -o tsv
+curl.exe -fsS "http://$fqdn/"
+curl.exe -fsS "http://$fqdn/images/"
+curl.exe -fsS "http://$fqdn/video/"
+curl.exe -sS -o NUL -w "HTTP %{http_code}; redirect %{redirect_url}`n" "http://$fqdn/legacy/"
+
+az network application-gateway show-backend-health `
+  -g AZ104-<postfix> `
+  -n lab06c-appgw-cat `
+  --query "backendAddressPools[].{pool:backendAddressPool.id,servers:backendHttpSettingsCollection[].servers[].{address:address,health:health}}" `
+  -o jsonc
+```
+
+`terraform validate` 與 `terraform plan` 只能驗證設定及控制平面變更，不能證明實際 routing 行為。完成部署後仍必須執行上述 data-plane HTTP checks，確認回應內容、301 redirect target 與 backend health。
+
 ## Full deployment preview
 
 只有在 M05D Router 健康且 state 已不再 tainted 後，才能建立 refreshed、無 `-target` 的完整 plan。這個區塊再次檢查 taint，避免沿用錯誤順序：
