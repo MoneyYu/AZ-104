@@ -195,6 +195,16 @@ resource "azurerm_application_gateway" "lab06c" {
     url_path_map_name  = local.lab06c_url_path_map_name
     priority           = 100
   }
+
+  # App Gateway v2 requires these NSG rules while it exists. Keep the
+  # dependency on the gateway so destroy removes the gateway before the rules.
+  depends_on = [
+    azurerm_network_security_rule.lab06cagw_http,
+    azurerm_network_security_rule.lab06cagw_https,
+    azurerm_network_security_rule.lab06cagw_gwmgr,
+    azurerm_network_security_rule.lab06cagw_lb,
+  ]
+
   tags = local.default_tags
 }
 

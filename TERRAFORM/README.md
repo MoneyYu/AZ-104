@@ -410,6 +410,21 @@ az network application-gateway show-backend-health `
 
 `terraform validate` 與 `terraform plan` 只能驗證設定及控制平面變更，不能證明實際 routing 行為。完成部署後仍必須執行上述 data-plane HTTP checks，確認回應內容、301 redirect target 與 backend health。
 
+### NSG 規則相依性與銷毀順序 (Destroy ordering)
+
+Application Gateway v2 要求其所在子網路的 NSG 必須開放 `GatewayManager` 的輸入流量（TCP 65200-65535）。當 Application Gateway 仍存在於子網路時，Azure 控制平面會拒絕移除該 NSG 規則。
+
+若 NSG 規則以獨立的 `azurerm_network_security_rule` 資源定義，在未設定顯式相依性的情況下，Terraform 在執行銷毀（destroy）時會將這些獨立規則視為葉節點並過早刪除，導致 `ApplicationGatewaySubnetInboundTrafficBlockedByNetworkSecurityGroup` 錯誤。
+
+因此在 `azurerm_application_gateway.lab06c` 中加入顯式 `depends_on` 指向四條 NSG 規則（`lab06cagw_http`、`lab06cagw_https`、`lab06cagw_gwmgr`、`lab06cagw_lb`）：
+- **建立（Create）時**：強制先建立 NSG 規則，再建立 Application Gateway。
+- **銷毀（Destroy）時**：強制先刪除 Application Gateway，再刪除 NSG 規則。
+
+**注意**：相依性方向不可反轉（不可在 NSG 規則上加上對 Application Gateway 的依賴，否則會導致銷毀順序顛倒）。
+
+詳細資訊與官方需求請參考：
+https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure
+
 ## Full deployment preview
 
 只有在 M05D Router 健康且 state 已不再 tainted 後，才能建立 refreshed、無 `-target` 的完整 plan。這個區塊再次檢查 taint，避免沿用錯誤順序：
