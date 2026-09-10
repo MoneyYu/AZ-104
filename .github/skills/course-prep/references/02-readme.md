@@ -26,15 +26,19 @@ rationale, no Terraform, no internal notes. Those live in `docs/` (Phase 6 and
      6 months note.
    - **Instruction**: the lab exercise links (grouped per lab repo if there are several), plus each
      `main.zip`. Add a `:::warning` if labs aren't localized.
-6. **`## Links`** — curated, **module-grouped** authoritative Microsoft links: a
-   `### Foundations & cross-cutting` group, then one `### Mxx - <module name>` group per course
-   module. Keep it **link-only**: when the slides surface a comparison (e.g. *ChatCompletions API
-   vs Responses API*, *Default vs Custom deployment settings*), add a concise `##### X vs Y` topic
-   heading with the authoritative link(s) beneath — **no inline prose summaries or comparison
-   tables**. The conceptual depth for those comparisons lives in `docs/teaching-guide.md`.
+6. **`## Links`** — curated official references grouped in the course's teaching order. First
+   inspect the **original/source course README** and preserve its module-reference layout, heading
+   rhythm, and standalone-link formatting while replacing the old subject matter with the current
+   course. Reconcile its headings with the current official module order; when the current course
+   has explicit Learning Paths, Learning Path headings may group those modules without changing
+   the source layout's link presentation. Do not invent a service/resource taxonomy. Every link
+   must directly support that module's official objectives.
 7. **`## Videos`** — curated, **module-grouped** *official-only* videos. See **Videos** below.
-8. *(recommended)* **`## Mind Map`** — a ```` ```markmap ```` overview, placed **at the very end**
-   (only `## Contact` after it), mirroring the finalized Links taxonomy. See **Mind map** below.
+8. **`## Mind Map`** — a ```` ```markmap ```` overview representing the course outline in the
+   structural style used by `MoneyYu/AI-901`. See **Mind map** below.
+9. **`## Exam & Credential`** — official exam, certification, and study-guide links when the
+   course maps to a credential. Use the standalone-link formatting contract below.
+10. **`## Contact`** — course-owner contact details, following the sibling-repo convention.
 
 ## Per-instance metadata to refresh every delivery
 
@@ -48,17 +52,48 @@ update them and nothing else when only re-running the same course.
 - Prefer canonical `learn.microsoft.com/...` URLs over blog/marketing pages. End-user (business
   user) how-to pages on `support.microsoft.com` are also authoritative.
 - Keep wording concise and attendee-appropriate; technical depth goes in `docs/teaching-guide.md`.
-- When the slides show two competing concepts, add a concise `##### X vs Y` topic heading in the
-  relevant `## Links` subsection with the authoritative link(s) beneath — keep the explanation /
-  comparison table in `docs/teaching-guide.md`, **not** in the attendee README.
+- The Links section is a reference index, not a concept summary. Put explanations and comparison
+  tables in `docs/teaching-guide.md`; the markmap carries the concise curriculum concepts.
 
 ## Organizing & verifying links
 
 **Group by module, not by service.** The `## Links` section mirrors the course's authoritative
-module list: a `### Foundations & cross-cutting` group first (concepts that span modules), then one
-`### Mxx - <module name>` group per module. Inside each group, lead with the Microsoft Learn
-**module** page, then the supporting concept/how-to pages. Add `##### X vs Y` sub-headings only
-where the course actually contrasts two concepts.
+module list. If the course publishes explicit Learning Paths, use a `### LPx - <path name>` heading
+and `#### Mxx - <module name>` beneath it; otherwise use `### Mxx - <module name>`. Do **not** add
+a generic `Foundations`, service, or resource category unless it is an official part of the course
+outline. Inside each module, lead with the Microsoft Learn **module** page, then only supporting
+concept/how-to pages that map directly to that module's objectives.
+
+**Source and relevance contract**
+- Official sources only: Microsoft Learn/product documentation, official Microsoft/GitHub
+  documentation, or an official Microsoft-maintained repository required by the module.
+- Prefer the exact product/concept/how-to page over a generic product hub.
+- Do not add blogs, Q&A, community posts, third-party tutorials, pricing pages, or links included
+  merely because they mention the same product.
+- A supporting link belongs under exactly the module that teaches it. Do not use a related topic
+  as filler in a neighboring module.
+
+**Exact Markdown layout for standalone reference links**
+
+```markdown
+### LP1 - <learning path>
+#### M01 - <module name>
+[Microsoft Learn Module](https://learn.microsoft.com/...)
+
+[Directly relevant official reference](https://learn.microsoft.com/...)
+
+[Another directly relevant official reference](https://learn.microsoft.com/...)
+
+#### M02 - <module name>
+[Microsoft Learn Module](https://learn.microsoft.com/...)
+```
+
+- The first link is on the line immediately after its heading: **no blank line after a heading**.
+- Put exactly one blank line between standalone links.
+- Do **not** use bullet points or numbered lists for standalone links.
+- Do not add prose summaries between links.
+- These spacing rules also apply to other standalone-link groups such as Course Materials, Infos,
+  and Exam/Credential. They do not prohibit bullets inside the markmap or the Contact section.
 
 **Verify semantically — a 200 is not enough.** For every candidate URL, confirm:
 1. **Final URL after redirects** — keep the canonical destination in the README.
@@ -80,9 +115,10 @@ the *same* verified URLs. Re-run before every delivery — Microsoft rename/reti
 
 ## Videos
 
-The `## Videos` section is **module-grouped and official-only**. Structure it as a `### Foundations`
-group (a few genuinely foundational clips) plus one `### Mxx - <module name>` table per module.
-Use a 3-column table: `| No. | Name | Link |` with `youtu.be/<id>` links.
+The `## Videos` section is **module-grouped and official-only**. Use one `### Mxx - <module name>`
+table per module. Add a `### Foundations` group only when Foundations is explicitly part of the
+official course outline or the user requests it. Use a 3-column table:
+`| No. | Name | Link |` with `youtu.be/<id>` links.
 
 **Sourcing priority (best first):**
 1. The course's **own official video series/playlist** if one exists (search `aka.ms/<COURSE>onYouTube`
@@ -108,27 +144,27 @@ Use a 3-column table: `| No. | Name | Link |` with `youtu.be/<id>` links.
 
 ## Mind map
 
-Add a `## Mind Map` as the **last content section** (only `## Contact` follows it), like the sibling
-repos (e.g. `MoneyYu/AI-901`). It is a single ```` ```markmap ```` fenced block (HackMD renders it).
+Add a `## Mind Map` near the end, followed by `## Exam & Credential` and `## Contact`, like
+`MoneyYu/AI-901`. It is a single ```` ```markmap ```` fenced block (HackMD renders it).
 
 **Structure**
 - **Root `#`** = the course title.
-- **`##` nodes** = `Foundations` + each `Mxx - <module name>` — i.e. **mirror the finalized `## Links`
-  taxonomy** so the map, the links, and the modules all agree.
-- **`###` / bullet nodes** = the concept spine of each module (below).
+- **`##` nodes** = each `Mxx - <module name>` in official course order. Add another node only when
+  it is explicitly part of the official course outline.
+- **`###` nodes** = two or three curriculum subtopics from that module's official objectives.
+- **Bullet nodes** = concise core concepts, comparisons, named capabilities, or process steps under
+  the matching curriculum subtopic.
 
-**What content each branch must carry** — the map is a *revision aid*, so every module branch should
-capture the things a learner is tested/assessed on, not marketing lines:
-- **The module's core concepts / the "what"** — the handful of ideas the module teaches (e.g. what an
-  agent is, its parts, the benefits).
-- **The course's `X vs Y` contrasts** — reuse the same comparisons as the `##### X vs Y` link
-  headings, written with **bold `**X**` vs `**Y**`** (e.g. free-tier **vs** licensed, tool-A **vs**
-  tool-B, web **vs** work grounding). These are the highest-value revision points.
-- **Named items the module enumerates** — e.g. each prebuilt agent/tool/service by name, and the
-  specific capabilities or limits the slides call out.
-- **Labs / hands-on** — a short `**Labs**: …` note on any module that has exercises.
-- **Authoritative links inline** — attach the **same verified URLs** from the ledger as
-  `[text](url)` on the concept they explain (not a separate link list).
+**Content contract** — the map is a compact visualization of the **course outline**, not a copy of
+the Links section and not a general architecture diagram:
+- Derive branches from official module objectives, slide agendas, and knowledge-check themes.
+- Capture the core concepts and the course's important comparisons in learner-facing language.
+- Attach selected verified links inline on the concept they explain, as AI-901 does; do not create
+  separate link-list branches or paste every reference.
+- Keep trainer implementation choices, Terraform, demo paths, local/Azure setup notes, credentials,
+  delivery metadata, lab logistics, and model-selection rationale out of the map.
+- Do not add `Foundations`, `Labs`, exam metadata, or resource categories by habit. Include them
+  only if the user or the official course outline explicitly requires them.
 
 **Leave out**: per-instance metadata, Skillable/ESI logistics, marketing taglines, and any link not
 already verified in the ledger. Don't dump every link — just the spine.
@@ -141,9 +177,105 @@ already verified in the ledger. Don't dump every link — just the spine.
 - Core concept, embedded as [concept](https://learn.microsoft.com/...)
 - **<Option A>** vs **<Option B>**: one-line distinction
 - Named item 1 / Named item 2 / Named item 3
-- **Labs**: <exercise>, <exercise>
 ```
 
-- Keep it dense-but-scannable; prefer 2–5 bullets per module over exhaustive detail.
+- Keep it dense-but-scannable; prefer two or three `###` curriculum subtopics and 4–7 total bullets
+  per module over exhaustive detail.
 - Verify the fence is balanced (one ```` ```markmap ```` open, one ```` ``` ```` close) and that every
   embedded link is in the verified ledger.
+
+## README validation contract
+
+Before accepting the README:
+
+```powershell
+$lines = Get-Content .\README.md
+$sectionNames = @('Course Materials', 'Infos', 'Links', 'Exam & Credential')
+$documentHeadings = @()
+$inFence = $false
+for ($lineIndex = 0; $lineIndex -lt $lines.Count; $lineIndex++) {
+    if ($lines[$lineIndex] -match '^```') {
+        $inFence = -not $inFence
+        continue
+    }
+    if (-not $inFence -and $lines[$lineIndex] -match '^## ') {
+        $documentHeadings += [pscustomobject]@{
+            Line       = $lines[$lineIndex]
+            LineNumber = $lineIndex + 1
+        }
+    }
+}
+
+$requiredOrder = @(
+    'Course Materials',
+    'Infos',
+    'Lab',
+    'Links',
+    'Mind Map',
+    'Exam & Credential',
+    'Contact'
+)
+$positions = @{}
+
+foreach ($heading in $requiredOrder) {
+    $positions[$heading] = ($documentHeadings |
+        Where-Object Line -eq "## $heading" |
+        Select-Object -First 1).LineNumber
+    if (-not $positions[$heading]) {
+        throw "Missing required section: $heading"
+    }
+}
+
+for ($i = 1; $i -lt $requiredOrder.Count; $i++) {
+    if ($positions[$requiredOrder[$i]] -le $positions[$requiredOrder[$i - 1]]) {
+        throw "Required sections are out of order: $($requiredOrder[$i - 1]) before $($requiredOrder[$i])"
+    }
+}
+
+$afterMindMap = @($documentHeadings |
+    Where-Object LineNumber -gt $positions['Mind Map'] |
+    ForEach-Object Line)
+if (($afterMindMap -join '|') -ne '## Exam & Credential|## Contact') {
+    throw 'Only ## Exam & Credential and ## Contact may follow ## Mind Map.'
+}
+
+foreach ($sectionName in $sectionNames) {
+    $start = $positions[$sectionName]
+    $end = ($documentHeadings |
+        Where-Object LineNumber -gt $start |
+        Select-Object -First 1).LineNumber
+    if (-not $end) {
+        $end = $lines.Count + 1
+    }
+    $section = $lines[($start - 1)..($end - 2)]
+
+    for ($i = 0; $i -lt $section.Count; $i++) {
+        if ($section[$i] -match '^#{2,4} ' -and $section[$i + 1] -eq '') {
+            throw "Blank line after heading: $($section[$i])"
+        }
+        if ($section[$i] -match '^([-*+]|\d+[.)])\s+\[') {
+            throw "Standalone link uses a list marker: $($section[$i])"
+        }
+        if ($section[$i] -match '^\[') {
+            $next = $i + 1
+            while ($next -lt $section.Count -and $section[$next] -eq '') {
+                $next++
+            }
+            if ($next -lt $section.Count -and $section[$next] -match '^\[' -and $next -ne $i + 2) {
+                throw "Links must have exactly one blank line between them: $($section[$i])"
+            }
+        }
+    }
+}
+
+$raw = $lines -join "`n"
+$map = [regex]::Match($raw, '(?s)```markmap\s+(.*?)```').Groups[1].Value
+$expectedModules = <official module count>
+if ([regex]::Matches($map, '(?m)^## M\d{2}\s+-').Count -ne $expectedModules) {
+    throw 'Mind map module count does not match the official course.'
+}
+```
+
+Replace `<official module count>` with the researched course value before running the check. Also
+verify every README URL is present in the shared ledger, run `scripts/link_check.py`, and perform a
+focused semantic review for module placement and curriculum coverage.

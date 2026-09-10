@@ -56,7 +56,7 @@ progress with a todo list and (for multi-step phases) a `plan.md`.
 |---|-------|-----------|
 | 0 | **Plan & track** — restate scope, create todos / `plan.md`, confirm the target GitHub repo | — |
 | 1 | **Research & verify the course** — confirm the *current* course identity, modules, labs, credential | [references/01-research.md](references/01-research.md) |
-| 2 | **Attendee README** — HackMD reference page: module-grouped Links, official-only Videos, and a markmap mind map at the end; verify every link & video | [references/02-readme.md](references/02-readme.md) |
+| 2 | **Attendee README** — HackMD reference page: module-grouped Links, official-only Videos, and a markmap near the end before Exam/Credential and Contact; verify every link & video | [references/02-readme.md](references/02-readme.md) |
 | 3 | **Demo backup Terraform** — full stack to a completed (resources + data-plane) state | [references/03-terraform.md](references/03-terraform.md) |
 | 4 | **Model selection** — validate against the retirement schedule; latest GA | [references/04-models.md](references/04-models.md) |
 | 5 | **Validate & end-to-end test** — fmt/validate, AST parse, real apply + destroy | [references/05-validation.md](references/05-validation.md) |
@@ -82,7 +82,11 @@ Phases 2–4 are usually iterated together (README ↔ models ↔ Terraform). Ph
    state (resources **and** data plane), so the demo shows real results immediately.
 6. **Verify every external link *semantically* before adding it** — check status **and** final URL
    (after redirects) **and** page title/locale, not just HTTP 200; drop links that 200 but redirect
-   to a generic hub/browse page. **Videos: official Microsoft channels ONLY**, confirmed LIVE via
+   to a generic hub/browse page. README references must be official, directly relevant to the
+   matching course module, and use the exact standalone-link layout in
+   [references/02-readme.md](references/02-readme.md). The mind map visualizes the official course
+   outline in the `MoneyYu/AI-901` style; it is not a generic concept map or link directory.
+   **Videos: official Microsoft channels ONLY**, confirmed LIVE via
    YouTube oEmbed, grouped by module, no third-party and no padding. Reuse
    [`scripts/link_check.py`](scripts/link_check.py) and re-verify before every delivery. Details:
    [references/02-readme.md](references/02-readme.md).

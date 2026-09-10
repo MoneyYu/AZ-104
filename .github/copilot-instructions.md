@@ -33,7 +33,6 @@ terraform validate   # 語法/型別檢查
 terraform plan       # 預覽變更
 ```
 
-- ⛔ **絕對不要執行 `terraform apply`**（也避免 `destroy`）。其餘 terraform 指令皆可執行。
 - README / 連結變更不需 build/test；但每個外部連結加入前要先確認可用（HTTP 200）。
 
 ## Terraform 慣例
