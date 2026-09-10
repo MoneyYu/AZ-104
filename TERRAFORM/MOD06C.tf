@@ -157,7 +157,7 @@ resource "azurerm_application_gateway" "lab06c" {
   redirect_configuration {
     name                 = local.lab06c_redirect_configuration_name
     redirect_type        = "Permanent"
-    target_listener_name = "${local.lab06c_name}-appgw-listener-${local.random_str}"
+    target_url           = "http://${azurerm_public_ip.lab06c.fqdn}/"
     include_path         = false
     include_query_string = false
   }
