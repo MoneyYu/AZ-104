@@ -9,10 +9,36 @@ resource "azurerm_subnet" "lab08vmss" {
   address_prefixes     = ["10.10.3.0/24"]
 }
 
-# Subnet-level NSG association for VMSS subnet (shared with MOD08 NSG)
+# VMSS 子網路專屬 NSG:與 MOD08 的 default 子網路分開,示範不同子網路套用不同 NSG。
+# 只開放 public Load Balancer 服務所需的 80 埠,不繼承 default 子網路的 RDP 規則。
+resource "azurerm_network_security_group" "lab08vmss" {
+  name                = "${local.lab08_name}b-vmss-nsg-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
+
+# 公開 Load Balancer 的入站流量會保留原始用戶端來源 IP(屬 Internet),
+# 不會命中 AllowAzureLoadBalancerInBound 服務標籤,因此必須明確放行 80 埠,
+# 否則會被預設規則 DenyAllInBound 擋下,VMSS 網頁示範將無法連線。
+resource "azurerm_network_security_rule" "lab08vmss_http" {
+  name                        = "AllowHTTP"
+  priority                    = 110
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefix       = "*"
+  destination_port_range      = "80"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab08vmss.name
+}
+
+# Subnet-level NSG association for VMSS subnet (dedicated NSG)
 resource "azurerm_subnet_network_security_group_association" "lab08vmss" {
   subnet_id                 = azurerm_subnet.lab08vmss.id
-  network_security_group_id = azurerm_network_security_group.lab08.id
+  network_security_group_id = azurerm_network_security_group.lab08vmss.id
 }
 
 # Create a Load Balancer for VMSS
@@ -196,5 +222,21 @@ resource "azurerm_monitor_diagnostic_setting" "lab08vmss_public_ip" {
 
   enabled_metric {
     category = "AllMetrics"
+  }
+}
+
+# vmss-subnet 改用專屬 NSG 後，需自行設定診斷；否則該子網路的 NSG 事件
+# 會隨著脫離 lab08-nsg 而不再送進 Log Analytics。類別與 MOD08 的兩個 NSG 一致。
+resource "azurerm_monitor_diagnostic_setting" "lab08vmss_nsg" {
+  name                       = "lab08vmss-diag"
+  target_resource_id         = azurerm_network_security_group.lab08vmss.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category = "NetworkSecurityGroupEvent"
+  }
+
+  enabled_log {
+    category = "NetworkSecurityGroupRuleCounter"
   }
 }

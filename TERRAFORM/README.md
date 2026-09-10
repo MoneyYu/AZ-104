@@ -52,6 +52,59 @@ Azure 會依區域產生 `<label>.<region>.cloudapp.azure.com` FQDN。DNS label 
 
 不要把 East Asia subnet 改為使用 Japan East 的共用 NSG。修改 NSG 佈局後，完整 plan 必須確認三個 subnet 都仍有 NSG association。
 
+### M08 / M08B subnet NSG 佈局
+
+`lab08-vnet-cat` 的三個 subnet 各自使用不同 NSG，不可合併：
+
+| Subnet | NSG | 對外開放的自訂規則 |
+| --- | --- | --- |
+| `default` | `lab08-nsg-cat` | `AllowRDP` 3389，來源為 `data.http.myip` 取得的講師公網 IP |
+| `AzureBastionSubnet` | `lab08-bastion-nsg-cat` | Azure Bastion 要求的完整輸入/輸出規則 |
+| `vmss-subnet` | `lab08b-vmss-nsg-cat` | `AllowHTTP` 80，來源 `*` |
+
+上表只列**自訂**規則。三個 subnet 的 VNet 內部流量一律由預設規則 `AllowVnetInBound` 放行，因此 Bastion 連線與跳板機 RDP 都不需要額外規則。
+
+`default` 的 `AllowRDP` 目前是**示範用途，實際上不會被命中**：`lab08-vm-cat` 的 NIC 沒有 public IP（`lab08-pip-cat` 屬於 Bastion），沒有任何來自 Internet 的路徑能觸及該規則。講師實際是透過 Bastion（443）連線，走的是 `AllowVnetInBound`。保留此規則是為了示範「以來源 IP 限縮 NSG 規則」的寫法；若日後為 VM 加上 public IP，它才會真正生效。
+
+⚠️ 已觀察到 `lab08-nsg-cat` 上的 `AllowRDP` 會被外部程序反覆清除：套用後數十分鐘內規則數會歸零，且 Activity Log 未出現對應的 `securityRules/delete` 事件（來源尚未確認）。因此 `terraform plan` 會**持續**顯示 `azurerm_network_security_rule.lab08_rdp will be created`。由於上述路徑本來就不會被命中，此漂移**不影響任何示範**，重複 apply 也無法根治；請直接忽略，不要因此判定環境異常。相對地，`lab08b-vmss-nsg-cat` 的 `AllowHTTP` 未受影響——若它變成 0 條規則，M08B 網頁示範就會中斷，屆時才需要重新 apply。
+
+`vmss-subnet` 必須放行 80：`lab08b-lb-cat` 是 public Standard Load Balancer（Tcp 80→80），其輸入流量會保留**原始用戶端來源 IP**（屬 Internet），不會命中 `AllowAzureLoadBalancerInBound` 服務標籤，因此若缺少明確的 80 規則就會被預設規則 `DenyAllInBound` 擋下，VMSS 網頁示範將無法連線。`AllowAzureLoadBalancerInBound` 只涵蓋健康探查，不涵蓋真實用戶端流量。
+
+不要讓 `vmss-subnet` 回頭共用 `lab08-nsg-cat`：該 NSG 只開放 3389，會直接讓 M08B 示範失效。另外，每個 NSG 都要有自己的 `azurerm_monitor_diagnostic_setting`（`NetworkSecurityGroupEvent` 與 `NetworkSecurityGroupRuleCounter`）；新增 NSG 時若漏設，該子網路的 NSG 事件就不會進 Log Analytics。
+
+驗證方式：
+
+```powershell
+az network nsg list -g AZ104-<postfix> --query "[].{name:name,rules:length(securityRules)}" -o table
+curl.exe -sS -o NUL -w "%{http_code}`n" http://<lab08b-lb-pip>
+```
+
+### 政策自動產生的殘留 NSG
+
+租戶政策會為「建立當下未關聯 NSG」的 subnet 自動建立並掛上 NSG，命名為 `<vnet>-<subnet>-nsg-<location>`（0 條規則）。Terraform 隨後套用自己的 `azurerm_subnet_network_security_group_association` 時會覆寫該關聯；之後 `terraform destroy` 刪除 VNet，這些政策 NSG 因**不在 state 內**而殘留。
+
+`terraform destroy` 永遠清不掉它們，必須手動刪除。**先列出候選再刪除**，不要直接對「未關聯」的 NSG 迴圈刪除——Terraform 管理中的 NSG 也可能短暫處於未關聯狀態，或本來就刻意不關聯。候選條件需同時滿足：無 subnet 關聯、無 NIC 關聯、**0 條自訂規則**，且符合政策命名樣式。
+
+```powershell
+$rg = 'AZ104-<postfix>'
+$candidates = az network nsg list -g $rg -o json |
+  ConvertFrom-Json |
+  Where-Object {
+    -not $_.subnets -and -not $_.networkInterfaces -and
+    $_.securityRules.Count -eq 0 -and
+    $_.name -match '-nsg-(japaneast|japanwest|eastasia)$'
+  }
+$candidates | Select-Object name, location | Format-Table   # 先人工核對這份清單
+```
+
+確認清單無誤後再刪除：
+
+```powershell
+$candidates | ForEach-Object { az network nsg delete -g $rg -n $_.name }
+```
+
+此現象最常見於 `TEMP\` 模組 apply 後又 destroy 的備課流程，但根目錄 active 模組同樣採「先建 subnet、再建 association」的兩段式寫法，因此並非完全不會發生。R-1 的取捨是接受偶發殘留並手動清理，而非杜絕它。
+
 ## M05B: AZ VPN Gateway public IP
 
 本環境建立 `VpnGw3AZ` 時，Azure 回傳：
