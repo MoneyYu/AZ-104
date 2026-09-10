@@ -30,8 +30,10 @@ resource "azurerm_public_ip" "lab05b" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  domain_name_label   = "${local.lab05b_name}-pip-${local.random_str}"
-  tags                = local.default_tags
+  # AZ VPN SKU requires explicit zones on its public IP.
+  zones             = ["1", "2", "3"]
+  domain_name_label = "${local.lab05b_name}-pip-${local.random_str}"
+  tags              = local.default_tags
 
   lifecycle {
     ignore_changes = [ip_tags]

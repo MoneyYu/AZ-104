@@ -124,6 +124,7 @@ resource "azurerm_public_ip" "lab04b_a1" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  domain_name_label   = "${local.lab04b_name}-pip-a1-${local.random_str}"
   tags                = local.default_tags
 
   lifecycle {
@@ -137,6 +138,7 @@ resource "azurerm_public_ip" "lab04b_a2" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  domain_name_label   = "${local.lab04b_name}-pip-a2-${local.random_str}"
   tags                = local.default_tags
 
   lifecycle {
@@ -150,6 +152,7 @@ resource "azurerm_public_ip" "lab04b_b1" {
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  domain_name_label   = "${local.lab04b_name}-pip-b1-${local.random_str}"
   tags                = local.default_tags
 
   lifecycle {

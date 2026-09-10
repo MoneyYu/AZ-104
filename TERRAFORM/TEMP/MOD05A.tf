@@ -28,14 +28,14 @@ resource "azurerm_public_ip" "lab05a01" {
   }
 }
 
-resource "azurerm_network_security_group" "lab05a01" {
-  name                = "${local.lab05a_name}-nsg-01-${local.random_str}"
+resource "azurerm_network_security_group" "lab05a_jpe" {
+  name                = "${local.lab05a_name}-nsg-jpe-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   tags                = local.default_tags
 }
 
-resource "azurerm_network_security_rule" "lab05a01" {
+resource "azurerm_network_security_rule" "lab05a_jpe" {
   name                        = "RDP"
   priority                    = 100
   direction                   = "Inbound"
@@ -46,7 +46,7 @@ resource "azurerm_network_security_rule" "lab05a01" {
   destination_port_range      = "3389"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.az104.name
-  network_security_group_name = azurerm_network_security_group.lab05a01.name
+  network_security_group_name = azurerm_network_security_group.lab05a_jpe.name
 }
 
 resource "azurerm_network_interface" "lab05a01" {
@@ -65,7 +65,7 @@ resource "azurerm_network_interface" "lab05a01" {
 
 resource "azurerm_subnet_network_security_group_association" "lab05a01" {
   subnet_id                 = azurerm_subnet.lab05a01.id
-  network_security_group_id = azurerm_network_security_group.lab05a01.id
+  network_security_group_id = azurerm_network_security_group.lab05a_jpe.id
 }
 
 resource "azurerm_windows_virtual_machine" "lab05a01" {
@@ -169,27 +169,6 @@ resource "azurerm_public_ip" "lab05a02" {
   }
 }
 
-resource "azurerm_network_security_group" "lab05a02" {
-  name                = "${local.lab05a_name}-nsg-02-${local.random_str}"
-  location            = azurerm_resource_group.az104.location
-  resource_group_name = azurerm_resource_group.az104.name
-  tags                = local.default_tags
-}
-
-resource "azurerm_network_security_rule" "lab05a02" {
-  name                        = "RDP"
-  priority                    = 100
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  source_address_prefix       = chomp(data.http.myip.response_body)
-  destination_port_range      = "3389"
-  destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.az104.name
-  network_security_group_name = azurerm_network_security_group.lab05a02.name
-}
-
 resource "azurerm_network_interface" "lab05a02" {
   name                = "${local.lab05a_name}-nic-02-${local.random_str}"
   location            = azurerm_resource_group.az104.location
@@ -206,7 +185,7 @@ resource "azurerm_network_interface" "lab05a02" {
 
 resource "azurerm_subnet_network_security_group_association" "lab05a02" {
   subnet_id                 = azurerm_subnet.lab05a02.id
-  network_security_group_id = azurerm_network_security_group.lab05a02.id
+  network_security_group_id = azurerm_network_security_group.lab05a_jpe.id
 }
 
 resource "azurerm_windows_virtual_machine" "lab05a02" {
@@ -422,23 +401,9 @@ resource "azurerm_virtual_machine_extension" "lab05a03script" {
   tags     = local.default_tags
 }
 
-resource "azurerm_monitor_diagnostic_setting" "lab05a01nsg" {
-  name                       = "lab05a01-nsg-diag"
-  target_resource_id         = azurerm_network_security_group.lab05a01.id
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
-
-  enabled_log {
-    category = "NetworkSecurityGroupEvent"
-  }
-
-  enabled_log {
-    category = "NetworkSecurityGroupRuleCounter"
-  }
-}
-
-resource "azurerm_monitor_diagnostic_setting" "lab05a02nsg" {
-  name                       = "lab05a02-nsg-diag"
-  target_resource_id         = azurerm_network_security_group.lab05a02.id
+resource "azurerm_monitor_diagnostic_setting" "lab05a_jpe_nsg" {
+  name                       = "lab05a-jpe-nsg-diag"
+  target_resource_id         = azurerm_network_security_group.lab05a_jpe.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
