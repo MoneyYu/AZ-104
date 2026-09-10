@@ -1,6 +1,17 @@
 ## LAB-06-C-APP-GATEWAY
 locals {
-  lab06c_bepool_name = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
+  lab06c_bepool_name                 = "${local.lab06c_name}-appgw-bepool-${local.random_str}"
+  lab06c_images_bepool_name          = "${local.lab06c_name}-appgw-images-bepool-${local.random_str}"
+  lab06c_video_bepool_name           = "${local.lab06c_name}-appgw-video-bepool-${local.random_str}"
+  lab06c_default_http_settings_name  = "${local.lab06c_name}-appgw-http-setting-${local.random_str}"
+  lab06c_images_http_settings_name   = "${local.lab06c_name}-appgw-images-http-setting-${local.random_str}"
+  lab06c_video_http_settings_name    = "${local.lab06c_name}-appgw-video-http-setting-${local.random_str}"
+  lab06c_default_probe_name          = "${local.lab06c_name}-appgw-default-probe-${local.random_str}"
+  lab06c_images_probe_name           = "${local.lab06c_name}-appgw-images-probe-${local.random_str}"
+  lab06c_video_probe_name            = "${local.lab06c_name}-appgw-video-probe-${local.random_str}"
+  lab06c_url_path_map_name           = "${local.lab06c_name}-appgw-url-path-map-${local.random_str}"
+  lab06c_redirect_configuration_name = "${local.lab06c_name}-appgw-redirect-${local.random_str}"
+  lab06c_small_vm_size               = "Standard_B2ms"
 }
 
 resource "azurerm_virtual_network" "lab06c" {
@@ -69,13 +80,41 @@ resource "azurerm_application_gateway" "lab06c" {
     name = local.lab06c_bepool_name
   }
 
+  backend_address_pool {
+    name = local.lab06c_images_bepool_name
+  }
+
+  backend_address_pool {
+    name = local.lab06c_video_bepool_name
+  }
+
   backend_http_settings {
-    name                  = "${local.lab06c_name}-appgw-http-setting-${local.random_str}"
+    name                  = local.lab06c_default_http_settings_name
     cookie_based_affinity = "Disabled"
     path                  = "/"
     port                  = 80
     protocol              = "Http"
     request_timeout       = 60
+    probe_name            = local.lab06c_default_probe_name
+  }
+
+  backend_http_settings {
+    name                  = local.lab06c_images_http_settings_name
+    cookie_based_affinity = "Disabled"
+    port                  = 80
+    protocol              = "Http"
+    request_timeout       = 60
+    probe_name            = local.lab06c_images_probe_name
+  }
+
+  backend_http_settings {
+    name                  = local.lab06c_video_http_settings_name
+    cookie_based_affinity = "Disabled"
+    path                  = "/"
+    port                  = 80
+    protocol              = "Http"
+    request_timeout       = 60
+    probe_name            = local.lab06c_video_probe_name
   }
 
   http_listener {
@@ -85,13 +124,76 @@ resource "azurerm_application_gateway" "lab06c" {
     protocol                       = "Http"
   }
 
+  probe {
+    name                = local.lab06c_default_probe_name
+    host                = "127.0.0.1"
+    interval            = 30
+    path                = "/"
+    protocol            = "Http"
+    timeout             = 30
+    unhealthy_threshold = 3
+  }
+
+  probe {
+    name                = local.lab06c_images_probe_name
+    host                = "127.0.0.1"
+    interval            = 30
+    path                = "/images/"
+    protocol            = "Http"
+    timeout             = 30
+    unhealthy_threshold = 3
+  }
+
+  probe {
+    name                = local.lab06c_video_probe_name
+    host                = "127.0.0.1"
+    interval            = 30
+    path                = "/"
+    protocol            = "Http"
+    timeout             = 30
+    unhealthy_threshold = 3
+  }
+
+  redirect_configuration {
+    name                 = local.lab06c_redirect_configuration_name
+    redirect_type        = "Permanent"
+    target_listener_name = "${local.lab06c_name}-appgw-listener-${local.random_str}"
+    include_path         = false
+    include_query_string = false
+  }
+
+  url_path_map {
+    name                               = local.lab06c_url_path_map_name
+    default_backend_address_pool_name  = local.lab06c_bepool_name
+    default_backend_http_settings_name = local.lab06c_default_http_settings_name
+
+    path_rule {
+      name                       = "images"
+      paths                      = ["/images", "/images/*"]
+      backend_address_pool_name  = local.lab06c_images_bepool_name
+      backend_http_settings_name = local.lab06c_images_http_settings_name
+    }
+
+    path_rule {
+      name                       = "video"
+      paths                      = ["/video", "/video/*"]
+      backend_address_pool_name  = local.lab06c_video_bepool_name
+      backend_http_settings_name = local.lab06c_video_http_settings_name
+    }
+
+    path_rule {
+      name                        = "legacy"
+      paths                       = ["/legacy", "/legacy/*"]
+      redirect_configuration_name = local.lab06c_redirect_configuration_name
+    }
+  }
+
   request_routing_rule {
-    name                       = "${local.lab06c_name}-appgw-rule-${local.random_str}"
-    rule_type                  = "Basic"
-    http_listener_name         = "${local.lab06c_name}-appgw-listener-${local.random_str}"
-    backend_address_pool_name  = local.lab06c_bepool_name
-    backend_http_settings_name = "${local.lab06c_name}-appgw-http-setting-${local.random_str}"
-    priority                   = 100
+    name               = "${local.lab06c_name}-appgw-rule-${local.random_str}"
+    rule_type          = "PathBasedRouting"
+    http_listener_name = "${local.lab06c_name}-appgw-listener-${local.random_str}"
+    url_path_map_name  = local.lab06c_url_path_map_name
+    priority           = 100
   }
   tags = local.default_tags
 }
@@ -384,6 +486,198 @@ resource "azurerm_virtual_machine_extension" "lab06c02script" {
   tags     = local.default_tags
 }
 
+resource "azurerm_network_interface" "lab06c03" {
+  name                = "${local.lab06c_name}-vm-03-nic-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+
+  ip_configuration {
+    name                          = "${local.lab06c_name}-vm-03-ipconfig-${local.random_str}"
+    subnet_id                     = azurerm_subnet.lab06csub01.id
+    private_ip_address_allocation = "Dynamic"
+  }
+  tags = local.default_tags
+}
+
+resource "azurerm_network_interface_security_group_association" "lab06c03" {
+  network_interface_id      = azurerm_network_interface.lab06c03.id
+  network_security_group_id = azurerm_network_security_group.lab06c.id
+}
+
+resource "azurerm_network_interface_application_gateway_backend_address_pool_association" "lab06c03" {
+  network_interface_id    = azurerm_network_interface.lab06c03.id
+  ip_configuration_name   = azurerm_network_interface.lab06c03.ip_configuration[0].name
+  backend_address_pool_id = "${azurerm_application_gateway.lab06c.id}/backendAddressPools/${local.lab06c_images_bepool_name}"
+}
+
+resource "azurerm_windows_virtual_machine" "lab06c03" {
+  name                  = "${local.lab06c_name}-vm03-${local.random_str}"
+  location              = azurerm_resource_group.az104.location
+  resource_group_name   = azurerm_resource_group.az104.name
+  network_interface_ids = [azurerm_network_interface.lab06c03.id]
+  size                  = local.lab06c_small_vm_size
+
+  os_disk {
+    name                 = "${local.lab06c_name}-vm-03-osdisk-${local.random_str}"
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-Datacenter"
+    version   = "latest"
+  }
+
+  computer_name  = "lab06c-vm03-cat"
+  admin_username = local.user_name
+  admin_password = local.user_password
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab06c03ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06c03.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06c03" {
+  name                    = "lab06c03-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06c03.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab06c03"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06c03_otel" {
+  name                    = "lab06c03-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06c03.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab06c03"
+}
+
+resource "azurerm_virtual_machine_extension" "lab06c03script" {
+  name                       = "${local.lab06c_name}-vm-03-script-${local.random_str}"
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.10"
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06c03.id
+
+  settings = <<SETTINGS
+    {
+        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe New-Item -ItemType Directory -Force -Path 'C:\\inetpub\\wwwroot\\images' && powershell.exe Set-Content -Path 'C:\\inetpub\\wwwroot\\images\\index.htm' -Value $('Hello from ' + $env:computername + '. This file is under wwwroot\\images.')"
+    }
+  SETTINGS
+  tags     = local.default_tags
+}
+
+resource "azurerm_network_interface" "lab06c04" {
+  name                = "${local.lab06c_name}-vm-04-nic-${local.random_str}"
+  location            = azurerm_resource_group.az104.location
+  resource_group_name = azurerm_resource_group.az104.name
+
+  ip_configuration {
+    name                          = "${local.lab06c_name}-vm-04-ipconfig-${local.random_str}"
+    subnet_id                     = azurerm_subnet.lab06csub01.id
+    private_ip_address_allocation = "Dynamic"
+  }
+  tags = local.default_tags
+}
+
+resource "azurerm_network_interface_security_group_association" "lab06c04" {
+  network_interface_id      = azurerm_network_interface.lab06c04.id
+  network_security_group_id = azurerm_network_security_group.lab06c.id
+}
+
+resource "azurerm_network_interface_application_gateway_backend_address_pool_association" "lab06c04" {
+  network_interface_id    = azurerm_network_interface.lab06c04.id
+  ip_configuration_name   = azurerm_network_interface.lab06c04.ip_configuration[0].name
+  backend_address_pool_id = "${azurerm_application_gateway.lab06c.id}/backendAddressPools/${local.lab06c_video_bepool_name}"
+}
+
+resource "azurerm_windows_virtual_machine" "lab06c04" {
+  name                  = "${local.lab06c_name}-vm04-${local.random_str}"
+  location              = azurerm_resource_group.az104.location
+  resource_group_name   = azurerm_resource_group.az104.name
+  network_interface_ids = [azurerm_network_interface.lab06c04.id]
+  size                  = local.lab06c_small_vm_size
+
+  os_disk {
+    name                 = "${local.lab06c_name}-vm-04-osdisk-${local.random_str}"
+    caching              = "ReadWrite"
+    storage_account_type = "Premium_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-Datacenter"
+    version   = "latest"
+  }
+
+  computer_name  = "lab06c-vm04-cat"
+  admin_username = local.user_name
+  admin_password = local.user_password
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.default_tags
+}
+
+resource "azurerm_virtual_machine_extension" "lab06c04ama" {
+  name                       = "AzureMonitorWindowsAgent"
+  publisher                  = "Microsoft.Azure.Monitor"
+  type                       = "AzureMonitorWindowsAgent"
+  type_handler_version       = "1.0"
+  automatic_upgrade_enabled  = true
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06c04.id
+  tags                       = local.default_tags
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06c04" {
+  name                    = "lab06c04-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06c04.id
+  data_collection_rule_id = azurerm_monitor_data_collection_rule.vminsights.id
+  description             = "VM Insights DCR association for lab06c04"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "lab06c04_otel" {
+  name                    = "lab06c04-otel-dcra"
+  target_resource_id      = azurerm_windows_virtual_machine.lab06c04.id
+  data_collection_rule_id = azapi_resource.vminsights_otel.id
+  description             = "OpenTelemetry metrics DCR association for lab06c04"
+}
+
+resource "azurerm_virtual_machine_extension" "lab06c04script" {
+  name                       = "${local.lab06c_name}-vm-04-script-${local.random_str}"
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.10"
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.lab06c04.id
+
+  settings = <<SETTINGS
+    {
+        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe Set-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello from ' + $env:computername + '. This file is under the wwwroot root.')"
+    }
+  SETTINGS
+  tags     = local.default_tags
+}
+
 resource "azurerm_monitor_diagnostic_setting" "lab06c_appgw" {
   name                       = "lab06c-appgw-diag"
   target_resource_id         = azurerm_application_gateway.lab06c.id
@@ -444,4 +738,29 @@ resource "azurerm_monitor_diagnostic_setting" "lab06c_vnet" {
   enabled_metric {
     category = "AllMetrics"
   }
+}
+
+output "lab06c_application_gateway_fqdn" {
+  description = "Fully qualified domain name of the lab 06C Application Gateway."
+  value       = azurerm_public_ip.lab06c.fqdn
+}
+
+output "lab06c_root_url" {
+  description = "Root URL routed to the default backend pool."
+  value       = "http://${azurerm_public_ip.lab06c.fqdn}/"
+}
+
+output "lab06c_images_url" {
+  description = "Images URL routed to the images backend pool."
+  value       = "http://${azurerm_public_ip.lab06c.fqdn}/images/"
+}
+
+output "lab06c_video_url" {
+  description = "Video URL routed to the video backend pool."
+  value       = "http://${azurerm_public_ip.lab06c.fqdn}/video/"
+}
+
+output "lab06c_legacy_url" {
+  description = "Legacy URL redirected to the existing HTTP listener."
+  value       = "http://${azurerm_public_ip.lab06c.fqdn}/legacy/"
 }
