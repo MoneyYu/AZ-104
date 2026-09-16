@@ -140,6 +140,12 @@ terraform -chdir=TERRAFORM plan `
 
 這個變數只控制兩個 subnet associations；四個 peering 仍由 demo 腳本手動建立。正式套用前仍須審查完整 plan，不要把 targeted plan 當成可部署的結果。
 
+### Destroy ordering
+
+兩個 route-table associations 都是由 demo 在 Terraform state 外手動建立；當 `lab05a_enable_transit_routing=false` 時，state 中不會有這些 association，這也是本修正的前提。為了讓 destroy 時順序反轉成「先刪 subnet、再刪 route table」，`TEMP\MOD05A.tf` 裡的 subnet 明確加入 `depends_on` route table。
+
+講師在停用或替換 MOD05A、或執行 destroy 前，**建議先跑 demo 的 Reset 區段**，把手動 associations 先清掉再交回 Terraform。若 Azure 在 subnet association 已移除後仍短暫回 `InUseRouteTableCannotBeDeleted`，請直接再跑一次；live validation 曾觀察到 route table 的 reverse `subnets` index 可能延遲更新，這是已觀察到的行為，不是官方保證。
+
 ### Manual demo
 
 使用 `DEMO\Module05\05-A-Transit-Routing.ps1`，依區段執行：
