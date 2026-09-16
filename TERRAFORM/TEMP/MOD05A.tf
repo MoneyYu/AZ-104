@@ -161,6 +161,9 @@ resource "azurerm_subnet" "lab05a02" {
   resource_group_name  = azurerm_resource_group.az104.name
   virtual_network_name = azurerm_virtual_network.lab05a02.name
   address_prefixes     = ["10.2.1.0/24"]
+
+  # Demo route-table associations are created outside Terraform, so keep subnet destroy ahead of route table destroy.
+  depends_on = [azurerm_route_table.lab05a_spoke2]
 }
 
 resource "azurerm_public_ip" "lab05a02" {
@@ -281,6 +284,9 @@ resource "azurerm_subnet" "lab05a03" {
   resource_group_name  = azurerm_resource_group.az104.name
   virtual_network_name = azurerm_virtual_network.lab05a03.name
   address_prefixes     = ["10.3.1.0/24"]
+
+  # Demo route-table associations are created outside Terraform, so keep subnet destroy ahead of route table destroy.
+  depends_on = [azurerm_route_table.lab05a_spoke3]
 }
 
 resource "azurerm_public_ip" "lab05a03" {
