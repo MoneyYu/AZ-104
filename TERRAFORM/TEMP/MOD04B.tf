@@ -84,7 +84,7 @@ resource "azurerm_subnet_network_security_group_association" "lab04b_b" {
 # Private DNS zone + VNet-A link + a manual A record
 # ---------------------------------------------------------------------------
 resource "azurerm_private_dns_zone" "lab04b" {
-  name                = "corp.contoso.com"
+  name                = "lab04b.local"
   resource_group_name = azurerm_resource_group.az104.name
   tags                = local.default_tags
 }
@@ -102,7 +102,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "lab04b_a" {
 # NOTE: VNet-B is deliberately left UNLINKED so the demo can show that an unlinked VNet
 # cannot resolve the zone. During the live demo, add a resolution-only link (registration
 # disabled) to show the before/after difference, e.g.:
-#   New-AzPrivateDnsVirtualNetworkLink -ResourceGroupName <rg> -ZoneName corp.contoso.com \
+#   New-AzPrivateDnsVirtualNetworkLink -ResourceGroupName <rg> -ZoneName lab04b.local \
 #     -Name link-b -VirtualNetworkId <vnet-b-id>   # do NOT pass -EnableRegistration
 
 # Manual A record: deterministic, independent of autoregistration timing.
@@ -208,7 +208,7 @@ resource "azurerm_network_interface" "lab04b_b1" {
 # ---------------------------------------------------------------------------
 # VMs -- Windows Server 2022, Standard_B2s.
 # computer_name is kept <= 15 chars (NetBIOS limit) so the autoregistered FQDNs are
-# vm-a1.corp.contoso.com / vm-a2.corp.contoso.com / vm-b1.corp.contoso.com
+# vm-a1.lab04b.local / vm-a2.lab04b.local / vm-b1.lab04b.local
 # ---------------------------------------------------------------------------
 resource "azurerm_windows_virtual_machine" "lab04b_a1" {
   name                  = "${local.lab04b_name}-vm-a1-${local.random_str}"
