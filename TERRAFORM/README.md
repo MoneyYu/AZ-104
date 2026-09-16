@@ -105,6 +105,59 @@ $candidates | ForEach-Object { az network nsg delete -g $rg -n $_.name }
 
 此現象最常見於 `TEMP\` 模組 apply 後又 destroy 的備課流程，但根目錄 active 模組同樣採「先建 subnet、再建 association」的兩段式寫法，因此並非完全不會發生。R-1 的取捨是接受偶發殘留並手動清理，而非杜絕它。
 
+## M05A: VNet peering transit routing (UDR + NVA)
+
+M05A 使用三個 VNet 示範 [VNet peering service chaining](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview#service-chaining)：
+
+- `lab05a-vnet-01-cat`（10.1.0.0/16）是 transit VNet，`lab05a-vm01-cat` 的固定私有 IP `10.1.1.4` 作為 NVA。
+- `lab05a-vnet-02-cat`（10.2.0.0/16）是 Japan East spoke。
+- `lab05a-vnet-03-cat`（10.3.0.0/16）是 East Asia spoke。
+
+VNet peering **不具傳遞性**。即使 VNet1 分別與 VNet2、VNet3 完成 peering，VNet2 仍不會自動經過 VNet1 到達 VNet3；必須使用 [user-defined routes](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview) 將 spoke-to-spoke 流量送到 NVA：
+
+| Route table | Region | Route |
+| --- | --- | --- |
+| `lab05a-rt-spoke2-cat` | Japan East | `10.3.0.0/16` → `VirtualAppliance` `10.1.1.4` |
+| `lab05a-rt-spoke3-cat` | East Asia | `10.2.0.0/16` → `VirtualAppliance` `10.1.1.4` |
+
+VM01 必須同時具備三項條件：私有 IP 固定為 `10.1.1.4`、Azure NIC 已[啟用 IP forwarding](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface#enable-or-disable-ip-forwarding)，以及客體 OS 的 RRAS routing 已啟用並執行。只開啟 Azure NIC IP forwarding 不會自動讓 Windows 轉送封包。
+
+四個 peering 物件是 VNet1↔VNet2 與 VNet1↔VNet3 的雙向連線；每個方向都必須允許 virtual network access 與 forwarded traffic。Forwarded traffic 允許對端接受來源不是 NVA 本身的轉送封包，但不會讓 peering 變成 transitive，也不會取代 UDR。
+
+兩側 NSG 另有明確的 `10.2.0.0/16`↔`10.3.0.0/16` inbound/outbound allow 規則。流量經 NVA 轉送後，不能依賴 `VirtualNetwork` service tag 自動涵蓋未直接 peering 的遠端 spoke；顯式規則讓資料平面行為可預期。
+
+### Default and validation modes
+
+`lab05a_enable_transit_routing` 是 `bool`，預設為 `false`。基礎部署會建立兩個 route tables 與其中的 routes，但不建立 subnet associations，也不建立任何 peering，讓講師可以從 peering-only 的失敗狀態開始示範。
+
+需要用 Terraform 驗證 association 規劃時，可產生完整 plan 並明確開啟變數：
+
+```powershell
+terraform -chdir=TERRAFORM plan `
+  "-var=group_postfix=0915" `
+  "-var=lab05a_enable_transit_routing=true"
+```
+
+這個變數只控制兩個 subnet associations；四個 peering 仍由 demo 腳本手動建立。正式套用前仍須審查完整 plan，不要把 targeted plan 當成可部署的結果。
+
+### Manual demo
+
+使用 `DEMO\Module05\05-A-Transit-Routing.ps1`，依區段執行：
+
+1. Preflight 確認目前 Az PowerShell subscription、Resource Group、三個 VNet、兩個 route tables、三台 VM/NIC，以及 VM01 的 `10.1.1.4` 與 NIC IP forwarding。
+2. 建立且只建立 VNet1↔VNet2、VNet1↔VNet3 共四個 peering；不要建立 VNet2↔VNet3 peering。
+3. 從 VM01 驗證可到兩個 spoke，再從 VM02 驗證 VM03 的 HTTP/ICMP 在 route-table association 前皆失敗。
+4. 將 VNet2/default 與 VNet3/default 分別關聯至所在區域的 route table；腳本使用 `Set-AzVirtualNetworkSubnetConfig` 與 `Set-AzVirtualNetwork`，並保留既有 NSG 與 address prefix。
+5. 檢查 VM02、VM03 NIC effective routes，應看到 `User`、`Active`、`VirtualAppliance`、next hop `10.1.1.4`，再驗證雙向 HTTP/ICMP 成功。
+
+2026-09-16 曾在 `AZ104-0915` 現場驗證：association 前 VM02→VM03 的 HTTP/ICMP 均為 `False`；association 後 effective routes 與雙向 HTTP/ICMP 符合上述預期；解除 association 後再次為 `False`。這是一次人工 live verification，不是持續執行的自動測試。
+
+### Restore
+
+腳本 Reset 區段會先解除 VNet2/default、VNet3/default 的 route-table associations，再移除本 demo 建立的四個 peering。Reset 可重複執行；預期最終狀態為 peerings 0、associations 0，而兩個 route tables 與 routes 保留。
+
+若先前以 `lab05a_enable_transit_routing=true` 套用 Terraform，請改回 `false` 後產生並審查完整 plan，確保 Terraform state 與上述預設狀態一致。
+
 ## M05B: AZ VPN Gateway public IP
 
 本環境建立 `VpnGw3AZ` 時，Azure 回傳：

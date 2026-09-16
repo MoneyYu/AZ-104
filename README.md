@@ -358,6 +358,13 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [Choose between virtual network peering and VPN gateways](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/virtual-network-peering)
 
+### Service Chaining (UDR + NVA)
+[VNet peering service chaining](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview#service-chaining)
+
+[User-defined routes](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview)
+
+[Enable or disable IP forwarding for a network interface](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface#enable-or-disable-ip-forwarding)
+
 ### Virtual network Gateway (VPN Gateway)
 [VPN Gateway SKUs](https://learn.microsoft.com/en-us/azure/vpn-gateway/about-gateway-skus)
 
@@ -838,6 +845,8 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 ## M05 - Intersite Connectivity
 
 - [VNet Peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview)
+
+- [Service Chaining (UDR + NVA)](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview#service-chaining)
 
 - [VPN Gateway](https://learn.microsoft.com/en-us/azure/vpn-gateway/about-gateway-skus)
 

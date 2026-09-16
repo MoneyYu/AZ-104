@@ -1,4 +1,10 @@
 ## LAB-05-A-PEERING
+variable "lab05a_enable_transit_routing" {
+  description = "Associates the VNet2 and VNet3 subnets with routes that send transit traffic through VM01."
+  type        = bool
+  default     = false
+}
+
 resource "azurerm_virtual_network" "lab05a01" {
   name                = "${local.lab05a_name}-vnet-01-${local.random_str}"
   address_space       = ["10.1.0.0/16"]
@@ -50,14 +56,16 @@ resource "azurerm_network_security_rule" "lab05a_jpe" {
 }
 
 resource "azurerm_network_interface" "lab05a01" {
-  name                = "${local.lab05a_name}-nic-01-${local.random_str}"
-  location            = azurerm_resource_group.az104.location
-  resource_group_name = azurerm_resource_group.az104.name
+  name                  = "${local.lab05a_name}-nic-01-${local.random_str}"
+  location              = azurerm_resource_group.az104.location
+  resource_group_name   = azurerm_resource_group.az104.name
+  ip_forwarding_enabled = true
 
   ip_configuration {
     name                          = "${local.lab05a_name}-ipconfig-01-${local.random_str}"
     subnet_id                     = azurerm_subnet.lab05a01.id
-    private_ip_address_allocation = "Dynamic"
+    private_ip_address_allocation = "Static"
+    private_ip_address            = "10.1.1.4"
     public_ip_address_id          = azurerm_public_ip.lab05a01.id
   }
   tags = local.default_tags
@@ -132,12 +140,12 @@ resource "azurerm_virtual_machine_extension" "lab05a01script" {
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a01.id
 
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
-    }
-  SETTINGS
-  tags     = local.default_tags
+  settings = jsonencode({
+    commandToExecute = <<-COMMAND
+      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& { try { Install-WindowsFeature -Name Web-Server,RemoteAccess,Routing -IncludeManagementTools -ErrorAction Stop; Set-Content -Path 'C:\inetpub\wwwroot\iisstart.htm' -Value ('Hello World from ' + $env:computername) -ErrorAction Stop } catch { Write-Error ('IIS and routing role setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; try { New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' -Name 'IPEnableRouter' -PropertyType DWord -Value 1 -Force -ErrorAction Stop | Out-Null } catch { Write-Error ('IP forwarding registry setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; try { $remoteAccess = Get-RemoteAccess -ErrorAction SilentlyContinue; if ($null -eq $remoteAccess -or $remoteAccess.RoutingStatus -ne 'Installed') { Install-RemoteAccess -VpnType RoutingOnly -ErrorAction Stop } } catch { Write-Error ('RRAS configuration failed: ' + $_.Exception.Message) -ErrorAction Continue }; try { Set-Service -Name RemoteAccess -StartupType Automatic -ErrorAction Stop; Start-Service -Name RemoteAccess -ErrorAction Stop } catch { Write-Error ('RemoteAccess service setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; try { Enable-NetFirewallRule -Name 'FPS-ICMP4-ERQ-In' -ErrorAction Stop } catch { Write-Error ('ICMP firewall rule setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; exit 0 }"
+    COMMAND
+  })
+  tags = local.default_tags
 }
 
 resource "azurerm_virtual_network" "lab05a02" {
@@ -252,12 +260,12 @@ resource "azurerm_virtual_machine_extension" "lab05a02script" {
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a02.id
 
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
-    }
-  SETTINGS
-  tags     = local.default_tags
+  settings = jsonencode({
+    commandToExecute = <<-COMMAND
+      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& { try { Install-WindowsFeature -Name Web-Server -IncludeManagementTools -ErrorAction Stop; Set-Content -Path 'C:\inetpub\wwwroot\iisstart.htm' -Value ('Hello World from ' + $env:computername) -ErrorAction Stop } catch { Write-Error ('IIS setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; try { Enable-NetFirewallRule -Name 'FPS-ICMP4-ERQ-In' -ErrorAction Stop } catch { Write-Error ('ICMP firewall rule setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; exit 0 }"
+    COMMAND
+  })
+  tags = local.default_tags
 }
 
 resource "azurerm_virtual_network" "lab05a03" {
@@ -393,12 +401,113 @@ resource "azurerm_virtual_machine_extension" "lab05a03script" {
   auto_upgrade_minor_version = true
   virtual_machine_id         = azurerm_windows_virtual_machine.lab05a03.id
 
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
-    }
-  SETTINGS
-  tags     = local.default_tags
+  settings = jsonencode({
+    commandToExecute = <<-COMMAND
+      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& { try { Install-WindowsFeature -Name Web-Server -IncludeManagementTools -ErrorAction Stop; Set-Content -Path 'C:\inetpub\wwwroot\iisstart.htm' -Value ('Hello World from ' + $env:computername) -ErrorAction Stop } catch { Write-Error ('IIS setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; try { Enable-NetFirewallRule -Name 'FPS-ICMP4-ERQ-In' -ErrorAction Stop } catch { Write-Error ('ICMP firewall rule setup failed: ' + $_.Exception.Message) -ErrorAction Continue }; exit 0 }"
+    COMMAND
+  })
+  tags = local.default_tags
+}
+
+# Optional VNet2-to-VNet3 transit routing through VM01.
+resource "azurerm_network_security_rule" "lab05a_jpe_allow_vnet3_inbound" {
+  name                        = "Allow-VNet3-Inbound"
+  priority                    = 200
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "10.3.0.0/16"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab05a_jpe.name
+}
+
+resource "azurerm_network_security_rule" "lab05a_jpe_allow_vnet3_outbound" {
+  name                        = "Allow-VNet3-Outbound"
+  priority                    = 200
+  direction                   = "Outbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "10.3.0.0/16"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab05a_jpe.name
+}
+
+resource "azurerm_network_security_rule" "lab05a03_allow_vnet2_inbound" {
+  name                        = "Allow-VNet2-Inbound"
+  priority                    = 200
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "10.2.0.0/16"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab05a03.name
+}
+
+resource "azurerm_network_security_rule" "lab05a03_allow_vnet2_outbound" {
+  name                        = "Allow-VNet2-Outbound"
+  priority                    = 200
+  direction                   = "Outbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "10.2.0.0/16"
+  resource_group_name         = azurerm_resource_group.az104.name
+  network_security_group_name = azurerm_network_security_group.lab05a03.name
+}
+
+resource "azurerm_route_table" "lab05a_spoke2" {
+  name                = "${local.lab05a_name}-rt-spoke2-${local.random_str}"
+  location            = azurerm_virtual_network.lab05a02.location
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
+
+resource "azurerm_route_table" "lab05a_spoke3" {
+  name                = "${local.lab05a_name}-rt-spoke3-${local.random_str}"
+  location            = azurerm_virtual_network.lab05a03.location
+  resource_group_name = azurerm_resource_group.az104.name
+  tags                = local.default_tags
+}
+
+resource "azurerm_route" "lab05a_spoke2_to_vnet3" {
+  name                   = "to-vnet3-via-vm01"
+  resource_group_name    = azurerm_resource_group.az104.name
+  route_table_name       = azurerm_route_table.lab05a_spoke2.name
+  address_prefix         = "10.3.0.0/16"
+  next_hop_type          = "VirtualAppliance"
+  next_hop_in_ip_address = "10.1.1.4"
+}
+
+resource "azurerm_route" "lab05a_spoke3_to_vnet2" {
+  name                   = "to-vnet2-via-vm01"
+  resource_group_name    = azurerm_resource_group.az104.name
+  route_table_name       = azurerm_route_table.lab05a_spoke3.name
+  address_prefix         = "10.2.0.0/16"
+  next_hop_type          = "VirtualAppliance"
+  next_hop_in_ip_address = "10.1.1.4"
+}
+
+resource "azurerm_subnet_route_table_association" "lab05a02_transit" {
+  count          = var.lab05a_enable_transit_routing ? 1 : 0
+  subnet_id      = azurerm_subnet.lab05a02.id
+  route_table_id = azurerm_route_table.lab05a_spoke2.id
+}
+
+resource "azurerm_subnet_route_table_association" "lab05a03_transit" {
+  count          = var.lab05a_enable_transit_routing ? 1 : 0
+  subnet_id      = azurerm_subnet.lab05a03.id
+  route_table_id = azurerm_route_table.lab05a_spoke3.id
 }
 
 resource "azurerm_monitor_diagnostic_setting" "lab05a_jpe_nsg" {
