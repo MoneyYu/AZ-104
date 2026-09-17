@@ -101,15 +101,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06e_frontdoor_profile" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "FrontDoorAccessLog"
-  }
-
-  enabled_log {
-    category = "FrontDoorHealthProbeLog"
-  }
-
-  enabled_log {
-    category = "FrontDoorWebApplicationFirewallLog"
+    category_group = "allLogs"
   }
 
   enabled_metric {
@@ -123,27 +115,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06e_windows_web_app" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "AppServiceHTTPLogs"
-  }
-
-  enabled_log {
-    category = "AppServiceConsoleLogs"
-  }
-
-  enabled_log {
-    category = "AppServiceAppLogs"
-  }
-
-  enabled_log {
-    category = "AppServiceAuditLogs"
-  }
-
-  enabled_log {
-    category = "AppServiceIPSecAuditLogs"
-  }
-
-  enabled_log {
-    category = "AppServicePlatformLogs"
+    category_group = "allLogs"
   }
 
   enabled_metric {

@@ -18,6 +18,21 @@ provider "azurerm" {
   subscription_id = "ffc7fbc7-3840-4835-ad88-4eb5015d7dac"
 }
 
+# lab06f 的儲存體帳戶停用共用金鑰(shared_access_key_enabled = false)。
+# AzureRM 預設會在建立/讀取儲存體帳戶時探測 blob / queue / file / table / static website
+# 資料平面,且該探測以共用金鑰驗證,在停用金鑰的帳戶上會回傳 403 KeyBasedAuthenticationNotPermitted。
+# 此 alias 僅關閉資料平面探測(管理平面不受影響),帳戶仍然只接受 Entra ID 驗證。
+provider "azurerm" {
+  alias           = "storage_no_data_plane"
+  subscription_id = "ffc7fbc7-3840-4835-ad88-4eb5015d7dac"
+
+  features {
+    storage {
+      data_plane_available = false
+    }
+  }
+}
+
 provider "azapi" {
   subscription_id = "ffc7fbc7-3840-4835-ad88-4eb5015d7dac"
 }
@@ -55,6 +70,7 @@ locals {
   lab06c_name   = "lab06c"
   lab06d_name   = "lab06d"
   lab06e_name   = "lab06e"
+  lab06f_name   = "lab06f"
   lab07_name    = "lab07"
   lab08_name    = "lab08"
   lab09a_name   = "lab09a"

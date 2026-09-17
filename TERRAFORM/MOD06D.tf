@@ -38,7 +38,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06d_tfm" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "ProbeHealthStatusEvents"
+    category_group = "allLogs"
   }
 
   enabled_metric {

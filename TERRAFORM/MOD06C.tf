@@ -694,7 +694,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06c_appgw" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "ApplicationGatewayAccessLog"
+    category_group = "allLogs"
   }
 
   enabled_metric {
@@ -708,11 +708,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06c_nsg" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "NetworkSecurityGroupEvent"
-  }
-
-  enabled_log {
-    category = "NetworkSecurityGroupRuleCounter"
+    category_group = "allLogs"
   }
 }
 
@@ -722,11 +718,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06cagw_nsg" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "NetworkSecurityGroupEvent"
-  }
-
-  enabled_log {
-    category = "NetworkSecurityGroupRuleCounter"
+    category_group = "allLogs"
   }
 }
 
@@ -734,6 +726,10 @@ resource "azurerm_monitor_diagnostic_setting" "lab06c_pip" {
   name                       = "lab06c-pip-diag"
   target_resource_id         = azurerm_public_ip.lab06c.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
 
   enabled_metric {
     category = "AllMetrics"
@@ -744,6 +740,10 @@ resource "azurerm_monitor_diagnostic_setting" "lab06c_vnet" {
   name                       = "lab06c-vnet-diag"
   target_resource_id         = azurerm_virtual_network.lab06c.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
 
   enabled_metric {
     category = "AllMetrics"
