@@ -422,6 +422,177 @@ if ($stateInstance.status -eq 'tainted') {
 
 不要使用 `-allow-missing`、`state rm` 或手工編輯 state。
 
+## M06B: Load Balancer 命名與輸出連線
+
+### 子物件改用 LB 前綴命名
+
+`MOD06B.tf` 開頭的 `locals` 集中定義 Load Balancer 的子物件名稱，入口網站與 Network Watcher 的清單因此能直接對應到所屬 LB：
+
+| 子物件 | 名稱 |
+| --- | --- |
+| Frontend IP configuration | `lab06b-lb-pip-config-cat` |
+| Backend pool | `lab06b-lb-bepool-cat` |
+| Health probe | `lab06b-lb-probe-cat` |
+| Load balancing rule | `lab06b-lb-rule-cat` |
+| Outbound rule | `lab06b-lb-outbound-rule-cat` |
+
+Public IP 也一併由 `lab06b-pip-cat` 改名為 `lab06b-lb-pip-cat`。依本 repo 慣例 `domain_name_label` 沿用資源名稱，因此 FQDN 變成 `lab06b-lb-pip-cat.japaneast.cloudapp.azure.com`；舊的講義、書籤或腳本若指向舊 FQDN 必須同步更新。
+
+改名會讓 Public IP 被取代，因此 `lifecycle` 除既有的 `ignore_changes = [ip_tags]` 外，另外需要 `create_before_destroy = true`：取代期間舊的 Public IP 仍被 LB frontend IP configuration 參考，先刪除會被 Azure 拒絕。新舊 DNS label 不同（`lab06b-pip-cat` 與 `lab06b-lb-pip-cat`），兩者短暫並存也不會發生 label 衝突。
+
+### 既有缺陷：後端 VM 沒有輸出連線（已修正）
+
+`azurerm_lb_rule.lab06b` 設定 `disable_outbound_snat = true`，而在本次變更前，環境中既沒有 outbound rule，也沒有 NAT Gateway，VM 更沒有執行個體層級的 public IP。Standard Load Balancer 後端在沒有任何明確輸出設定時預設不得連外，因此兩台 lab06b VM 完全沒有輸出路徑。
+
+實際觀察到的證據：lab06b 兩台 VM 持續執行，但 Log Analytics 連續 30 天沒有任何 `Heartbeat` 資料列；同一工作區的 lab06c VM 則正常回報。
+
+修正方式是新增明確的 `azurerm_lb_outbound_rule.lab06b`（`protocol = "All"`、`allocated_outbound_ports = 1024`、`idle_timeout_in_minutes = 4`，frontend 指向同一個 `lab06b-lb-pip-config-cat`）。這條規則是下列功能的前提，不可為了精簡而刪除：
+
+- Azure Monitor Agent（AMA）回報 `Heartbeat` 與 VM Insights 資料；
+- Network Watcher Agent 安裝與回報（`MOD06F.tf` 的兩個 agent extension 因此 `depends_on` 這條 outbound rule）；
+- Connection Monitor 的「VM → Internet」測試；
+- VM 本身的一般對外存取（例如 Windows Update、下載工具）。
+
+### 部署後驗證
+
+以下指令從 repo 根目錄執行，`AZ104-<postfix>` 換成實際的資源群組：
+
+```powershell
+az network lb show -g AZ104-<postfix> -n lab06b-lb-cat `
+  --query "{frontend:frontendIPConfigurations[].name,pool:backendAddressPools[].name,probe:probes[].name,rule:loadBalancingRules[].name,outbound:outboundRules[].name}" `
+  -o jsonc
+
+az network lb outbound-rule show -g AZ104-<postfix> --lb-name lab06b-lb-cat -n lab06b-lb-outbound-rule-cat `
+  --query "{protocol:protocol,allocatedPorts:allocatedOutboundPorts,idleTimeout:idleTimeoutInMinutes,frontend:frontendIPConfigurations[].id}" `
+  -o jsonc
+
+az network public-ip show -g AZ104-<postfix> -n lab06b-lb-pip-cat `
+  --query "{name:name,fqdn:dnsSettings.fqdn,ip:ipAddress}" `
+  -o jsonc
+```
+
+確認輸出連線已恢復：AMA 啟動後約 5–10 分鐘，兩台 VM 都應出現在 `Heartbeat` 查詢結果中。
+
+```powershell
+$workspaceId = az monitor log-analytics workspace show -g AZ104-<postfix> -n law-vminsights-cat --query customerId -o tsv
+az monitor log-analytics query -w $workspaceId --analytics-query "Heartbeat | where TimeGenerated > ago(1h) | where Computer startswith 'lab06b' | summarize LastHeartbeat = max(TimeGenerated) by Computer" -o table
+```
+
+`az monitor log-analytics query` 來自 `log-analytics` 擴充功能（`az extension add --name log-analytics`）；也可以直接在入口網站的 Log Analytics 查詢頁面貼上同一段 KQL。
+
+## M06F: Network Watcher（flow log、連線監視、封包擷取）
+
+### 共用的 Network Watcher 不由本環境管理
+
+`MOD06F.tf` 以 `data "azurerm_network_watcher" "japaneast"` 引用訂閱在該區域自動建立的 `NetworkWatcher_japaneast`（位於 `NetworkWatcherRG`）。這是唯讀參考：本環境**不得**建立或刪除該共用 watcher 與其資源群組，`terraform destroy` 也不會移除它。
+
+### 為什麼使用 VNet Flow Logs v2
+
+NSG flow logs 已公告於 2027-09-30 退場，且目前已不再支援新建，因此 demo 一律改用 VNet flow logs：
+
+- https://learn.microsoft.com/azure/network-watcher/nsg-flow-logs-overview
+- https://learn.microsoft.com/azure/network-watcher/vnet-flow-logs-overview
+
+### 為什麼使用 `azapi_resource` + 使用者指派的受控識別
+
+- 本環境鎖定的 AzureRM provider 中，`azurerm_network_watcher_flow_log` 只有 `retention_policy`、`traffic_analytics`、`timeouts` 三個區塊，**沒有 `identity`**，無法掛上使用者指派的受控識別（實作當時的 4.78.0 與目前鎖定的 4.81.0 皆是如此）。
+- ARM 的 `Microsoft.Network/networkWatchers/flowLogs@2025-07-01` 支援 identity，因此 flow log 改以 `azapi_resource` 建立。
+- 儲存體帳戶 `lab06fstorcat` 依租戶政策設定 `shared_access_key_enabled = false`，只接受 Entra ID 驗證。
+- UAMI `lab06f-flowlog-mi-cat` 在該儲存體帳戶範圍取得 `Storage Blob Data Contributor`，flow log 以此身分寫入 `insights-logs-flowlogflowevent` 容器；講師帳號另有同一角色，才能在入口網站瀏覽 blob。
+- 只有該儲存體資源使用 alias provider `azurerm.storage_no_data_plane`（`features.storage.data_plane_available = false`）。它的唯一作用是讓 provider 略過以 Shared Key 進行的資料平面探測（否則會收到 403 `KeyBasedAuthenticationNotPermitted`）。**這不代表**管理平面不會呼叫 `ListKeys`，也不代表 state 內不會出現機密；Terraform state 仍須當成機密資料保護。
+
+### Packet Capture 只寫入 VM 本機
+
+Network Watcher 封包擷取若要直接寫入儲存體，只支援 SAS 或 Shared Key，而本模組的儲存體帳戶已停用 Shared Key。因此 `.\DEMO\Module06\NW-PacketCapture.ps1` 刻意只把 `.cap` 寫到 VM 本機路徑（預設 `C:\CaptureLogs\lab06b-http-capture.cap`），而且不下載該檔案。**不要**為了這個 demo 放寬儲存體政策去重新啟用 Shared Key；需要取回檔案時，改以 Azure Bastion 連線複製，或另外安排以 Entra ID 驗證的傳輸（例如對具備資料平面 RBAC 的帳戶使用 AzCopy 登入模式）。
+
+```powershell
+.\DEMO\Module06\NW-PacketCapture.ps1 -ResourceGroup AZ104-<postfix>
+```
+
+腳本會啟動擷取、從 VM 內部產生 HTTP 流量、停止擷取，並回報 `.cap` 的位置與大小；預設目標為 `lab06b-vm01-cat`、對端為 `lab06b-vm02-cat`，可用 `-VmName` / `-PeerVmName` / `-CaptureFilePath` 等參數覆寫。重跑前先刪除同名 session：
+
+```powershell
+az network watcher packet-capture delete --location japaneast --name lab06b-http-capture
+```
+
+### Connection Monitor 測試矩陣
+
+`azurerm_network_connection_monitor.lab06f`（名稱 `lab06f-connection-monitor-cat`）的三個 test group，測試頻率皆為 60 秒：
+
+| Test group | 來源 | 目的地 | 測試 |
+| --- | --- | --- | --- |
+| `vm-to-vm` | `lab06b-vm01-cat` | `lab06b-vm02-cat` | TCP 80、ICMP（啟用 trace route） |
+| `vm-to-appgw` | `lab06b-vm01-cat`、`lab06b-vm02-cat` | M06C App Gateway 公用 FQDN（`lab06c-pip-cat.japaneast.cloudapp.azure.com`） | TCP 80 |
+| `vm-to-internet` | `lab06b-vm01-cat` | `www.microsoft.com` | TCP 443 |
+
+前提條件：
+
+- ICMP 測試需要 VM 開啟 Windows 防火牆規則 `FPS-ICMP4-ERQ-In`，由 `MOD06B.tf` 的 CustomScriptExtension 在佈建時啟用；若手動重建 VM 而未跑該腳本，ICMP 測試會失敗。
+- 所有測試都依賴 M06B 的明確 outbound rule，Network Watcher Agent 也因此設定 `depends_on`。
+
+### 跨模組相依
+
+`MOD06F.tf` 同時參考 MOD06B（VNet、兩台 VM）與 MOD06C（App Gateway 的 public IP FQDN）。若要把模組搬進或搬出 `TEMP\`，**B、C、F 三者必須一起移動**，否則參考會中斷而無法 plan。
+
+### Traffic Analytics 與清理注意事項
+
+flow log 啟用 Traffic Analytics（`trafficAnalyticsInterval = 10` 分鐘、保留 7 天、format JSON v2），資料送往共用工作區 `law-vminsights-cat`。Azure 會在**工作區所在資源群組**（本環境為 `AZ104-<postfix>`）自動建立 `NWTA` 前綴的 DCR/DCE，這些資源不在 Terraform state 內，`terraform destroy` 不會清掉。
+
+拆除環境前只辨識並移除與**這個 flow log** 相關的資源；不得整組刪除 `NetworkWatcherRG`，也不得刪除與本環境無關的 monitor 資源（其他講師或其他環境可能共用同一區域的 watcher）。
+
+成本備註：Flow logs 每個訂閱每月有 5 GB 免費額度；Traffic Analytics **沒有**免費額度，依處理量計費。10 分鐘間隔是為了課堂上較快看到資料而選，不是成本最佳化的設定；長時間掛著環境時要留意費用。
+
+### 部署前後驗證
+
+部署前先確認共用 watcher 存在，且該區域尚無同名 flow log：
+
+```powershell
+az network watcher list --query "[?location=='japaneast'].{name:name,rg:resourceGroup,state:provisioningState}" -o table
+az network watcher flow-log list --location japaneast --query "[].{name:name,target:targetResourceId,enabled:enabled}" -o table
+```
+
+部署後檢查 flow log、Traffic Analytics、身分識別、儲存體政策與 Connection Monitor：
+
+```powershell
+az network watcher flow-log show --location japaneast --name lab06f-vnet-flowlog-cat `
+  --query "{enabled:enabled,target:targetResourceId,version:format.version,retentionDays:retentionPolicy.days,ta:flowAnalyticsConfiguration.networkWatcherFlowAnalyticsConfiguration.enabled,taInterval:flowAnalyticsConfiguration.networkWatcherFlowAnalyticsConfiguration.trafficAnalyticsInterval,identity:identity.type}" `
+  -o jsonc
+
+az storage account show -g AZ104-<postfix> -n lab06fstorcat `
+  --query "{sharedKey:allowSharedKeyAccess,oauthDefault:defaultToOAuthAuthentication,https:enableHttpsTrafficOnly}" `
+  -o jsonc
+
+az network watcher connection-monitor show --location japaneast --name lab06f-connection-monitor-cat `
+  --query "{provisioning:provisioningState,groups:testGroups[].{name:name,sources:sources,destinations:destinations,tests:testConfigurations}}" `
+  -o jsonc
+```
+
+資料平面（實際有沒有進資料）只能用 KQL 確認，工作區 GUID 取得方式同 M06B：
+
+```kusto
+// Connection Monitor 測試結果（部署後約 5–10 分鐘開始有資料）
+NWConnectionMonitorTestResult
+| where TimeGenerated > ago(1h)
+| summarize Tests = count(), Failed = countif(TestResult !~ "Pass") by TestGroupName, DestinationName
+| order by TestGroupName asc
+
+// VNet flow logs + Traffic Analytics（間隔 10 分鐘，通常 20–30 分鐘後才穩定出現）
+// SubType 的實際值為 "Flowlog"，這裡用大小寫不敏感的 =~ 比對避免拼寫踩雷
+NTANetAnalytics
+| where TimeGenerated > ago(2h)
+| where SubType =~ "FlowLog"
+| summarize Flows = count() by FlowStatus, DestPort
+| order by Flows desc
+
+// 後端 VM 是否恢復回報（驗證 M06B outbound rule）
+Heartbeat
+| where TimeGenerated > ago(1h)
+| where Computer startswith "lab06b"
+| summarize LastHeartbeat = max(TimeGenerated) by Computer
+```
+
+**注意**：`terraform validate` 與 `terraform plan` 只能驗證設定與控制平面變更，無法證明 flow log、Traffic Analytics 或 Connection Monitor 真的有資料進入工作區。上課前務必實際跑過上述 KQL 與 `NW-PacketCapture.ps1`，確認資料平面正常。
+
 ## M06C: Application Gateway path-based routing
 
 M06C 以 Contoso 線上媒體商店示範 Application Gateway 如何先依 URL path 選擇 backend pool，再於選定的 pool 內執行負載平衡。
