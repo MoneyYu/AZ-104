@@ -536,9 +536,27 @@ az network watcher packet-capture delete --location japaneast --name lab06b-http
 
 ### Traffic Analytics 與清理注意事項
 
-flow log 啟用 Traffic Analytics（`trafficAnalyticsInterval = 10` 分鐘、保留 7 天、format JSON v2），資料送往共用工作區 `law-vminsights-cat`。Azure 會在**工作區所在資源群組**（本環境為 `AZ104-<postfix>`）自動建立 `NWTA` 前綴的 DCR/DCE，這些資源不在 Terraform state 內，`terraform destroy` 不會清掉。
+flow log 啟用 Traffic Analytics（`trafficAnalyticsInterval = 10` 分鐘、保留 7 天、format JSON v2），資料送往共用工作區 `law-vminsights-cat`。Azure 會在**工作區所在資源群組**（本環境為 `AZ104-<postfix>`）自動建立 `NWTA` 前綴的 DCR/DCE。
 
-拆除環境前只辨識並移除與**這個 flow log** 相關的資源；不得整組刪除 `NetworkWatcherRG`，也不得刪除與本環境無關的 monitor 資源（其他講師或其他環境可能共用同一區域的 watcher）。
+這些 DCR/DCE 由 Traffic Analytics 服務自行建立與管理，不在 Terraform state 內，所以 `terraform destroy` 不會直接對它們下刪除。但**不在 state 內不代表沒有人會清**：[Network Watcher FAQ](https://learn.microsoft.com/azure/network-watcher/frequently-asked-questions#can-i-apply-locks-to-the-dce-and-dcr-resources-created-by-traffic-analytics--) 寫明「Locked resources aren't cleaned up upon deletion of the related flow logs」，可見服務本身的清理時機是**相關 flow log 被刪除時**，而 resource lock 會擋掉這個清理。FAQ 並未保證未上鎖的資源一定會被清乾淨，所以刪完 flow log 之後仍要實際檢查有無殘留。同一份 FAQ 也說明對這些資源做任何操作都可能讓 Traffic Analytics 無法正常運作，因此順序很重要。
+
+拆除環境時照下列順序走，不要反過來：
+
+1. **先辨識相依**：確認有哪些 flow log 正在使用這組 NWTA DCR/DCE。工作區是共用的，同一組 DCR/DCE 可能同時服務其他 flow log（其他模組或其他講師的環境），這種情況下它們就不屬於本環境。
+2. **先停用或刪除對應的 flow log**：本環境是 `lab06f-vnet-flowlog-cat`，交給 `terraform destroy` 處理該 azapi 資源即可；手動處理時用 `az network watcher flow-log delete --location japaneast --name lab06f-vnet-flowlog-cat`。
+3. **flow log 移除後才回頭檢查殘留**：給服務一點時間，再列出工作區所在資源群組內的 `NWTA` 資源。
+4. **只手動刪除「已確認未被使用、且屬於本環境」的殘留**：若殘留還在，先確認是不是被 resource lock 擋住（服務不會清理被鎖住的資源，這也是不建議對這些 DCR/DCE 上鎖的原因）；確定無人使用後才移除。
+
+```powershell
+# 步驟 3：flow log 已刪除之後才執行
+az resource list -g AZ104-<postfix> `
+  --query "[?starts_with(name,'NWTA')].{name:name,type:type,location:location}" -o table
+
+# 步驟 4：殘留仍在時，先確認有沒有鎖
+az lock list -g AZ104-<postfix> -o table
+```
+
+**絕對不要**：在 flow log 還在使用時就先刪 DCR/DCE（會讓 Traffic Analytics 失效）、整組刪除 `NetworkWatcherRG`，或刪除與本環境無關的 monitor 資源（其他講師或其他環境可能共用同一區域的 watcher 與同一個工作區）。
 
 成本備註：Flow logs 每個訂閱每月有 5 GB 免費額度；Traffic Analytics **沒有**免費額度，依處理量計費。10 分鐘間隔是為了課堂上較快看到資料而選，不是成本最佳化的設定；長時間掛著環境時要留意費用。
 
@@ -578,11 +596,12 @@ NWConnectionMonitorTestResult
 
 // VNet flow logs + Traffic Analytics（間隔 10 分鐘，通常 20–30 分鐘後才穩定出現）
 // SubType 的實際值為 "Flowlog"，這裡用大小寫不敏感的 =~ 比對避免拼寫踩雷
+// NTANetAnalytics 存的是彙總後的紀錄，count() 算的是「紀錄筆數」而不是流量數，因此欄位命名為 Records
 NTANetAnalytics
 | where TimeGenerated > ago(2h)
 | where SubType =~ "FlowLog"
-| summarize Flows = count() by FlowStatus, DestPort
-| order by Flows desc
+| summarize Records = count() by FlowStatus, DestPort
+| order by Records desc
 
 // 後端 VM 是否恢復回報（驗證 M06B outbound rule）
 Heartbeat
