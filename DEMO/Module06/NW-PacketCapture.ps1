@@ -55,6 +55,57 @@ $ErrorActionPreference = "Stop"
 # finally block below would replace the failure that actually broke the demo.
 $PSNativeCommandUseErrorActionPreference = $false
 
+function Assert-CaptureFilePath {
+    # The capture path is pasted into the PowerShell source that az vm run-command invoke
+    # executes on the VM, so it is checked against a deliberately narrow allow list before
+    # the first Azure call rather than being escaped after the fact.
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Path
+    )
+
+    $guidance = "Use an absolute local Windows path on the VM that ends in .cap, for example C:\CaptureLogs\lab06b-http-capture.cap"
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        throw "-CaptureFilePath is empty. $guidance"
+    }
+
+    foreach ($character in @("'", '"', ';', '|', '&', '`', '$', '%', '(', ')', '{', '}')) {
+        if ($Path.Contains($character)) {
+            throw "-CaptureFilePath '$Path' contains '$character', which is not allowed because this path is embedded in PowerShell source that runs on the target VM. $guidance"
+        }
+    }
+
+    foreach ($character in $Path.ToCharArray()) {
+        if ([char]::IsControl($character)) {
+            throw "-CaptureFilePath contains a control character such as a line break or a tab, which is not allowed because this path is embedded in PowerShell source that runs on the target VM. $guidance"
+        }
+    }
+
+    if ($Path.Contains("..")) {
+        throw "-CaptureFilePath '$Path' contains '..'. Relative traversal is not allowed. $guidance"
+    }
+
+    # Case sensitive on purpose: with case insensitive matching .NET folds characters such
+    # as U+212A KELVIN SIGN into [A-Za-z], which would admit paths that Windows does not
+    # accept. The extension stays case insensitive through its own character classes.
+    if ($Path -cnotmatch '\A[A-Za-z]:\\(?:[A-Za-z0-9 ._-]+\\)*[A-Za-z0-9 ._-]+\.[Cc][Aa][Pp]\z') {
+        throw "-CaptureFilePath '$Path' is not a supported capture path. It has to start with a drive letter, use only letters, digits, spaces, dots, underscores, hyphens and backslashes, and end in .cap. UNC paths, environment variables and relative paths are not supported. $guidance"
+    }
+}
+
+function ConvertTo-RemoteSingleQuoted {
+    # Belt and braces: Assert-CaptureFilePath already rejects quotes, and every value that
+    # reaches a single quoted literal in a remote template is escaped here as well.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    return $Value.Replace("'", "''")
+}
+
 function Invoke-AzCommand {
     param(
         [Parameter(Mandatory = $true)]
@@ -106,10 +157,17 @@ function Invoke-VmPowerShell {
     }
 
     $result = $json | ConvertFrom-Json
-    return (@($result.value | ForEach-Object { $_.message }) -join [Environment]::NewLine)
+    $messages = (@($result.value | ForEach-Object { $_.message }) -join [Environment]::NewLine)
+    if ([string]::IsNullOrWhiteSpace($messages)) {
+        throw "$FailureMessage VM '$TargetVmName' returned an empty run-command result, so the remote script produced no output to check."
+    }
+
+    return $messages
 }
 
 Write-Host "`nM06F Network Watcher packet capture" -ForegroundColor Cyan
+
+Assert-CaptureFilePath -Path $CaptureFilePath
 
 # packet-capture list/show/show-status/stop are region scoped, so the Network Watcher
 # name and resource group are only used to resolve that region.
@@ -136,6 +194,34 @@ if ([string]::IsNullOrWhiteSpace($watcherLocation)) {
 }
 Write-Host "Network Watcher : $NetworkWatcherName ($NetworkWatcherResourceGroup, region $watcherLocation)"
 
+# packet-capture create has no location parameter: the service uses the Network Watcher of
+# the target VM's own region, while every other packet-capture command is addressed by
+# --location. If the two regions differ, create would reach one watcher while
+# show/show-status/stop reach another, so fail before anything is created.
+$vmLocation = Invoke-AzCommand -Arguments @(
+    "vm", "show",
+    "--resource-group", $ResourceGroup,
+    "--name", $VmName,
+    "--query", "location",
+    "--output", "tsv",
+    "--only-show-errors"
+) -FailureMessage "Unable to read the location of VM '$VmName' in resource group '$ResourceGroup'."
+
+if ([string]::IsNullOrWhiteSpace($vmLocation)) {
+    throw "Azure CLI returned no location for VM '$VmName' in resource group '$ResourceGroup'. Confirm that the M06F environment is deployed."
+}
+
+$normalizedVmLocation = $vmLocation.Trim().ToLowerInvariant()
+$normalizedWatcherLocation = $watcherLocation.Trim().ToLowerInvariant()
+if ($normalizedVmLocation -ne $normalizedWatcherLocation) {
+    throw "VM '$VmName' in resource group '$ResourceGroup' is in region '$normalizedVmLocation', but Network Watcher '$NetworkWatcherName' in resource group '$NetworkWatcherResourceGroup' is in region '$normalizedWatcherLocation'. The capture of a VM is always created through the Network Watcher of the VM's own region. Pass -NetworkWatcherName for the watcher of region '$normalizedVmLocation' (see 'az network watcher list --output table'), or target a VM in region '$normalizedWatcherLocation'."
+}
+
+# Single region for the whole run: create resolves it through the VM, and
+# list/show/show-status/stop are all addressed with this value.
+$captureLocation = $normalizedWatcherLocation
+Write-Host "Target VM       : $VmName (region $normalizedVmLocation)"
+
 $peerPrivateIp = Invoke-AzCommand -Arguments @(
     "vm", "list-ip-addresses",
     "--resource-group", $ResourceGroup,
@@ -159,16 +245,17 @@ Write-Host "Peer VM         : $PeerVmName ($peerPrivateIp)"
 # name, so fail on any existing session instead of overwriting the trainer's evidence.
 $existingCaptureNames = Invoke-AzCommand -Arguments @(
     "network", "watcher", "packet-capture", "list",
-    "--location", $watcherLocation,
+    "--location", $captureLocation,
     "--query", "[].name",
     "--output", "tsv",
     "--only-show-errors"
-) -FailureMessage "Unable to list packet capture sessions in region '$watcherLocation'."
+) -FailureMessage "Unable to list packet capture sessions in region '$captureLocation'."
 
+# An empty list is the normal state of a clean lab, so it is not treated as a failure.
 $conflictingCaptures = @($existingCaptureNames -split "`r?`n" | Where-Object { $_.Trim() -eq $CaptureName })
 if ($conflictingCaptures.Count -gt 0) {
     $existingStatusOutput = & az network watcher packet-capture show-status `
-        --location $watcherLocation `
+        --location $captureLocation `
         --name $CaptureName `
         --query "packetCaptureStatus" `
         --output tsv `
@@ -179,7 +266,7 @@ if ($conflictingCaptures.Count -gt 0) {
     else {
         $existingStatus = "unavailable, show-status exited with code $LASTEXITCODE"
     }
-    throw "Packet capture session '$CaptureName' already exists in region '$watcherLocation' (status: $existingStatus). This demo does not overwrite it. Delete the old session first with: az network watcher packet-capture delete --location $watcherLocation --name $CaptureName"
+    throw "Packet capture session '$CaptureName' already exists in region '$captureLocation' (status: $existingStatus). This demo does not overwrite it. Delete the old session first with: az network watcher packet-capture delete --location $captureLocation --name $CaptureName"
 }
 
 $ensureDirectoryTemplate = @'
@@ -198,7 +285,8 @@ if (Test-Path -LiteralPath $captureFilePath) {
 Write-Output ('CAPTURE_FILE_PREVIOUS_TICKS=' + $previousTicks)
 '@
 
-$ensureDirectoryScript = $ensureDirectoryTemplate.Replace('__CAPTURE_FILE_PATH__', $CaptureFilePath)
+$remoteCaptureFilePath = ConvertTo-RemoteSingleQuoted -Value $CaptureFilePath
+$ensureDirectoryScript = $ensureDirectoryTemplate.Replace('__CAPTURE_FILE_PATH__', $remoteCaptureFilePath)
 
 Write-Host "`nPreparing the capture directory on '$VmName'" -ForegroundColor Cyan
 $ensureDirectoryMessages = Invoke-VmPowerShell `
@@ -212,10 +300,11 @@ if ($ensureDirectoryMessages -notlike "*CAPTURE_DIR_READY=*") {
     throw "VM '$VmName' did not report the capture directory for '$CaptureFilePath' as ready. Confirm that the VM is running and that the Run Command extension is healthy."
 }
 
-$previousCaptureTicks = 0
-if ($ensureDirectoryMessages -match 'CAPTURE_FILE_PREVIOUS_TICKS=(\d+)') {
-    $previousCaptureTicks = [long]$Matches[1]
+if ($ensureDirectoryMessages -notmatch 'CAPTURE_FILE_PREVIOUS_TICKS=(\d+)') {
+    Write-Host $ensureDirectoryMessages
+    throw "VM '$VmName' did not report a baseline last write time for '$CaptureFilePath', so a leftover .cap file from an earlier capture could not be told apart from this one. Confirm that the VM is running and that the Run Command extension is healthy."
 }
+$previousCaptureTicks = [long]$Matches[1]
 Write-Host "Capture directory ready for $CaptureFilePath"
 
 $captureLimitBytes = [long]$CaptureLimitMiB * 1MB
@@ -274,18 +363,19 @@ $trafficScript = $trafficTemplate.Replace('__PEER_IP__', $peerPrivateIp).Replace
 
 # Everything between the running capture and the stop call belongs in try/finally so a
 # failed check never leaves a billable capture session running on the VM.
+$primaryFailure = $null
 $stopFailureMessage = $null
 try {
     $captureStatus = $null
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         $captureStatus = Invoke-AzCommand -Arguments @(
             "network", "watcher", "packet-capture", "show-status",
-            "--location", $watcherLocation,
+            "--location", $captureLocation,
             "--name", $CaptureName,
             "--query", "packetCaptureStatus",
             "--output", "tsv",
             "--only-show-errors"
-        ) -FailureMessage "Unable to read the status of packet capture '$CaptureName' in region '$watcherLocation'."
+        ) -FailureMessage "Unable to read the status of packet capture '$CaptureName' in region '$captureLocation'."
 
         if ($captureStatus -eq "Running") {
             break
@@ -316,20 +406,37 @@ try {
     }
     Write-Host "Successful HTTP requests: $successfulRequests of $RequestCount"
 }
+catch {
+    # Recorded rather than swallowed: it is rethrown after the stop attempt, so the stop
+    # call can never become the failure the trainer sees instead of the real one.
+    $primaryFailure = $_
+}
 finally {
-    Write-Host "`nStopping packet capture '$CaptureName'" -ForegroundColor Cyan
-    & az network watcher packet-capture stop `
-        --location $watcherLocation `
-        --name $CaptureName `
-        --only-show-errors
-    if ($LASTEXITCODE -ne 0) {
-        # Never throw or stop from finally: that would replace an earlier failure.
-        $stopFailureMessage = "Unable to stop packet capture '$CaptureName' in region '$watcherLocation'. Azure CLI exited with code $LASTEXITCODE. Stop it manually with: az network watcher packet-capture stop --location $watcherLocation --name $CaptureName"
-        Write-Warning $stopFailureMessage -WarningAction Continue
-    }
-    else {
+    # The stop command can also fail before it ever sets $LASTEXITCODE, for example when az
+    # cannot be launched at all. Catching that here is what keeps an exception from leaving
+    # finally and replacing the primary failure recorded above.
+    try {
+        Write-Host "`nStopping packet capture '$CaptureName'" -ForegroundColor Cyan
+        & az network watcher packet-capture stop `
+            --location $captureLocation `
+            --name $CaptureName `
+            --only-show-errors
+        if ($LASTEXITCODE -ne 0) {
+            throw "Azure CLI exited with code $LASTEXITCODE."
+        }
         Write-Host "Packet capture '$CaptureName' stopped."
     }
+    catch {
+        $stopFailureMessage = "Unable to stop packet capture '$CaptureName' in region '$captureLocation': $($_.Exception.Message) Stop it manually with: az network watcher packet-capture stop --location $captureLocation --name $CaptureName"
+        Write-Warning $stopFailureMessage -WarningAction Continue
+    }
+}
+
+if ($null -ne $primaryFailure) {
+    if ($null -ne $stopFailureMessage) {
+        Write-Warning "Two failures occurred. Stopping the capture also failed: $stopFailureMessage The failure that broke the demo follows." -WarningAction Continue
+    }
+    throw $primaryFailure
 }
 
 if ($null -ne $stopFailureMessage) {
@@ -339,21 +446,27 @@ if ($null -ne $stopFailureMessage) {
 Write-Host "`nPacket capture status" -ForegroundColor Cyan
 $statusOutput = Invoke-AzCommand -Arguments @(
     "network", "watcher", "packet-capture", "show-status",
-    "--location", $watcherLocation,
+    "--location", $captureLocation,
     "--name", $CaptureName,
     "--output", "jsonc",
     "--only-show-errors"
-) -FailureMessage "Unable to read the status of packet capture '$CaptureName' in region '$watcherLocation'."
+) -FailureMessage "Unable to read the status of packet capture '$CaptureName' in region '$captureLocation'."
+if ([string]::IsNullOrWhiteSpace($statusOutput)) {
+    throw "Azure CLI returned no status for packet capture '$CaptureName' in region '$captureLocation', so the result of this demo cannot be shown."
+}
 Write-Host $statusOutput
 
 Write-Host "`nPacket capture details" -ForegroundColor Cyan
 $detailsOutput = Invoke-AzCommand -Arguments @(
     "network", "watcher", "packet-capture", "show",
-    "--location", $watcherLocation,
+    "--location", $captureLocation,
     "--name", $CaptureName,
     "--output", "jsonc",
     "--only-show-errors"
-) -FailureMessage "Unable to read the details of packet capture '$CaptureName' in region '$watcherLocation'."
+) -FailureMessage "Unable to read the details of packet capture '$CaptureName' in region '$captureLocation'."
+if ([string]::IsNullOrWhiteSpace($detailsOutput)) {
+    throw "Azure CLI returned no details for packet capture '$CaptureName' in region '$captureLocation', so the result of this demo cannot be shown."
+}
 Write-Host $detailsOutput
 
 $verifyTemplate = @'
@@ -375,7 +488,7 @@ else {
 }
 '@
 
-$verifyScript = $verifyTemplate.Replace('__CAPTURE_FILE_PATH__', $CaptureFilePath)
+$verifyScript = $verifyTemplate.Replace('__CAPTURE_FILE_PATH__', $remoteCaptureFilePath)
 
 $verifyMessages = Invoke-VmPowerShell `
     -ResourceGroupName $ResourceGroup `
@@ -420,4 +533,4 @@ Write-Host "- Connect to $VmName over an approved admin path such as Azure Basti
 Write-Host "- If the file has to leave the VM without an interactive session, arrange a separately approved Microsoft Entra authenticated transfer, for example AzCopy with an Entra login against a storage account where the operator holds a data plane RBAC role. Do not re-enable Shared Key on the flow-log storage account."
 
 Write-Host "`nBefore running this demo again" -ForegroundColor Cyan
-Write-Host "Delete the finished session: az network watcher packet-capture delete --location $watcherLocation --name $CaptureName"
+Write-Host "Delete the finished session: az network watcher packet-capture delete --location $captureLocation --name $CaptureName"
