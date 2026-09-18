@@ -58,7 +58,16 @@ resource "azurerm_kubernetes_cluster" "lab09c" {
   # Managed Prometheus — 收集 node/kubelet/kube-state/cAdvisor/CoreDNS 指標
   monitor_metrics {}
 
+  # Microsoft Defender for Containers — 使用平台既有的區域預設 Log Analytics workspace
+  microsoft_defender {
+    log_analytics_workspace_id = data.azurerm_log_analytics_workspace.defender_default.id
+  }
+
   tags = local.default_tags
+
+  lifecycle {
+    ignore_changes = [microsoft_defender[0].log_analytics_workspace_id]
+  }
 }
 
 # AcrPull 角色指派

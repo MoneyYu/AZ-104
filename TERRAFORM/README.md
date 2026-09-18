@@ -66,7 +66,7 @@ Azure 會依區域產生 `<label>.<region>.cloudapp.azure.com` FQDN。DNS label 
 
 `default` 的 `AllowRDP` 目前是**示範用途，實際上不會被命中**：`lab08-vm-cat` 的 NIC 沒有 public IP（`lab08-pip-cat` 屬於 Bastion），沒有任何來自 Internet 的路徑能觸及該規則。講師實際是透過 Bastion（443）連線，走的是 `AllowVnetInBound`。保留此規則是為了示範「以來源 IP 限縮 NSG 規則」的寫法；若日後為 VM 加上 public IP，它才會真正生效。
 
-⚠️ 已觀察到 `lab08-nsg-cat` 上的 `AllowRDP` 會被外部程序反覆清除：套用後數十分鐘內規則數會歸零，且 Activity Log 未出現對應的 `securityRules/delete` 事件（來源尚未確認）。因此 `terraform plan` 會**持續**顯示 `azurerm_network_security_rule.lab08_rdp will be created`。由於上述路徑本來就不會被命中，此漂移**不影響任何示範**，重複 apply 也無法根治；請直接忽略，不要因此判定環境異常。相對地，`lab08b-vmss-nsg-cat` 的 `AllowHTTP` 未受影響——若它變成 0 條規則，M08B 網頁示範就會中斷，屆時才需要重新 apply。
+⚠️ 已觀察到 `lab08-nsg-cat` 上的 `AllowRDP` 會被外部程序反覆清除：套用後數十分鐘內規則數會歸零。Activity Log 中沒有出現對應的子層級 `securityRules/delete` 事件，但可以查到針對 `lab08-nsg-cat` 本身的父層級 `Create or Update Network Security Group` 操作紀錄——NSG 規則集合被整批覆寫時，Azure 只會記錄父資源（NSG）的更新事件，不會為其中被移除的子規則各自產生 `securityRules/delete`，這說明了為何看不到規則層級的刪除事件。這項證據**與**「治理自動化移除了來源為 Internet 的 RDP 規則」一致，但**不足以證明**該自動化的實際意圖（例如究竟是刻意的合規修復，還是其他副作用）；請勿將此視為已證實的因果結論。因此 `terraform plan` 會**持續**顯示 `azurerm_network_security_rule.lab08_rdp will be created`。由於上述路徑本來就不會被命中，此漂移**不影響任何示範**，重複 apply 也無法根治；請直接忽略，不要因此判定環境異常。相對地，`lab08b-vmss-nsg-cat` 的 `AllowHTTP` 未受影響——若它變成 0 條規則，M08B 網頁示範就會中斷，屆時才需要重新 apply。
 
 `vmss-subnet` 必須放行 80：`lab08b-lb-cat` 是 public Standard Load Balancer（Tcp 80→80），其輸入流量會保留**原始用戶端來源 IP**（屬 Internet），不會命中 `AllowAzureLoadBalancerInBound` 服務標籤，因此若缺少明確的 80 規則就會被預設規則 `DenyAllInBound` 擋下，VMSS 網頁示範將無法連線。`AllowAzureLoadBalancerInBound` 只涵蓋健康探查，不涵蓋真實用戶端流量。
 
@@ -104,6 +104,58 @@ $candidates | ForEach-Object { az network nsg delete -g $rg -n $_.name }
 ```
 
 此現象最常見於 `TEMP\` 模組 apply 後又 destroy 的備課流程，但根目錄 active 模組同樣採「先建 subnet、再建 association」的兩段式寫法，因此並非完全不會發生。R-1 的取捨是接受偶發殘留並手動清理，而非杜絕它。
+
+## 訂閱／管理群組層級的治理漂移觀察
+
+本環境實際觀察到數項訂閱或管理群組層級的治理控制，會在 apply 之後產生非 Terraform 造成的差異。以下逐項說明觀察結果與因應方式；不是每一項都需要 `ignore_changes`。
+
+### MDE 延伸模組（無 Terraform 漂移）
+
+Microsoft Defender for Endpoint（MDE）的 VM extension 由訂閱層級 Azure Policy 自動部署到所有 VM。此 extension 從未進入任何 `azurerm_virtual_machine_extension` 的 state，`terraform plan` 對它完全無感、也沒有漂移，因此不需要任何 `ignore_changes`。
+
+### Public IP 的 `FirstPartyUsage` ip_tags（既有 ignore 例外）
+
+訂閱政策會自動在每個 Public IP 注入 `FirstPartyUsage` 這個 ip_tag。若不加 `lifecycle { ignore_changes = [ip_tags] }`，每次 `terraform plan` 都會顯示該 Public IP 需要強制重建。本 repo 內所有 `azurerm_public_ip`（含 `TERRAFORM\TEMP\MOD11-deprecated.tf` 的 `lab11`）都已套用此例外。
+
+### AKS Defender 預設 workspace（已顯式宣告，使用窄範圍 ignore）
+
+`azurerm_kubernetes_cluster.lab09c`（`MOD09C.tf`）已於建立時顯式宣告 `microsoft_defender` 區塊，並指向平台既有的 Defender 區域預設 Log Analytics workspace（見下方「Defender 預設 workspace 前置需求」），而不是叢集專屬的 `lab09c-law-cat`。實際 plan 顯示 data source 回傳的 ID 使用 `/resourceGroups/`，但 AKS API/state 儲存為 `/resourcegroups/`；AzureRM 4.78.0 的 resource ID parser 又拒絕小寫路徑段，因此只忽略 `microsoft_defender[0].log_analytics_workspace_id` 的 post-create 大小寫差異。Defender 區塊本身仍由 Terraform 建立與管理。
+
+### lab08 OS-disk SKU 由外部服務主體變更（新增單一 VM 例外）
+
+全訂閱逐台稽核時，只有 `lab08-vm-cat` 的 OS 磁碟直接觀察到 `storage_account_type` 在部署後變成 `Standard_LRS`；其他 8 台 active VM 都維持設定的 `Premium_LRS`，13 台 `TEMP\` VM 尚未部署。訂閱與管理群組層級都查無對應的磁碟 SKU Policy 可解釋 `lab08` 的變更。
+
+⚠️ 特別注意：**`Standard_LRS` 是 Standard HDD，不是 Standard SSD**——Standard SSD 對應的 SKU 名稱是 `StandardSSD_LRS`，兩者不可混淆。
+
+因此只針對 `azurerm_windows_virtual_machine.lab08` 新增：
+
+```hcl
+lifecycle {
+  ignore_changes = [os_disk[0].storage_account_type]
+}
+```
+
+設定中的 `storage_account_type` 仍維持 `Premium_LRS` 不變——這是建立時的目標值；只有 `lab08` 建立後被外部程序變更的 SKU 會被忽略。其他 active 與 `TEMP` VM 不套用此例外，Terraform 會繼續偵測它們的 OS disk SKU 差異；若未來真的出現同類 drift，必須先取得該 VM 的 plan、Azure 實況與 Activity Log 證據，再逐台決定是否新增例外。
+
+### VMSS 不套用此例外
+
+`azurerm_windows_virtual_machine_scale_set.lab08vmss`（`MOD08B.tf`）**不**加上述例外。其 model 的 OS 磁碟 SKU 已確認為 `Premium_LRS`，與設定及 state 一致，未出現漂移。
+
+驗證 VMSS 目前的磁碟 SKU 時，必須查詢 **VMSS model**，而不是查詢磁碟資源本身：VMSS 的 OS 磁碟是依 model 動態建立的隱含磁碟，`Get-AzDisk` 無法保證涵蓋這些隱含磁碟。正確作法：
+
+```powershell
+(Get-AzVmss -ResourceGroupName AZ104-<postfix> -VMScaleSetName lab08b-vmss-cat).VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType
+```
+
+### Apply 前置檢查：涉及 VM/extension 取代時，VM 必須先為執行中狀態
+
+若某次 `terraform plan` 包含 VM 或其 extension 的**取代（replacement）**操作，套用前必須先啟動受影響的 VM，並等待其達到 `VM running` 狀態，才能執行 `terraform apply`；請勿用 `-NoWait` 啟動後就直接 apply。
+
+⚠️ 這項前置步驟只適用於**包含取代操作**的 apply。若 plan 沒有任何 VM/extension replacement，並不需要事先把所有 DR VM 都開機——不要把此步驟誤解為每次一般 apply 都必須先啟動全部 VM。
+
+### Defender 預設 workspace 前置需求
+
+`data.azurerm_log_analytics_workspace.defender_default`（定義於 `MAIN.tf`）指向 Microsoft Defender for Cloud 在 Japan East 為訂閱自動建立的預設 workspace：`DefaultWorkspace-<subscription_id>-EJP`，固定位於資源群組 `DefaultResourceGroup-EJP`。`EJP` 是 Japan East 的區域代碼。若訂閱從未在 Japan East 啟用過 Defender for Cloud（因而從未觸發該 workspace 自動建立），此 data source 會找不到資源，導致 `terraform plan`/`apply` 失敗。套用本環境前，請先確認訂閱在 Japan East 已有 Defender for Cloud 的自動佈建紀錄。
 
 ## M05A: VNet peering transit routing (UDR + NVA)
 
