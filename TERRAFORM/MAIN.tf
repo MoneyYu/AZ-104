@@ -99,6 +99,12 @@ data "http" "myip" {
 
 data "azurerm_client_config" "current" {}
 
+# Japan East Defender for Cloud auto-provisions this default workspace per subscription (region code "EJP").
+data "azurerm_log_analytics_workspace" "defender_default" {
+  name                = "DefaultWorkspace-${data.azurerm_client_config.current.subscription_id}-EJP"
+  resource_group_name = "DefaultResourceGroup-EJP"
+}
+
 resource "random_string" "rid" {
   length  = 3
   special = false

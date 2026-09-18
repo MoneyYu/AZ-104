@@ -256,6 +256,10 @@ resource "azurerm_windows_virtual_machine" "lab08" {
   }
 
   tags = local.default_tags
+
+  lifecycle {
+    ignore_changes = [os_disk[0].storage_account_type]
+  }
 }
 
 resource "azurerm_virtual_machine_extension" "lab08ama" {

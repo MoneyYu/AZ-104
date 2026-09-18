@@ -30,6 +30,10 @@ resource "azurerm_public_ip" "lab11" {
   tags = {
     environment = local.group_name
   }
+
+  lifecycle {
+    ignore_changes = [ip_tags]
+  }
 }
 
 # Create Network Security Group and rule
