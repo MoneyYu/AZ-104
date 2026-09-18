@@ -775,200 +775,175 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 ### Directory foundations
 - [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/fundamentals/what-is-entra): cloud identity and access management for users, groups, applications, and devices
 - [Microsoft Entra ID vs Active Directory DS](https://learn.microsoft.com/en-us/entra/fundamentals/compare): cloud identity service vs traditional domain services
-### Identities and organization
-- Users can be members or guests; groups can simplify licensing and access assignments
-- [External identities](https://learn.microsoft.com/en-us/entra/external-id/external-identities-overview) support collaboration beyond the tenant
-- [Administrative units](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/administrative-units) delegate administration over a scoped part of the directory
-### Authentication and access
-- [Microsoft Entra roles](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference) manage directory resources; Azure RBAC manages Azure resources
-- [Conditional Access](https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview) evaluates identity, device, location, and risk signals before granting access
-- [Self-service password reset](https://learn.microsoft.com/en-us/entra/identity/authentication/tutorial-enable-sspr) lets users reset passwords or unlock accounts under policy
-### Hybrid identity
-- [Microsoft Entra Connect](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-roadmap) synchronizes identities from on-premises Active Directory
-- A staging server provides a standby synchronization configuration for recovery
-- [Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/overview) provides managed domain join, LDAP, Kerberos, and NTLM
+- Microsoft Entra ID is also the directory used by cloud applications and Microsoft online services
+- P1/P2 licensing adds identity capabilities; [Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/overview) provides managed domain features
+### Manage identities
+- Create and manage users and groups, restore deleted users, and assign licenses
+- Register devices and use group membership to organize access and administration
+- Custom security attributes add business-specific metadata; automatic provisioning creates and updates identities from connected systems
+### Self-service password reset
+- [SSPR](https://learn.microsoft.com/en-us/entra/identity/authentication/tutorial-enable-sspr) lets users reset passwords or unlock accounts without help-desk intervention
+- Define scope, authentication methods, registration, notifications, and customization
+- Evaluate the requirements, deploy the configuration, and test the user experience
 
 ## M02 - Compliance
 
-### Azure organization and resilience
-- Management group → subscription → resource group → resource defines the management hierarchy
-- [Availability zones](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview) isolate datacenters within a region; region pairs support broader disaster-recovery planning
-- [Management groups](https://learn.microsoft.com/en-us/azure/governance/management-groups/overview) apply governance consistently across subscriptions
-### Governance controls
-- [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview): definition → initiative → assignment → compliance evaluation and remediation
-- [Resource locks](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/lock-resources) protect against deletion or modification; permissions do not bypass the lock
-- [Tags](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-resources) organize resources for operations and cost reporting but do not automatically inherit
-### Role-based access control
+### Azure architecture and hierarchy
+- Datacenters form regions; [availability zones](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview) provide separate datacenter locations within supported regions
+- Region pairs and sovereign regions address geographic, regulatory, and continuity requirements
+- [Management group](https://learn.microsoft.com/en-us/azure/governance/management-groups/overview) → subscription → resource group → resource defines the management hierarchy
+### Azure Policy
+- [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) enforces organizational standards and evaluates compliance at scale
+- Definition → initiative → assignment → compliance evaluation
+- Policy effects determine whether a resource is audited, denied, modified, or remediated
+### Azure RBAC
 - Role assignment = security principal + role definition + scope
-- [Built-in roles](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles) cover common duties; custom roles define only the required actions
-- Scope inheritance flows from management group or subscription down to child resources
-### Cost management
-- [Reservations](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/save-compute-costs-reservations) commit to eligible resource capacity; savings plans commit to hourly compute spend
-- Azure Hybrid Benefit reuses eligible licenses; budgets and cost alerts track spending without enforcing a hard limit
-- Azure Advisor recommends improvements across cost, reliability, security, performance, and operational excellence
+- [Built-in roles](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles) grant common permissions; access checks show the assignments effective at a scope
+- Verify current access → grant the required role at the narrowest scope → review RBAC changes in the Activity Log
 
 ## M03 - Administration
 
-### Management tools
-- Portal for guided administration; [Cloud Shell](https://learn.microsoft.com/en-us/azure/cloud-shell/features) for browser-based command-line access
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/) uses cross-platform commands; [Azure PowerShell](https://learn.microsoft.com/en-us/powershell/azure/) uses object-based cmdlets
-### Azure Resource Manager
-- [Azure Resource Manager](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview) provides the control plane for deployment, organization, access control, locks, and tags
-- Declarative templates describe the desired state and support repeatable, idempotent deployments
-- Deployment scope can be a resource group, subscription, management group, or tenant
-### Infrastructure as code
-- ARM JSON is explicit and portable; [Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview) provides concise syntax over the same ARM resource model
-- Parameters → variables → resources → outputs; modules compose reusable deployments
-- Existing ARM templates can be decompiled to Bicep and then reviewed before use
-### Safe deployment and reuse
-- What-if previews expected changes before deployment; validation catches schema and expression errors
-- [Template Specs](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-specs) version and share templates as Azure resources
-- [Deployment Stacks](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/deployment-stacks) manage a collection of resources and define behavior for detached resources
+### Azure Cloud Shell
+- [Cloud Shell](https://learn.microsoft.com/en-us/azure/cloud-shell/features) provides an authenticated, browser-based shell for Azure administration
+- Choose Bash with Azure CLI or PowerShell with Azure PowerShell according to the task and scripting preference
+- Persistent storage keeps scripts and files available across Cloud Shell sessions
+### JSON ARM templates
+- ARM templates declare Azure resources in JSON for repeatable deployments
+- Template structure includes schema, content version, parameters, variables, resources, and outputs
+- Create the template in Visual Studio Code → define resources and parameters → deploy → use outputs
 
 ## M04 - Virtual Network
 
-### Address spaces and IP addressing
-- [Virtual networks and subnets](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) create private address boundaries for Azure resources
-- Plan non-overlapping CIDR ranges for peering, hybrid connectivity, and future growth
+### Virtual networks and IP addressing
+- [Virtual networks and subnets](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) create private network boundaries for Azure resources
+- Plan non-overlapping address spaces and choose subnet sizes for workload and growth requirements
+- Public IP addresses support internet-facing resources; private IP addresses provide communication within private networks
 - Azure reserves the first four and last IP address in every subnet
-### Routing
-- System routes provide default connectivity; [user-defined routes](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview) override traffic paths through a chosen next hop
-- Route selection favors the longest prefix match, then route origin when prefixes are equal
-### Network security
+### Network security groups
 - [NSG rules](https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview) evaluate source, destination, port, protocol, direction, priority, and action
+- Effective security rules combine the NSGs applied to a network interface and its subnet
 - Application security groups represent workload roles; service tags represent Azure service address ranges
-- **NSG** vs [**Azure Firewall**](https://learn.microsoft.com/en-us/azure/firewall/overview): distributed packet filtering vs centralized stateful network security
-- [DDoS Protection](https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview) adds managed mitigation and monitoring for public endpoints
-### Name resolution
-- [Azure DNS](https://learn.microsoft.com/en-us/azure/dns/dns-overview) hosts public zones and records after domain delegation
-- [Private DNS](https://learn.microsoft.com/en-us/azure/dns/private-dns-overview) resolves private names through virtual network links and optional autoregistration
-- [DNS Private Resolver](https://learn.microsoft.com/en-us/azure/dns/dns-private-resolver-overview) connects Azure and on-premises DNS with inbound endpoints, outbound endpoints, and forwarding rulesets
+### Azure DNS
+- [Azure DNS](https://learn.microsoft.com/en-us/azure/dns/dns-overview) hosts DNS zones and records after a domain is delegated
+- A records map names to IPv4 addresses; alias records point to supported Azure resources
+- [Private DNS](https://learn.microsoft.com/en-us/azure/dns/private-dns-overview) resolves private names through virtual network links
+- Create the zone → add records → delegate or link the zone → test name resolution
 
 ## M05 - Intersite Connectivity
 
 ### Virtual network peering
 - [VNet peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview) connects virtual networks over the Microsoft backbone with private IP addresses
-- Peering is non-transitive; each required VNet relationship must be designed explicitly
+- Peering is non-transitive; each required virtual network relationship must be configured explicitly
 - Forwarded traffic and gateway transit settings control hub-spoke connectivity
-### Service chaining
-- [Service chaining](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview#service-chaining): subnet route table → user-defined route → network virtual appliance
-- The appliance NIC must support IP forwarding and the guest operating system must route the traffic
-### Hybrid connectivity
-- [VPN Gateway](https://learn.microsoft.com/en-us/azure/vpn-gateway/about-gateway-skus): site-to-site connects networks; point-to-site connects individual clients
-- Active-active gateways and zone-redundant SKUs improve availability
-- [ExpressRoute](https://learn.microsoft.com/en-us/azure/expressroute/expressroute-introduction) provides private connectivity through a service provider rather than the public internet
-### Scaled network topologies
-- [Hub-spoke](https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke) centralizes shared security and connectivity services while isolating workloads in spokes
-- [Virtual WAN](https://learn.microsoft.com/en-us/azure/virtual-wan/virtual-wan-about) provides Microsoft-managed hubs for branch, VPN, ExpressRoute, and VNet connectivity
+### Routes and network virtual appliances
+- System routes provide default paths; [user-defined routes](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview) send traffic to a selected next hop
+- Route table + UDR + network virtual appliance controls traffic through a custom path
+- The appliance network interface and guest operating system must both support IP forwarding
+- [Service chaining](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview#service-chaining) directs traffic from one virtual network through a virtual appliance in another
+### Connectivity topologies
+- [Hub-spoke](https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke) centralizes shared connectivity while isolating workloads in spokes
+- Gateway transit lets peered spokes use a VPN gateway in the hub
+- Site-to-site connects networks; point-to-site connects individual clients; VNet-to-VNet connects Azure virtual networks through VPN gateways
 
 ## M06 - Network Traffic Management
 
-### Private access to platform services
-- [Service endpoint](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview) extends a subnet identity to a PaaS service while the service retains its public endpoint
-- [Private Link](https://learn.microsoft.com/en-us/azure/private-link/private-link-overview) places a private endpoint NIC and private IP address in the consumer virtual network
-- Private endpoints require DNS planning so the service name resolves to the private IP address
-### Choose a load-balancing service
-- Regional L4 → Azure Load Balancer; regional L7 → Application Gateway
-- Global DNS-based → Traffic Manager; global HTTP/S proxy → Front Door
-- Select by scope, protocol, TLS termination, path-based routing, and web application firewall requirements
-### Layer 4 and Layer 7 delivery
-- Azure Load Balancer distributes TCP/UDP flows by frontend, rule, backend pool, and health probe
-- [Application Gateway](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant) routes HTTP/S through listeners, rules, backend pools, settings, and probes
-- [Path-based routing](https://learn.microsoft.com/en-us/azure/application-gateway/url-route-overview) sends URL paths to different backend pools; WAF adds application-layer protection
-### Network diagnostics
-- [Network Watcher](https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-overview) provides topology, next-hop, IP-flow, connection, flow-log, and packet-capture tools
+### Azure Load Balancer
+- Azure Load Balancer distributes TCP and UDP flows at Layer 4
+- Frontend IP configuration + rule + backend pool + health probe defines traffic distribution
+- Choose Load Balancer for high-performance regional network traffic that does not require application-layer routing
+### Azure Application Gateway
+- [Application Gateway](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant) provides Layer 7 routing for HTTP and HTTPS applications
+- Listener → rule → backend pool and settings → health probe defines request processing
+- [Path-based routing](https://learn.microsoft.com/en-us/azure/application-gateway/url-route-overview) sends URL paths to different backends; WAF adds web application protection
+### Azure Network Watcher
+- [Network Watcher](https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-overview) monitors and troubleshoots IaaS network connectivity
+- Representative tools inspect topology, effective paths, security decisions, connections, and packets
 - Connection Monitor continuously tests reachability and latency between endpoints
-- [VNet flow logs](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview) record IP traffic metadata for analysis and Traffic Analytics
 
 ## M07 - Storage
 
-### Storage accounts and redundancy
-- General-purpose v2 supports Blob, Files, Queue, and Table services; premium account types target specific workloads
-- [LRS / ZRS / GRS / GZRS](https://learn.microsoft.com/en-us/azure/storage/common/storage-redundancy): local, zonal, geo-replicated, and geo-zone-redundant durability choices
-- Read-access geo variants expose the secondary region for read operations
-### Blob data management
-- Block blobs store files and objects; append blobs optimize append operations; page blobs support random-access workloads
-- [Hot / Cool / Cold / Archive](https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview?tabs=azure-portal) balance access cost, storage cost, and retrieval latency
+### Storage accounts
+- General-purpose v2 supports Blob, Files, Queue, and Table services; premium accounts target specific workloads
+- [LRS / ZRS / GRS / GZRS](https://learn.microsoft.com/en-us/azure/storage/common/storage-redundancy) provide local, zonal, geo-replicated, and geo-zone-redundant choices
+- Service endpoints secure access from selected subnets; [private endpoints](https://learn.microsoft.com/en-us/azure/private-link/private-link-overview) assign a private IP address for a storage service
+### Blob Storage
+- Containers organize blobs; block, append, and page blobs support different data-access patterns
+- [Hot / Cool / Cold / Archive](https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview?tabs=azure-portal) balance storage cost, access cost, and retrieval latency
 - [Lifecycle management](https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview) tiers or deletes blobs by rule; object replication asynchronously copies block blobs
+- Capacity, operations, data retrieval, redundancy, and tier changes contribute to pricing
+### Storage security
+- [Shared access signatures](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview) delegate scoped permissions for a defined resource and time window
+- A SAS URI combines the resource address with signed parameters such as permissions, start, and expiry
+- Storage encryption protects data at rest; customer-managed keys give the customer control over key lifecycle
 ### Azure Files
-- Azure Files provides managed SMB or NFS shares; snapshots and soft delete protect share data
-- Azure File Sync caches Azure file shares on Windows Servers and uses cloud tiering to retain frequently accessed files locally
-### Access and data protection
-- Prefer Microsoft Entra ID and Azure RBAC; [disabling Shared Key authorization](https://learn.microsoft.com/en-us/azure/storage/common/shared-key-authorization-prevent) prevents key-based access
-- [Shared access signatures](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview) delegate limited permissions for a defined resource and time window
-- Versioning, [soft delete](https://learn.microsoft.com/en-us/azure/storage/blobs/soft-delete-blob-overview), immutability, and stored access policies address different recovery and governance needs
+- Azure Files provides managed file shares; Blob Storage provides object storage
+- Snapshots and soft delete support recovery from deletion or change
+- Storage Explorer manages storage data through a graphical tool
+- Azure File Sync caches Azure file shares on Windows Servers; cloud tiering keeps frequently used files local
 
 ## M08 - VM
 
-### Plan and configure virtual machines
-- [VM sizes](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/overview) balance vCPU, memory, storage throughput, networking, accelerators, and cost
-- OS disk + data disks persist; the temporary disk is local to the host and is not durable
-- [Managed disks](https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview) abstract storage accounts and offer Standard HDD, Standard SSD, Premium SSD, and Ultra Disk choices
+### Plan and create virtual machines
+- Choose region, availability option, image, [size](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/overview), storage, networking, and authentication before creation
+- Azure portal, ARM templates, PowerShell, Azure CLI, REST, and SDKs provide different creation workflows
+- OS disks and data disks persist; the temporary disk is local to the host and is not durable
+### Manage virtual machines
+- [Managed disks](https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview) simplify disk management and offer performance tiers for different workloads
+- VM extensions add post-deployment configuration, monitoring, security, and automation
+- Administrative services support ongoing configuration and management; Azure Backup provides recovery protection
 ### Availability and scale
 - Availability sets distribute VMs across fault and update domains; availability zones distribute them across datacenters
 - [Virtual Machine Scale Sets](https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview) create and manage a group of load-balanced VMs with autoscale
 - Vertical scaling changes VM size; horizontal scaling changes instance count
-### Security and access
-- Azure Disk Encryption encrypts guest volumes; encryption at host protects data on the compute host
-- [Trusted Launch](https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch) combines Secure Boot, virtual TPM, and boot integrity monitoring
-- [Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-overview) provides managed RDP/SSH access without assigning public IP addresses to VMs
-### Configuration and lifecycle
-- VM extensions add post-deployment configuration, monitoring, security, and automation
-- Images define repeatable VM baselines; Spot VMs trade eviction risk for lower cost
-- Automatic guest patching orchestrates update assessment and installation within maintenance constraints
 
 ## M09 - Platform Service Computing
 
 ### App Service plans
 - An App Service plan defines region, operating system, compute resources, pricing tier, and scaling capacity
 - Scale up changes the plan tier or worker size; scale out changes the number of worker instances
-### App Service applications
+### Azure App Service
+- Create an app → configure deployment or CI/CD → validate the running application
 - Deployment slots provide isolated staging environments and controlled swaps into production
-- Custom domains + certificates secure application names; backup protects supported application content and configuration
-- VNet integration provides outbound access to a virtual network; private endpoints provide private inbound access
-### Container platforms
-- [Azure Container Registry](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-skus) stores private images and artifacts; service tiers change scale and advanced features
-- [Azure Container Instances](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-container-groups) runs container groups without managing orchestrator infrastructure
-- [Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/overview) provides managed ingress, revisions, KEDA scaling, and optional Dapr integration
-### Choose a container service
-- ACI for isolated or burst workloads; Container Apps for serverless apps and microservices
-- [AKS](https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts) for direct Kubernetes APIs, cluster-level control, and complex orchestration
+- App Service security, custom domains and certificates, and backup/restore protect the application lifecycle
+### Application Insights
+- Application Insights monitors application availability, performance, failures, and usage
+- Enable monitoring for an App Service app and use collected telemetry to investigate behavior
+### Azure Container Instances and container platforms
+- Containers share a host operating system; virtual machines include a complete guest operating system
+- [Azure Container Instances](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-container-groups) runs single or multi-container groups without managing an orchestrator
+- [Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/overview) supports serverless APIs, background jobs, event-driven processing, and microservices
+- Container Apps can scale from HTTP, events, CPU/memory, or KEDA scalers and is built on Dapr, KEDA, and Envoy
+- Container Apps abstracts Kubernetes APIs; AKS provides direct Kubernetes control for complex orchestration
 
 ## M10 - Backup
 
-### Vaults and protection controls
-- [Recovery Services vault](https://learn.microsoft.com/en-us/azure/backup/backup-azure-recovery-services-vault-overview) protects workloads such as Azure VMs and Azure Files
-- [Backup vault](https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview) protects newer workloads through the Azure Data Protection platform
-- Soft delete, immutability, and multi-user authorization reduce accidental or malicious backup deletion
-### Backup workloads
-- [Azure Backup](https://learn.microsoft.com/en-us/azure/backup/backup-overview) provides policy-driven backup for Azure and supported hybrid workloads
-- Workload choice determines the vault, agent or extension, consistency model, and supported restore options
-### Policies and recovery
-- Backup policy = schedule + retention; daily, weekly, monthly, and yearly retention support long-term recovery goals
-- Restore can recover a complete VM, disks, files, or application data depending on the workload
-- Archive tier lowers long-term storage cost but increases retrieval time
-### Disaster recovery
-- [Site Recovery](https://learn.microsoft.com/en-us/azure/site-recovery/site-recovery-overview) replicates workloads and orchestrates recovery to a secondary location
-- Test failover validates recovery without disrupting production; failover and failback change the active site
-- Recovery plans coordinate ordered groups, automation, and manual actions
+### Azure Backup fundamentals
+- [Azure Backup](https://learn.microsoft.com/en-us/azure/backup/backup-overview) provides policy-driven protection for supported Azure and hybrid workloads
+- Recovery Services vaults and Backup vaults store recovery points for the workloads they support
+- Match workload, recovery requirements, retention, and storage tier to the backup scenario
+### VM backup
+- Configure a vault and backup policy → enable protection for the VM → create scheduled or on-demand recovery points
+- Backup policy defines schedule and retention; snapshot and vault tiers support operational and longer-term recovery
+- Backup protects recoverable copies of data; replication and failover address workload continuity
+### Restore VM data
+- Restore a complete VM when the original workload must be recreated
+- Restore disks when recovery requires controlled VM reconstruction or data access
+- File recovery mounts a recovery point so individual files can be selected and restored
 
 ## M11 - Monitor
 
-### Observability data
-- [Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/overview) collects, analyzes, and acts on telemetry across Azure and hybrid resources
+### VM monitoring data and diagnostics
+- Host metrics describe the Azure platform view; guest performance counters and event logs describe the operating system view
 - Metrics are numeric time-series data; logs are structured records for detailed queries and correlation
-- The Activity Log records subscription-level control-plane events; diagnostic settings route platform logs and metrics
-### Workload monitoring
+- Configure the recommended diagnostics and data sources for the VM monitoring requirement
+### Metrics, alerts, and VM insights
+- Metrics Explorer charts host metrics and helps compare values over time
+- Recommended VM alerts provide a starting set of common health and performance conditions
+- VM insights combines performance and dependency views for monitored virtual machines
+### Guest monitoring and log analysis
 - Azure Monitor Agent collects guest data according to data collection rules
-- VM insights, Storage insights, Container insights, and Network Watcher provide workload-specific views
-### Analyze and visualize
-- [Log Analytics](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-tutorial) queries workspace data with [Kusto Query Language](https://learn.microsoft.com/en-us/kusto/query/?view=azure-data-explorer&preserve-view=true)
-- Workbooks combine queries, metrics, text, and parameters into interactive reports
-- Managed Prometheus and Managed Grafana support cloud-native metrics and dashboards
-### Alert and respond
-- [Alert rule](https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview) = scope + signal + condition + action group
-- Metric alerts react to time-series thresholds; log alerts evaluate query results; Activity Log alerts react to control-plane events
-- Action groups route notifications and automation to email, SMS, webhooks, Functions, Logic Apps, or runbooks
+- DCRs select performance counters and Windows event logs and route them to a Log Analytics workspace
+- [Log Analytics](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-tutorial) analyzes collected data with [Kusto Query Language](https://learn.microsoft.com/en-us/kusto/query/?view=azure-data-explorer&preserve-view=true)
 ```
 
 ## Whiteboard
