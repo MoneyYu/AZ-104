@@ -166,7 +166,27 @@ resource "azurerm_windows_virtual_machine_scale_set" "lab08vmss" {
     auto_upgrade_minor_version = true
 
     settings = jsonencode({
-      commandToExecute = "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from VMSS instance: ' + $env:computername)"
+      commandToExecute = "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe Set-Content -Path 'C:\\inetpub\\wwwroot\\health.html' -Value ('{'+[char]34+'ApplicationHealthState'+[char]34+':'+[char]34+'Healthy'+[char]34+'}') && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from VMSS instance: ' + $env:computername)"
+    })
+  }
+
+  # Rolling upgrade 需要健康監視。使用 Application Health extension 才能在
+  # upgrade_mode 維持 Manual 時預先完成健康設定，供課堂上切換 Rolling 示範。
+  extension {
+    name                       = "${local.lab08_name}b-vmss-health-${local.random_str}"
+    publisher                  = "Microsoft.ManagedServices"
+    type                       = "ApplicationHealthWindows"
+    type_handler_version       = "2.0"
+    auto_upgrade_minor_version = true
+    provision_after_extensions = ["${local.lab08_name}b-vmss-iis-${local.random_str}"]
+
+    settings = jsonencode({
+      protocol          = "http"
+      port              = 80
+      requestPath       = "/health.html"
+      intervalInSeconds = 10
+      numberOfProbes    = 3
+      gracePeriod       = 600
     })
   }
 

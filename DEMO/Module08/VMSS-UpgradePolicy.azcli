@@ -1,0 +1,101 @@
+# ⚠️ 示範結束務必執行「切回 Manual」步驟。
+# upgrade_mode 在 azurerm provider 是 ForceNew 欄位；若 VMSS 還在 Rolling 狀態就執行
+# terraform apply，Terraform 可能銷毀並重建整個 VMSS。
+
+RESOURCE_GROUP='AZ104-0915'
+VMSS_NAME='lab08b-vmss-cat'
+LB_PUBLIC_IP='20.46.182.109'
+
+# 檢視目前 upgrade policy、Application Health extension 與首頁
+az vmss show \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --query "{Mode:upgradePolicy.mode,RollingPolicy:upgradePolicy.rollingUpgradePolicy}" \
+  -o json
+
+az vmss extension list \
+  --resource-group $RESOURCE_GROUP \
+  --vmss-name $VMSS_NAME \
+  --query "[].{Name:name,Publisher:publisher,Type:type,ProvisioningState:provisioningState}" \
+  -o table
+
+curl -sS "http://${LB_PUBLIC_IP}/"
+curl -sS "http://${LB_PUBLIC_IP}/health.html"
+
+# 逐一檢視執行個體健康狀態
+for INSTANCE_ID in $(az vmss list-instances \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --query "[].instanceId" \
+  -o tsv); do
+  az vmss get-instance-view \
+    --resource-group $RESOURCE_GROUP \
+    --name $VMSS_NAME \
+    --instance-id $INSTANCE_ID \
+    --query "{InstanceId:'${INSTANCE_ID}',LatestModel:latestModelApplied,Health:vmHealth.status.displayStatus}" \
+    -o table
+done
+
+# Manual upgrade：將尚未套用最新 VMSS model 的執行個體更新
+az vmss update-instances \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --instance-ids "*"
+
+# Rolling / batch 示範
+# 本環境只有 2 個執行個體，1 台 = 50%；門檻若維持預設 20%，第一批就可能停止。
+az vmss update \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --set upgradePolicy.mode=Rolling \
+  --max-batch-instance-percent 50 \
+  --max-unhealthy-instance-percent 50 \
+  --max-unhealthy-upgraded-instance-percent 50 \
+  --pause-time-between-batches PT30S
+
+# 僅在 Rolling upgrade 正在執行時使用
+az vmss rolling-upgrade get-latest \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  -o json
+
+# 選用：取消正在執行的 Rolling upgrade
+# az vmss rolling-upgrade cancel \
+#   --resource-group $RESOURCE_GROUP \
+#   --name $VMSS_NAME
+
+# 必做收尾：切回 Manual，並移除課堂上設定的 rolling policy。
+az vmss update \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --set upgradePolicy.mode=Manual \
+  --remove upgradePolicy.rollingUpgradePolicy
+
+# 再次確認已回到 Manual；執行 terraform plan 時若仍看到 VMSS replacement，立即停止。
+az vmss show \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --query "{Mode:upgradePolicy.mode,RollingPolicy:upgradePolicy.rollingUpgradePolicy}" \
+  -o json
+
+######
+
+# 補充教學指令（選用／逐台示範 Rich Health States）
+INSTANCE_ID='0'
+
+# 將健康狀態改為真正的 Unhealthy。
+# 2.0 Rich Health States 若直接刪除 health.html，只會得到 Unknown。
+az vmss run-command invoke \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --instance-id $INSTANCE_ID \
+  --command-id RunPowerShellScript \
+  --scripts "Set-Content -Path C:\\inetpub\\wwwroot\\health.html -Value ('{'+[char]34+'ApplicationHealthState'+[char]34+':'+[char]34+'Unhealthy'+[char]34+'}')"
+
+# 還原 Healthy
+az vmss run-command invoke \
+  --resource-group $RESOURCE_GROUP \
+  --name $VMSS_NAME \
+  --instance-id $INSTANCE_ID \
+  --command-id RunPowerShellScript \
+  --scripts "Set-Content -Path C:\\inetpub\\wwwroot\\health.html -Value ('{'+[char]34+'ApplicationHealthState'+[char]34+':'+[char]34+'Healthy'+[char]34+'}')"
