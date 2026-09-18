@@ -1,4 +1,12 @@
 ## LAB-06-B-LOAD-BALANCER
+locals {
+  lab06b_lb_feip_name          = "${local.lab06b_name}-lb-pip-config-${local.random_str}"
+  lab06b_lb_bepool_name        = "${local.lab06b_name}-lb-bepool-${local.random_str}"
+  lab06b_lb_probe_name         = "${local.lab06b_name}-lb-probe-${local.random_str}"
+  lab06b_lb_rule_name          = "${local.lab06b_name}-lb-rule-${local.random_str}"
+  lab06b_lb_outbound_rule_name = "${local.lab06b_name}-lb-outbound-rule-${local.random_str}"
+}
+
 resource "azurerm_virtual_network" "lab06b" {
   name                = "${local.lab06b_name}-vnet-${local.random_str}"
   address_space       = ["10.10.0.0/16"]
@@ -15,16 +23,17 @@ resource "azurerm_subnet" "lab06b" {
 }
 
 resource "azurerm_public_ip" "lab06b" {
-  name                = "${local.lab06b_name}-pip-${local.random_str}"
+  name                = "${local.lab06b_name}-lb-pip-${local.random_str}"
   location            = azurerm_resource_group.az104.location
   resource_group_name = azurerm_resource_group.az104.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  domain_name_label   = "${local.lab06b_name}-pip-${local.random_str}"
+  domain_name_label   = "${local.lab06b_name}-lb-pip-${local.random_str}"
   tags                = local.default_tags
 
   lifecycle {
-    ignore_changes = [ip_tags]
+    ignore_changes        = [ip_tags]
+    create_before_destroy = true
   }
 }
 
@@ -35,7 +44,7 @@ resource "azurerm_lb" "lab06b" {
   sku                 = "Standard"
 
   frontend_ip_configuration {
-    name                 = "PublicIPAddress"
+    name                 = local.lab06b_lb_feip_name
     public_ip_address_id = azurerm_public_ip.lab06b.id
   }
   tags = local.default_tags
@@ -43,26 +52,41 @@ resource "azurerm_lb" "lab06b" {
 
 resource "azurerm_lb_backend_address_pool" "lab06b" {
   loadbalancer_id = azurerm_lb.lab06b.id
-  name            = "BackendPool"
+  name            = local.lab06b_lb_bepool_name
 }
 
 resource "azurerm_lb_probe" "lab06b" {
   loadbalancer_id     = azurerm_lb.lab06b.id
-  name                = "probe"
+  name                = local.lab06b_lb_probe_name
   port                = 80
   interval_in_seconds = 5
 }
 
 resource "azurerm_lb_rule" "lab06b" {
   loadbalancer_id                = azurerm_lb.lab06b.id
-  name                           = "rule"
+  name                           = local.lab06b_lb_rule_name
   protocol                       = "Tcp"
   frontend_port                  = 80
   backend_port                   = 80
-  frontend_ip_configuration_name = "PublicIPAddress"
+  frontend_ip_configuration_name = local.lab06b_lb_feip_name
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.lab06b.id]
   probe_id                       = azurerm_lb_probe.lab06b.id
   disable_outbound_snat          = true
+}
+
+# 入站規則關閉 SNAT 後,後端 VM 需要明確的 outbound rule 才能連外,
+# 也是 Network Watcher 連線監視「VM → Internet」測試成立的前提。
+resource "azurerm_lb_outbound_rule" "lab06b" {
+  name                     = local.lab06b_lb_outbound_rule_name
+  loadbalancer_id          = azurerm_lb.lab06b.id
+  backend_address_pool_id  = azurerm_lb_backend_address_pool.lab06b.id
+  protocol                 = "All"
+  allocated_outbound_ports = 1024
+  idle_timeout_in_minutes  = 4
+
+  frontend_ip_configuration {
+    name = local.lab06b_lb_feip_name
+  }
 }
 
 resource "azurerm_network_security_group" "lab06b" {
@@ -182,7 +206,7 @@ resource "azurerm_virtual_machine_extension" "lab06b01script" {
 
   settings = <<SETTINGS
     {
-        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
+        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername) && powershell.exe Enable-NetFirewallRule -Name 'FPS-ICMP4-ERQ-In'"
     }
   SETTINGS
   tags     = local.default_tags
@@ -278,7 +302,7 @@ resource "azurerm_virtual_machine_extension" "lab06b02script" {
 
   settings = <<SETTINGS
     {
-        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
+        "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername) && powershell.exe Enable-NetFirewallRule -Name 'FPS-ICMP4-ERQ-In'"
     }
   SETTINGS
   tags     = local.default_tags
@@ -290,7 +314,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06b_lb" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "LoadBalancerHealthEvent"
+    category_group = "allLogs"
   }
 
   enabled_metric {
@@ -304,11 +328,7 @@ resource "azurerm_monitor_diagnostic_setting" "lab06b_nsg" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
 
   enabled_log {
-    category = "NetworkSecurityGroupEvent"
-  }
-
-  enabled_log {
-    category = "NetworkSecurityGroupRuleCounter"
+    category_group = "allLogs"
   }
 }
 
@@ -316,6 +336,10 @@ resource "azurerm_monitor_diagnostic_setting" "lab06b_pip" {
   name                       = "lab06b-pip-diag"
   target_resource_id         = azurerm_public_ip.lab06b.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
 
   enabled_metric {
     category = "AllMetrics"
@@ -326,6 +350,10 @@ resource "azurerm_monitor_diagnostic_setting" "lab06b_vnet" {
   name                       = "lab06b-vnet-diag"
   target_resource_id         = azurerm_virtual_network.lab06b.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.vminsights.id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
 
   enabled_metric {
     category = "AllMetrics"

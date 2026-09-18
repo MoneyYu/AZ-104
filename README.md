@@ -439,6 +439,14 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 
 [What is Azure Front Door?](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview)
 
+[What is Azure Network Watcher?](https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-overview)
+
+[Monitor network communication with Connection Monitor](https://learn.microsoft.com/en-us/azure/network-watcher/connection-monitor-overview)
+
+[Virtual network flow logs](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview)
+
+[Packet capture overview](https://learn.microsoft.com/en-us/azure/network-watcher/packet-capture-overview)
+
 ## M07 - Storage
 [Azure Blob Storage Types](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts)
 
@@ -877,6 +885,14 @@ https://mslabs.cloudguides.com/guides/AZ-104%20Exam%20Guide%20-%20Microsoft%20Az
 - [Traffic Manager](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods)
 
 - [Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview)
+
+- [Network Watcher](https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-overview)
+
+    - Connection Monitor
+
+    - [VNet Flow Logs](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-overview)
+
+    - Packet Capture
 
 ## M07 - Storage
 
