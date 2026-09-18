@@ -1,0 +1,92 @@
+# 請使用 Bash、WSL 或 Azure Cloud Shell 執行。
+set -euo pipefail
+
+SUBSCRIPTION_ID='ffc7fbc7-3840-4835-ad88-4eb5015d7dac'
+RESOURCE_GROUP='AZ104-0915'
+WEBAPP_NAME='lab09a-web-cat'
+STORAGE_ACCOUNT='lab09astorcat'
+SHARE_NAME='content'
+
+# 檢視由 Terraform 建立的 Storage Mount 掛載設定（篩選欄位以避免暴露 accessKey）
+az webapp config storage-account list \
+  --subscription "$SUBSCRIPTION_ID" \
+  --resource-group $RESOURCE_GROUP \
+  --name $WEBAPP_NAME \
+  --query "[].{MountName: name || customId, Type: value.type || type, AccountName: value.accountName || accountName, ShareName: value.shareName || shareName, MountPath: value.mountPath || mountPath, State: value.state || state}" \
+  -o table
+
+# 建立示範用 HTML 檔案
+DEMO_FILE=$(mktemp --suffix=.html)
+cat << 'EOF' > "$DEMO_FILE"
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>CLI 動態上傳示範</title>
+</head>
+<body>
+  <h1>動態新增內容成功！</h1>
+  <p>此檔案透過 Azure CLI 直接上傳至 App Service 已掛載的 Azure Files Share。</p>
+</body>
+</html>
+EOF
+
+# 取得 Storage Account Access Key 並存入環境變數（不直接印出金鑰）
+export AZURE_STORAGE_ACCOUNT=$STORAGE_ACCOUNT
+export AZURE_STORAGE_KEY=$(az storage account keys list \
+  --subscription "$SUBSCRIPTION_ID" \
+  --resource-group $RESOURCE_GROUP \
+  --account-name $STORAGE_ACCOUNT \
+  --query "[0].value" \
+  -o tsv)
+
+# 將檔案上傳至 Azure Files 檔案共用
+az storage file upload \
+  --share-name $SHARE_NAME \
+  --source "$DEMO_FILE" \
+  --path demo.html \
+  --content-type "text/html; charset=utf-8"
+
+# 驗證 Terraform seed file 與 CLI 上傳檔案的資料平面 metadata。
+az storage file show \
+  --share-name $SHARE_NAME \
+  --path index.html \
+  --query "{Name:name,Length:properties.contentLength,ContentType:properties.contentSettings.contentType}" \
+  -o table
+
+az storage file show \
+  --share-name $SHARE_NAME \
+  --path demo.html \
+  --query "{Name:name,Length:properties.contentLength,ContentType:properties.contentSettings.contentType}" \
+  -o table
+
+unset AZURE_STORAGE_KEY
+unset AZURE_STORAGE_ACCOUNT
+echo "Local demo file retained at: $DEMO_FILE"
+
+######
+
+# 補充教學指令（選用／僅供講解，平時示範請勿執行）
+# 警告：現有環境之掛載設定已由 Terraform (MOD09A.tf) 管理。
+# 若手動執行 add 或 delete 會造成 Terraform State 狀態漂移 (State Drift)。
+
+# 手動新增掛載範例（等同 Terraform storage_account 區塊）：
+# ACCOUNT_KEY=$(az storage account keys list --subscription "$SUBSCRIPTION_ID" --resource-group $RESOURCE_GROUP --account-name $STORAGE_ACCOUNT --query "[0].value" -o tsv)
+# az webapp config storage-account add \
+#   --subscription "$SUBSCRIPTION_ID" \
+#   --resource-group $RESOURCE_GROUP \
+#   --name $WEBAPP_NAME \
+#   --custom-id $SHARE_NAME \
+#   --storage-type AzureFiles \
+#   --account-name $STORAGE_ACCOUNT \
+#   --share-name $SHARE_NAME \
+#   --access-key "$ACCOUNT_KEY" \
+#   --mount-path "/mounts/${SHARE_NAME}"
+# unset ACCOUNT_KEY
+
+# 手動刪除掛載範例：
+# az webapp config storage-account delete \
+#   --subscription "$SUBSCRIPTION_ID" \
+#   --resource-group $RESOURCE_GROUP \
+#   --name $WEBAPP_NAME \
+#   --custom-id $SHARE_NAME

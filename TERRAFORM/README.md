@@ -218,6 +218,39 @@ lifecycle {
 
 `data.azurerm_log_analytics_workspace.defender_default`（定義於 `MAIN.tf`）指向 Microsoft Defender for Cloud 在 Japan East 為訂閱自動建立的預設 workspace：`DefaultWorkspace-<subscription_id>-EJP`，固定位於資源群組 `DefaultResourceGroup-EJP`。`EJP` 是 Japan East 的區域代碼。若訂閱從未在 Japan East 啟用過 Defender for Cloud（因而從未觸發該 workspace 自動建立），此 data source 會找不到資源，導致 `terraform plan`/`apply` 失敗。套用本環境前，請先確認訂閱在 Japan East 已有 Defender for Cloud 的自動佈建紀錄。
 
+## M07: Storage 使用 Entra ID 與 RBAC
+
+`MOD07.tf` 的 Storage Account 停用 Shared Key，並設定 `default_to_oauth_authentication = true`。講師帳號透過 `Storage Blob Data Contributor`、`Storage File Data Privileged Contributor`、`Storage Queue Data Contributor` 與 `Storage Table Data Contributor` 示範資料平面操作。
+
+Azure Portal 使用者若同時具備 `listkeys/action`，瀏覽 Storage data plane 時可能仍預設使用 access key。請確認 **Authentication method**，必要時選擇 **Switch to Microsoft Entra user account**。本示範未設定 Azure Files identity source，因此不宣稱支援 SMB/Kerberos mount；範圍是 Portal 與 REST 的 OAuth 存取。
+
+## M09A: App Service Storage Mount
+
+`MOD09A.tf` 將 Azure Files share `content` 掛載至 Windows code App Service 的 `/mounts/content`，並由 Terraform 預先植入 `FILES\lab09a\index.html`。依 [Mount Azure Storage as a local share in App Service](https://learn.microsoft.com/en-us/azure/app-service/configure-connect-to-azure-storage?pivots=code-windows)，Windows code App 的自訂掛載只支援 Azure Files，且停用 key-based authentication 的 Storage Account 不受支援。
+
+因此 `azurerm_storage_account.lab09a` 是本環境唯一保留 Shared Key 的 Storage Account 例外，並依賴 `SecurityControl = "Ignore"` 標籤避免租戶 Modify Policy 停用掛載所需設定。其他 Storage Account 仍維持 Entra ID + RBAC。
+
+驗證時執行下列指令，`State` 應為 `Ok`；輸出不包含 access key：
+
+```azurecli
+az webapp config storage-account list \
+  --subscription ffc7fbc7-3840-4835-ad88-4eb5015d7dac \
+  --resource-group AZ104-<postfix> \
+  --name lab09a-web-cat \
+  --query "[].{Name:name,Type:value.type,MountPath:value.mountPath,State:value.state}" \
+  -o table
+```
+
+本訂閱實測以 `Microsoft.Web/sites/config` 將 `/storage` 對應至掛載路徑時，第二個 virtual application 與 root application 下的 virtual directory 都回傳 `400 Bad Request`、ExtendedCode `04064`（physical path invalid）。因此此 demo 僅示範 Storage Mount 與 Azure Files 資料平面操作，不提供 `/storage` HTTP URL。CLI 流程請參考 `DEMO\Module09a\StorageMount.azcli`。
+
+## M10B: Site Recovery keyless cache
+
+`MOD10B.tf` 是 Site Recovery demo 的 M10 章節版本。ASR cache Storage Account 停用 Shared Key並預設使用 OAuth；Recovery Services vault 啟用 SystemAssigned managed identity，並在 cache account 取得 `Contributor` 與 `Storage Blob Data Contributor`。兩台 replicated VM 都明確依賴這兩個 role assignments。
+
+本訂閱的外部自動化曾將兩台來源 VM 的 OS disk SKU 從 `Premium_LRS` 改為 `Standard_LRS`。為避免 Terraform 因這項已確認的外部變更重建來源 VM 並中斷 ASR 保護，只有這兩台 VM 忽略 `os_disk[0].storage_account_type`；其他 VM 屬性仍照常偵測 drift。ASR 的 `source_vm_id` 也轉為小寫，以符合 Azure 回傳的 canonical resource ID。
+
+部署完成不代表 demo 已可用；請在 Recovery Services vault 確認兩台 replicated VM 都到達 **Protected**，且 replication health 為 **Normal**。官方說明：[Turn off key authentication for Azure Site Recovery cache storage accounts](https://learn.microsoft.com/en-us/azure/site-recovery/asr-turn-off-key-authentication-cache)。
+
 ## M05A: VNet peering transit routing (UDR + NVA)
 
 M05A 使用三個 VNet 示範 [VNet peering service chaining](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview#service-chaining)：

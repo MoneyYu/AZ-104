@@ -35,6 +35,7 @@ provider "azurerm" {
 
 provider "azapi" {
   subscription_id = "ffc7fbc7-3840-4835-ad88-4eb5015d7dac"
+  tenant_id       = "2aeb30d9-f0a6-4e27-8c47-f97c5b695eb6"
 }
 
 variable "group_postfix" {
@@ -78,8 +79,8 @@ locals {
   lab09c_name   = "lab09c"
   lab09d_name   = "lab09d"
   lab10_name    = "lab10"
+  lab10b_name   = "lab10b"
   lab11_name    = "lab11"
-  lab11b_name   = "lab11b"
   user_name     = "demouser"
   user_password = "Azuredemo2020"
 
