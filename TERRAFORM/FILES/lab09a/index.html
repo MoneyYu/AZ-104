@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Azure Files 儲存體掛載示範</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Microsoft JhengHei", "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #0078d4 0%, #004e8c 100%);
+    color: #ffffff;
+  }
+  .card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 16px;
+    padding: 40px 48px;
+    max-width: 640px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+  }
+  h1 {
+    margin-top: 0;
+    font-size: 1.8rem;
+  }
+  .badge {
+    display: inline-block;
+    background: #ffb900;
+    color: #202020;
+    font-weight: bold;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  ul {
+    line-height: 1.8;
+  }
+  code {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: Consolas, monospace;
+  }
+  footer {
+    margin-top: 24px;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Azure Files 掛載成功</span>
+    <h1>這個檔案來自 Azure Files 共用</h1>
+    <p>
+      您現在看到的這個網頁，實際上並未直接部署在 App Service 的本機
+      <code>site\wwwroot</code> 目錄中，而是儲存在 <strong>Azure Files 共用（File Share）</strong>
+      內，再透過 App Service 的<strong>「儲存體掛接（Storage Mount）」</strong>功能，
+      掛載到 App Service 的 <code>/mounts/content</code> 路徑。
+    </p>
+    <ul>
+      <li>儲存體帳戶：<code>azurerm_storage_account</code></li>
+      <li>檔案共用：<code>azurerm_storage_share</code>（共用名稱 <code>content</code>）</li>
+      <li>掛載設定：Web App 的 <code>storage_account</code> 區塊，型別為 <code>AzureFiles</code></li>
+    </ul>
+    <p>這示範了如何讓 App Service 透過共用金鑰驗證存取 Azure Files，將內容與應用程式的程式碼儲存體分離管理。</p>
+    <footer>AZ-104 課程示範頁面 &middot; M09 儲存與內容傳遞</footer>
+  </div>
+</body>
+</html>
