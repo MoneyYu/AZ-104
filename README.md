@@ -6,8 +6,8 @@ GA: G-DXYJBX6BH8
 
 # AZ-104 Reference
 :::success
-Date: 20260120
-Course ID: 93886
+Date: 20260915
+Course ID: 107449
 :::
 
 :::info
