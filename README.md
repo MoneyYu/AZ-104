@@ -15,9 +15,9 @@ Post Course Survey: [https://aka.ms/az104zhsurvey](https://aka.ms/az104zhsurvey)
 :::
 
 ## Course Materials
-[Course AZ-104 English version](https://learn.microsoft.com/en-us/training/paths/az-104-administrator-prerequisites/)
-[Course AZ-104 简体中文版本](https://learn.microsoft.com/en-us/training/paths/az-104-administrator-prerequisites/)
-[Course AZ-104 正體中文版本](https://learn.microsoft.com/zh-tw/training/paths/az-104-administrator-prerequisites/)
+[Course AZ-104 English version](https://learn.microsoft.com/en-us/training/courses/az-104t00)
+[Course AZ-104 简体中文版本](https://learn.microsoft.com/zh-cn/training/courses/az-104t00)
+[Course AZ-104 正體中文版本](https://learn.microsoft.com/zh-tw/training/courses/az-104t00)
 
 ## Infos
 [ESI Support](https://aka.ms/esisupport)
