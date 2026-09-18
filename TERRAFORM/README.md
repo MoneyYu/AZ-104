@@ -79,6 +79,67 @@ az network nsg list -g AZ104-<postfix> --query "[].{name:name,rules:length(secur
 curl.exe -sS -o NUL -w "%{http_code}`n" http://<lab08b-lb-pip>
 ```
 
+### M08B: VMSS 健康監視與 upgrade policy
+
+`lab08b-vmss-cat` 的 Terraform 設定維持 `upgrade_mode = "Manual"`，但已安裝
+`ApplicationHealthWindows` 2.0 extension。這是為了解除入口網站切換
+**Rolling - Upgrades roll out in batches** 時的健康監視阻擋，同時保留講師先示範
+Manual upgrade、再於課堂上手動設定 batch 的流程。
+
+Uniform orchestration 的 VMSS 要使用 Rolling upgrade，必須有 Load Balancer health
+probe 或 Application Health extension。這裡選 extension，因為 azurerm provider
+只允許在 `upgrade_mode = "Automatic"` 或 `"Rolling"` 時設定 `health_probe_id`；
+直接改 `upgrade_mode` 又會強制重建 VMSS。Terraform 因此不預設
+`rolling_upgrade_policy`，也不把 `azurerm_lb_probe.lab08vmss` 指派給 VMSS。
+
+健康端點與流量端點刻意分開：
+
+- Load Balancer probe：`http://<instance>/`，確認 IIS 首頁可服務流量。
+- Application Health extension：`http://localhost/health.html`，確認執行個體可參與
+  Rolling upgrade。
+- Rich Health States 2.0 的 `/health.html` 必須回傳 HTTP 2xx，且本文為
+  `{"ApplicationHealthState":"Healthy"}`。純文字 `OK` 會被判定為 `Unknown`，
+  Rolling upgrade 會把 `Unknown` 視同不健康。
+
+VMSS 只能使用一種 orchestration health source。現有 Load Balancer probe 僅由 LB
+rule 使用，不是 VMSS 的 `health_probe_id`；加入 Application Health extension 後，
+不要再把該 probe 指派給 VMSS。
+
+本環境只有 2 個執行個體，1 個執行個體就是 50%。課堂切換 Rolling 時，batch 與
+unhealthy 門檻應設為 50%，否則預設 20% 容易在第一個執行個體更新時停止。完整命令
+與故障示範請使用 `DEMO/Module08/VMSS-UpgradePolicy.azcli`。
+
+> ⚠️ **Terraform state drift / replacement 風險**
+>
+> `upgrade_mode` 在 azurerm provider 是 ForceNew 欄位。入口網站或 Azure CLI 將
+> VMSS 切成 Rolling 後，Terraform 設定仍是 Manual；若未先切回 Manual 就執行
+> `terraform apply`，plan 可能要求銷毀並重建整個 VMSS。示範結束必須先切回
+> Manual、清除 rolling policy，再重新執行 `terraform plan`；只要看到 VMSS
+> replacement 就立即停止，不可套用。
+
+驗證方式：
+
+```powershell
+$rg = "AZ104-<postfix>"
+$vmss = "lab08b-vmss-cat"
+$pip = "<lab08b-lb-pip>"
+
+az vmss extension list -g $rg --vmss-name $vmss -o table
+az vmss list-instances -g $rg -n $vmss --query "[].instanceId" -o tsv |
+  ForEach-Object {
+    az vmss get-instance-view -g $rg -n $vmss --instance-id $_ `
+      --query "{instanceId:'$_',health:vmHealth.status.displayStatus}" -o json
+  }
+curl.exe -sS "http://$pip/"
+curl.exe -sS "http://$pip/health.html"
+az vmss show -g $rg -n $vmss --query "upgradePolicy.mode" -o tsv
+```
+
+參考：
+
+- https://learn.microsoft.com/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-configure-rolling-upgrades
+- https://learn.microsoft.com/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-health-extension
+
 ### 政策自動產生的殘留 NSG
 
 租戶政策會為「建立當下未關聯 NSG」的 subnet 自動建立並掛上 NSG，命名為 `<vnet>-<subnet>-nsg-<location>`（0 條規則）。Terraform 隨後套用自己的 `azurerm_subnet_network_security_group_association` 時會覆寫該關聯；之後 `terraform destroy` 刪除 VNet，這些政策 NSG 因**不在 state 內**而殘留。
